@@ -1,0 +1,87 @@
+// Importa os estilos base do ProseMirror para a área de edição.
+@import "prosemirror-view/style/prosemirror.css";
+
+// :host aplica estilos ao próprio elemento <app-prosemirror-editor>
+:host {
+  display: block;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  margin: 20px auto;
+  max-width: 800px;
+  background-color: #fff;
+}
+
+// Estilos para a Barra de Ferramentas Customizada
+.tessera-custom-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+
+  button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: #333;
+    padding: 6px 10px;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.2;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background-color: #e9ecef;
+      border-color: #ced4da;
+    }
+
+    &:active {
+      background-color: #cfe2ff;
+      border-color: #b6d4fe;
+    }
+
+    &.active {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0a58ca;
+    }
+
+    b { font-weight: bold; }
+    i { font-style: italic; }
+  }
+
+  // Estilo para o separador na barra de ferramentas
+  .toolbar-separator {
+    display: inline-block;
+    width: 1px;
+    background-color: #ced4da; // Cor do separador
+    height: 20px; // Altura do separador
+    margin: 0 8px; // Espaçamento ao redor do separador
+    vertical-align: middle;
+  }
+}
+
+// Estilos para o container do editor
+.prosemirror-editor-container {
+  // ...
+}
+
+// Estilos para o elemento editável do ProseMirror
+.ProseMirror {
+  padding: 15px;
+  min-height: 300px;
+  outline: none;
+  line-height: 1.6;
+  color: #333;
+
+  p { margin-top: 0; margin-bottom: 1em; }
+  h1, h2, h3, h4, h5, h6 { margin-top: 1.2em; margin-bottom: 0.5em; line-height: 1.2; font-weight: 600; }
+  ul, ol { margin-left: 20px; padding-left: 20px; }
+  blockquote { border-left: 3px solid #eee; margin-left: 0; margin-right: 0; padding-left: 1em; color: #555; }
+}
