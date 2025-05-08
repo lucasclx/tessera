@@ -48,8 +48,8 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        // Esta é a linha que estava causando o erro se a versão do JJWT fosse < 0.12.0
-        return Jwts.parserBuilder()
+        // Alteração principal: Jwts.parserBuilder() para Jwts.parser()
+        return Jwts.parser() 
                    .setSigningKey(key)
                    .build()
                    .parseClaimsJws(token)
