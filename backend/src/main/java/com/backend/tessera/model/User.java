@@ -7,13 +7,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(columnNames = "username"),
-    @UniqueConstraint(columnNames = "email") // Removido o unique constraint de CPF
+    @UniqueConstraint(columnNames = "email")
 })
 @Data
 @NoArgsConstructor
@@ -38,25 +39,47 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String institution;
 
-    // Removido: @Column(nullable = false, unique = true) private String cpf;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    // Novos campos para o sistema de aprovação
+    @Enumerated(EnumType.STRING)
+    private Role requestedRole; // Papel solicitado pelo usuário
+
+    private boolean approved = false; // Status de aprovação
+
+    private LocalDateTime approvalDate; // Data de aprovação/rejeição
+
+    @Column(length = 500)
+    private String adminComments; // Comentários do administrador
+
+    // Campos para status da conta
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
     private boolean enabled = true;
 
-    // Construtor usado pelo DataInitializer (mantido como antes, pois não usava CPF)
+    // Campo para rastrear data de criação
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    // Inicializa a data de criação antes de persistir
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    // Construtor usado pelo DataInitializer
     public User(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.approved = true; // Usuários iniciais já vêm aprovados
+        this.createdAt = LocalDateTime.now();
     }
 
-    // Construtor completo para RegisterController (sem CPF)
+    // Construtor completo para RegisterController
     public User(String nome, String username, String email, String password, String institution, Role role) {
         this.nome = nome;
         this.username = username;
@@ -64,6 +87,7 @@ public class User implements UserDetails {
         this.password = password;
         this.institution = institution;
         this.role = role;
+        this.createdAt = LocalDateTime.now();
     }
 
     @Override
