@@ -1,0 +1,11 @@
+/* src/app/auth/auth.component.scss */
+:host {
+    display: flex;
+    flex-direction: column; /* Caso queira adicionar algo acima/abaixo do router-outlet no futuro */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center;     /* Centraliza horizontalmente */
+    min-height: 100vh;       /* Ocupa no mínimo a altura total da viewport */
+    width: 100%;             /* Ocupa a largura total */
+    padding: 20px;           /* Espaçamento interno para não colar nas bordas em telas pequenas */
+    box-sizing: border-box;  /* Garante que o padding não aumente o tamanho total */
+  }

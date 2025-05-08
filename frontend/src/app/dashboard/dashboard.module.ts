@@ -2,19 +2,20 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
-import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component'; // Certifique-se que o caminho está correto
-import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component'; // Certifique-se que o caminho está correto
+import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
+import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
+// DashboardComponent (o wrapper, se houver) seria declarado aqui se standalone: false
+// import { DashboardComponent } from './dashboard.component';
 
 @NgModule({
   declarations: [
-    // ProfessorDashboardComponent, // Remova daqui
-    // AlunoDashboardComponent    // Remova daqui
+    // DashboardComponent, // Se DashboardComponent for standalone: false
   ],
   imports: [
     CommonModule,
     DashboardRoutingModule,
-    ProfessorDashboardComponent, // Adicione aqui
-    AlunoDashboardComponent     // Adicione aqui
+    ProfessorDashboardComponent, // Importado pois é standalone
+    AlunoDashboardComponent     // Importado pois é standalone
   ]
 })
 export class DashboardModule { }

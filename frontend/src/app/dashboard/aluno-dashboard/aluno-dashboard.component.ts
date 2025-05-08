@@ -2,13 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
+import { CommonModule } from '@angular/common'; // Importe CommonModule se usar *ngIf, etc.
 
 @Component({
   selector: 'app-aluno-dashboard',
-  // REMOVA a linha 'standalone: true,' daqui
-  // REMOVA a linha 'imports: [CommonModule],' daqui
+  standalone: true, // Assumindo que é standalone
+  imports: [
+    CommonModule // Adicione se usar diretivas do CommonModule no template
+  ],
   templateUrl: './aluno-dashboard.component.html',
-  styleUrl: './aluno-dashboard.component.scss' // ou styleUrls
+  styleUrl: './aluno-dashboard.component.scss'
 })
 export class AlunoDashboardComponent implements OnInit {
   username: string | null = null;

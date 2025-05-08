@@ -1,18 +1,19 @@
+// src/app/auth/login/login.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; // Importe ReactiveFormsModule
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { CommonModule } from '@angular/common'; // Importe CommonModule
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  standalone: true, // Certifique-se que está true
+  standalone: true,
   imports: [
-    CommonModule, // Adicione CommonModule
-    ReactiveFormsModule // Adicione ReactiveFormsModule
+    CommonModule,
+    ReactiveFormsModule
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss' // Certifique-se que aponta para o arquivo SCSS
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -38,7 +39,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
+      this.loginForm.markAllAsTouched(); // Marca todos os campos como "tocados" para exibir erros
       return;
     }
     this.loading = true;
@@ -53,7 +54,7 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         this.loading = false;
         this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no login. Verifique suas credenciais.';
-        console.error(err);
+        console.error('Login error:', err);
       }
     });
   }
@@ -66,6 +67,8 @@ export class LoginComponent implements OnInit {
     } else {
       this.errorMessage = 'Usuário não possui um perfil válido para acesso.';
       console.error("Usuário logado mas sem role PROFESSOR ou ALUNO:", this.authService.currentUserValue);
+      // Opcional: redirecionar para uma página de erro ou logout
+      // this.authService.logout();
     }
   }
 }

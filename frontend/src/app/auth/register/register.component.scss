@@ -1,0 +1,55 @@
+/* src/app/auth/register/register.component.scss */
+@import '../login/login.component.scss'; // Importa estilos do login para reutilização
+
+.register-container {
+  @extend .login-container; // Herda estilos do login-container
+
+  h2 {
+    font-size: 1.9em; // Ajuste específico para o título do registro
+  }
+
+  select[multiple] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1em;
+    color: #2c3e50;
+    min-height: 80px; // Altura para mostrar algumas opções
+
+    &:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
+    }
+     &.is-invalid {
+      border-color: #e74c3c;
+      background-color: #fff6f6;
+    }
+  }
+}
+
+.login-link {
+  margin-top: 25px;
+  font-size: 0.9em;
+  color: #555;
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.success-message {
+  margin-top: 20px;
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}

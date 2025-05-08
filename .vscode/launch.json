@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-TesseraApplication<tessera>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.backend.tessera.TesseraApplication",
+            "projectName": "tessera",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

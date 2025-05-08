@@ -2,13 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
+import { CommonModule } from '@angular/common'; // Importe CommonModule
 
 @Component({
   selector: 'app-professor-dashboard',
-  // REMOVA a linha 'standalone: true,' daqui
-  // REMOVA a linha 'imports: [CommonModule],' daqui
+  standalone: true, // Certifique-se que está true
+  imports: [
+    CommonModule // Adicione CommonModule aqui
+  ],
   templateUrl: './professor-dashboard.component.html',
-  styleUrl: './professor-dashboard.component.scss' // ou styleUrls
+  styleUrl: './professor-dashboard.component.scss'
 })
 export class ProfessorDashboardComponent implements OnInit {
   username: string | null = null;

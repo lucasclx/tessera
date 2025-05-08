@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
+html, body {
+    height: 100%; /* Garante que o html e o body ocupem a altura total da tela */
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+                 "Segoe UI Symbol"; /* Uma pilha de fontes moderna */
+    background-color: #f4f7f6; /* Um fundo cinza claro suave para a aplicação */
+    color: #333; /* Cor de texto padrão */
+    box-sizing: border-box;
+  }
+  
+  *, *::before, *::after {
+    box-sizing: inherit; /* Herda o box-sizing para todos os elementos */
+  }
+  
+  /* Opcional: Reset básico para alguns elementos comuns */
+  h1, h2, h3, h4, h5, h6, p {
+    margin-top: 0;
+  }

@@ -1,1 +1,16 @@
-<p>aluno-dashboard works!</p>
+<div class="dashboard-container aluno-dashboard">
+    <header class="dashboard-header">
+      <h1>Dashboard do Aluno</h1>
+      <button (click)="logout()" class="btn btn-logout">Sair</button>
+    </header>
+    <p class="welcome-message">Bem-vindo(a), {{ username || 'Aluno' }}!</p>
+  
+    <div *ngIf="dashboardData" class="data-section">
+      <h3>Dados do Servidor (Aluno):</h3>
+      <p>{{ dashboardData }}</p>
+    </div>
+  
+    <div *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>

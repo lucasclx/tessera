@@ -1,6 +1,9 @@
-<div class="dashboard-container">
-    <h1>Dashboard do Professor</h1>
-    <p>Bem-vindo(a), {{ username }}!</p>
+<div class="dashboard-container professor-dashboard">
+    <header class="dashboard-header">
+      <h1>Dashboard do Professor</h1>
+      <button (click)="logout()" class="btn btn-logout">Sair</button>
+    </header>
+    <p class="welcome-message">Bem-vindo(a), {{ username || 'Professor' }}!</p>
   
     <div *ngIf="dashboardData" class="data-section">
       <h3>Dados do Servidor:</h3>
@@ -10,6 +13,4 @@
     <div *ngIf="errorMessage" class="error-message">
       <p>{{ errorMessage }}</p>
     </div>
-  
-    <button (click)="logout()">Sair</button>
-  </div>ng
+  </div>

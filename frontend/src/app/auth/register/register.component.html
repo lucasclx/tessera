@@ -1,0 +1,76 @@
+<div class="register-container">
+    <h2>Registro de Novo Usuário</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-field">
+        <label for="nome">Nome Completo:</label>
+        <input type="text" id="nome" formControlName="nome">
+        <div *ngIf="registerForm.get('nome')?.invalid && (registerForm.get('nome')?.dirty || registerForm.get('nome')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('nome')?.errors?.['required']">Nome é obrigatório.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="username">Nome de Usuário (Login):</label>
+        <input type="text" id="username" formControlName="username">
+        <div *ngIf="registerForm.get('username')?.invalid && (registerForm.get('username')?.dirty || registerForm.get('username')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('username')?.errors?.['required']">Nome de usuário é obrigatório.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="email">Email:</label>
+        <input type="email" id="email" formControlName="email">
+        <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.dirty || registerForm.get('email')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('email')?.errors?.['required']">Email é obrigatório.</small>
+          <small *ngIf="registerForm.get('email')?.errors?.['email']">Formato de email inválido.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="password">Senha:</label>
+        <input type="password" id="password" formControlName="password">
+        <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('password')?.errors?.['required']">Senha é obrigatória.</small>
+          <small *ngIf="registerForm.get('password')?.errors?.['minlength']">Senha deve ter no mínimo 6 caracteres.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="confirmPassword">Confirmar Senha:</label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword">
+        <div *ngIf="registerForm.get('confirmPassword')?.invalid && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Confirmação de senha é obrigatória.</small>
+        </div>
+        <div *ngIf="registerForm.errors?.['passwordMismatch'] && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)" class="error-feedback">
+          <small>As senhas não coincidem.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="roles">Perfil:</label>
+        <select id="roles" formControlName="roles" multiple>
+          <option value="ALUNO">Aluno</option>
+          <option value="PROFESSOR">Professor (Cuidado: apenas para demonstração)</option>
+        </select>
+         <div *ngIf="registerForm.get('roles')?.invalid && (registerForm.get('roles')?.dirty || registerForm.get('roles')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('roles')?.errors?.['required']">Pelo menos um perfil deve ser selecionado.</small>
+        </div>
+      </div>
+  
+  
+      <button type="submit" [disabled]="registerForm.invalid || loading">
+        {{ loading ? 'Registrando...' : 'Registrar' }}
+      </button>
+  
+      <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+  
+      <div class="login-link">
+        Já tem uma conta? <a routerLink="/auth/login">Faça login</a>
+      </div>
+    </form>
+  </div>

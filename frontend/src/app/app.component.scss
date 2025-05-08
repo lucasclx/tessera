@@ -1,0 +1,55 @@
+/* src/app/app.component.scss */
+.navbar {
+    background-color: #343a40;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+    .navbar-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  
+    .navbar-brand {
+      color: #ffffff;
+      font-size: 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  
+    .navbar-nav {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+      display: flex;
+  
+      .nav-item {
+        margin-left: 1.5rem;
+      }
+  
+      .nav-link {
+        color: #adb5bd;
+        text-decoration: none;
+        font-size: 1rem;
+        padding: 0.5rem 0;
+        transition: color 0.2s ease-in-out;
+  
+        &:hover {
+          color: #ffffff;
+        }
+  
+        &.active {
+          color: #ffffff;
+          font-weight: 500;
+          border-bottom: 2px solid #007bff;
+        }
+      }
+    }
+  }
+  
+  /* Ajuste para o conteúdo principal não ficar embaixo da navbar fixa (se for o caso) */
+  /* router-outlet + * {
+    padding-top: 80px; // Altura aproximada da navbar
+  } */
