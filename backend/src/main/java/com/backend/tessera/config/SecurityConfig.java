@@ -1,7 +1,7 @@
 package com.backend.tessera.config;
 
 import com.backend.tessera.security.JwtAuthenticationFilter;
-import com.backend.tessera.service.UserDetailsServiceImpl; // Importa o seu UserDetailsService
+import com.backend.tessera.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,14 +26,11 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true) // Para @PreAuthorize etc.
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    // Não precisamos mais do UserDetailsServiceImpl aqui se estiver usando o AuthenticationProvider padrão
-    // que já usa o UserDetailsService bean.
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,15 +39,17 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                // Permitir acesso à API de autenticação sem autenticação
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll() // Se estiver usando H2 console
+                // Permitir acesso a endpoints específicos por perfil
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
+                // Qualquer outra requisição precisa ser autenticada
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
-        // Para H2 console funcionar corretamente com Spring Security (se estiver usando)
+        // Para H2 console funcionar (se for usado)
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
         return http.build();
@@ -69,10 +68,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // URL do seu frontend Angular
+        // Permissão para frontend em localhost:4200
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // Permitir todos os métodos HTTP necessários
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Permitir todos os headers
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        // Expor headers que o frontend possa precisar
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // Aplicar configuração para todos os endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

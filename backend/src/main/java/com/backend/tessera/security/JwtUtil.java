@@ -2,7 +2,6 @@ package com.backend.tessera.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-// Removido: import io.jsonwebtoken.SignatureAlgorithm; // Não é mais necessário para signWith(Key)
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +47,8 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        // Alteração principal: Jwts.parserBuilder() para Jwts.parser()
-        return Jwts.parser() 
+        // Correção: usar parserBuilder() ao invés de parser()
+        return Jwts.parserBuilder() 
                    .setSigningKey(key)
                    .build()
                    .parseClaimsJws(token)

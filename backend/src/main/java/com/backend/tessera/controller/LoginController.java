@@ -1,6 +1,6 @@
 package com.backend.tessera.controller;
 
-// SEUS IMPORTS - Ajuste estes caminhos se suas classes estiverem em subpacotes diferentes dentro de com.backend.tessera
+// SEUS IMPORTS - Corrigidos para usar o caminho completo
 import com.backend.tessera.dto.AuthRequest;
 import com.backend.tessera.dto.AuthResponse;
 import com.backend.tessera.security.JwtUtil;
@@ -17,7 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import jakarta.validation.Valid; // Import para @Valid
+import jakarta.validation.Valid;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

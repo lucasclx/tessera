@@ -1,0 +1,84 @@
+/* src/app/dashboard/aluno-dashboard/aluno-dashboard.component.scss */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    
+    &.aluno-dashboard {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+    
+    h1 {
+      color: #28a745;  // Cor diferente para diferenciar do professor
+      font-size: 2em;
+      margin: 0;
+    }
+  }
+  
+  .welcome-message {
+    font-size: 1.2em;
+    color: #495057;
+    margin-bottom: 25px;
+  }
+  
+  .data-section {
+    background-color: white;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    
+    h3 {
+      color: #343a40;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.4em;
+    }
+    
+    p {
+      line-height: 1.6;
+    }
+  }
+  
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 20px;
+    
+    p {
+      margin: 0;
+    }
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: none;
+    
+    &.btn-logout {
+      background-color: #dc3545;
+      color: white;
+      
+      &:hover {
+        background-color: #c82333;
+      }
+    }
+  }

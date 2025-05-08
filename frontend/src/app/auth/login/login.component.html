@@ -23,7 +23,7 @@
         {{ errorMessage }}
       </div>
   
-      <button type="submit" (click)="logButtonClick()" [disabled]="loginForm.invalid || loading">
+      <button type="submit" [disabled]="loginForm.invalid || loading">
         {{ loading ? 'Entrando...' : 'Entrar' }}
       </button>
   

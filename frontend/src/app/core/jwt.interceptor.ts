@@ -1,23 +1,26 @@
+// src/app/core/jwt.interceptor.ts
 import { Injectable } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpInterceptor
+  HttpInterceptor,
+  HttpErrorResponse
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { AuthService } from './auth.service'; // Importar AuthService
-import { environment } from '../../environments/environment'; // Importar environment
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) {} // Injetar AuthService
+  constructor(private authService: AuthService, private router: Router) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.authService.getToken();
     const isLoggedIn = this.authService.isLoggedIn();
-    // Verifica se a URL da requisição começa com a apiUrl definida no environment
     const isApiUrl = request.url.startsWith(environment.apiUrl);
 
     if (isLoggedIn && isApiUrl && token) {
@@ -27,6 +30,25 @@ export class JwtInterceptor implements HttpInterceptor {
         }
       });
     }
-    return next.handle(request);
+
+    return next.handle(request).pipe(
+      catchError((err: HttpErrorResponse) => {
+        // Intercepta erros 401 (Unauthorized) e redireciona para login
+        if (err.status === 401) {
+          console.log('JwtInterceptor: Token expirado ou inválido, redirecionando para login');
+          this.authService.logout();
+          this.router.navigate(['/auth/login']);
+        }
+        
+        // Intercepta erros 403 (Forbidden) e redireciona para a página de acesso negado
+        if (err.status === 403) {
+          console.log('JwtInterceptor: Acesso negado (403 Forbidden)');
+          // Opcionalmente redirecionar para uma página de acesso negado
+          // this.router.navigate(['/unauthorized']);
+        }
+        
+        return throwError(() => err);
+      })
+    );
   }
 }

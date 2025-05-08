@@ -1,14 +1,17 @@
+// src/app/dashboard/professor-dashboard/professor-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
-import { CommonModule } from '@angular/common'; // Importe CommonModule
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-professor-dashboard',
-  standalone: true, // Certifique-se que está true
+  standalone: true,
   imports: [
-    CommonModule // Adicione CommonModule aqui
+    CommonModule,
+    RouterModule
   ],
   templateUrl: './professor-dashboard.component.html',
   styleUrl: './professor-dashboard.component.scss'

@@ -5,23 +5,27 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
-import { HomeComponent } from './home/home.component'; // Importe o HomeComponent
+import { HomeComponent } from './home/home.component';
+import { AuthGuard } from './core/auth.guard';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   {
-    path: 'auth', // Define o segmento 'auth'
-    component: AuthComponent, // AuthComponent é o container para as rotas filhas de 'auth'
+    path: 'auth',
+    component: AuthComponent,
     children: [
-      { path: 'login', component: LoginComponent },       // Rota para /auth/login
-      { path: 'register', component: RegisterComponent }, // Rota para /auth/register
-      { path: '', redirectTo: 'login', pathMatch: 'full' } // Redireciona /auth para /auth/login
+      { path: 'login', component: LoginComponent },
+      { path: 'register', component: RegisterComponent },
+      { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
-  { path: '', redirectTo: '/home', pathMatch: 'full' }, // Redireciona a rota raiz para /home
-  // Opcional: uma rota curinga para páginas não encontradas
-  // { path: '**', component: PageNotFoundComponent }, // Crie este componente se desejar
-  { path: '**', redirectTo: '/home' } // Ou redirecione para home como fallback
+  {
+    path: 'dashboard',
+    loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
+    canActivate: [AuthGuard]
+  },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/home' }
 ];
 
 @NgModule({

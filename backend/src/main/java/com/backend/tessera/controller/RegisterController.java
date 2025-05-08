@@ -26,58 +26,69 @@ public class RegisterController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Erro: Nome de usuário já está em uso!"));
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Erro: Email já está em uso!"));
-        }
-
-        // Removida a verificação de existência de CPF
-        // if (userRepository.existsByCpf(signUpRequest.getCpf())) {
-        //     return ResponseEntity
-        //             .badRequest()
-        //             .body(new MessageResponse("Erro: CPF já cadastrado!"));
-        // }
-
-        Role assignedRole = Role.ALUNO; // Papel padrão
-        Set<String> strRoles = signUpRequest.getRole();
-
-        if (strRoles != null && !strRoles.isEmpty()) {
-            String roleStr = strRoles.iterator().next().toUpperCase();
-            switch (roleStr) {
-                case "PROFESSOR":
-                    assignedRole = Role.PROFESSOR;
-                    break;
-                case "ALUNO":
-                    assignedRole = Role.ALUNO;
-                    break;
-                case "ADMIN": // Supondo que ADMIN também seja uma opção válida
-                    assignedRole = Role.ADMIN;
-                    break;
-                default:
-                    return ResponseEntity
-                            .badRequest()
-                            .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
+        try {
+            // Log para debug
+            System.out.println("Recebendo requisição de registro: " + signUpRequest.getUsername());
+            
+            // Verificação de username já existente
+            if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Erro: Nome de usuário já está em uso!"));
             }
+
+            // Verificação de email já existente
+            if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Erro: Email já está em uso!"));
+            }
+
+            // Definir papel padrão como ALUNO se não especificado
+            Role assignedRole = Role.ALUNO;
+            Set<String> strRoles = signUpRequest.getRole();
+
+            if (strRoles != null && !strRoles.isEmpty()) {
+                String roleStr = strRoles.iterator().next().toUpperCase();
+                switch (roleStr) {
+                    case "PROFESSOR":
+                        assignedRole = Role.PROFESSOR;
+                        break;
+                    case "ALUNO":
+                        assignedRole = Role.ALUNO;
+                        break;
+                    case "ADMIN":
+                        assignedRole = Role.ADMIN;
+                        break;
+                    default:
+                        return ResponseEntity
+                                .badRequest()
+                                .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
+                }
+            }
+
+            // Construir o objeto usuário
+            User user = new User();
+            user.setNome(signUpRequest.getNome());
+            user.setUsername(signUpRequest.getUsername());
+            user.setEmail(signUpRequest.getEmail());
+            user.setPassword(encoder.encode(signUpRequest.getPassword()));
+            user.setInstitution(signUpRequest.getInstitution());
+            user.setRole(assignedRole);
+
+            // Salvar no banco de dados
+            userRepository.save(user);
+            
+            System.out.println("Usuário registrado com sucesso: " + user.getUsername());
+
+            return ResponseEntity.ok(new MessageResponse("Usuário registrado com sucesso!"));
+        } catch (Exception e) {
+            // Log de erro para debugging
+            System.err.println("Erro ao registrar usuário: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new MessageResponse("Erro ao processar o registro: " + e.getMessage()));
         }
-
-        User user = new User();
-        user.setNome(signUpRequest.getNome());
-        user.setUsername(signUpRequest.getUsername());
-        user.setEmail(signUpRequest.getEmail());
-        user.setPassword(encoder.encode(signUpRequest.getPassword()));
-        user.setInstitution(signUpRequest.getInstitution());
-        // Removido: user.setCpf(signUpRequest.getCpf());
-        user.setRole(assignedRole);
-
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new MessageResponse("Usuário registrado com sucesso!"));
     }
 }

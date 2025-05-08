@@ -1,14 +1,17 @@
+// src/app/dashboard/aluno-dashboard/aluno-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
-import { CommonModule } from '@angular/common'; // Importe CommonModule se usar *ngIf, etc.
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-aluno-dashboard',
-  standalone: true, // Assumindo que é standalone
+  standalone: true,
   imports: [
-    CommonModule // Adicione se usar diretivas do CommonModule no template
+    CommonModule,
+    RouterModule
   ],
   templateUrl: './aluno-dashboard.component.html',
   styleUrl: './aluno-dashboard.component.scss'

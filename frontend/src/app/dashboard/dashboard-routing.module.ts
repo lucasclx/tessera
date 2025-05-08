@@ -1,24 +1,25 @@
+// src/app/dashboard/dashboard-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
-import { RoleGuard } from '../core/role.guard'; // << IMPORTAR RoleGuard (ajuste o caminho se necessário)
+import { RoleGuard } from '../core/role.guard';
 
 const routes: Routes = [
   {
     path: 'professor',
     component: ProfessorDashboardComponent,
-    canActivate: [RoleGuard], // AuthGuard já foi aplicado na rota pai ('/dashboard')
-    data: { expectedRole: 'PROFESSOR' } // Passar a role esperada para o guard
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'PROFESSOR' }
   },
   {
     path: 'aluno',
     component: AlunoDashboardComponent,
     canActivate: [RoleGuard],
-    data: { expectedRole: 'ALUNO' } // Passar a role esperada para o guard
+    data: { expectedRole: 'ALUNO' }
   },
-  // Você pode adicionar um redirecionamento padrão ou um componente de dashboard "home" aqui
-  { path: '', redirectTo: 'professor', pathMatch: 'full' } // Exemplo: redireciona para professor por padrão
+  // Redirecionamento padrão baseado no papel do usuário
+  { path: '', redirectTo: 'professor', pathMatch: 'full' }
 ];
 
 @NgModule({

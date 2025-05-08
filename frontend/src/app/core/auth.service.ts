@@ -1,6 +1,6 @@
 // src/app/core/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; // Adicione HttpHeaders
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
@@ -8,7 +8,13 @@ import { environment } from '../../environments/environment';
 export interface AuthResponse {
   token: string;
   username: string;
-  roles: string[]; // Backend retorna array de strings para roles
+  roles: string[];
+}
+
+// Interface para os dados de login
+export interface LoginData {
+  username: string;
+  password: string;
 }
 
 // Interface para os dados de registro
@@ -17,7 +23,8 @@ export interface RegistrationData {
   username: string;
   email: string;
   password: string;
-  roles: string[]; // Roles como um array de strings
+  institution: string; // Campo obrigatório
+  role: Set<string>; // Tipo específico Set<string>
 }
 
 @Injectable({
@@ -40,7 +47,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  login(credentials: { username: string, password: string }): Observable<AuthResponse> {
+  login(credentials: LoginData): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
         tap(user => {
@@ -52,9 +59,16 @@ export class AuthService {
       );
   }
 
-  // Novo método de registro
-  register(data: RegistrationData): Observable<any> { // O backend pode retornar uma mensagem ou o usuário criado
-    return this.http.post(`${this.apiUrl}/register`, data, {
+  register(data: RegistrationData): Observable<any> {
+    // Convertemos o Set para um formato que JSON possa serializar (Array)
+    const requestData = {
+      ...data,
+      role: Array.from(data.role)
+    };
+    
+    console.log('Enviando requisição de registro:', requestData);
+    
+    return this.http.post(`${this.apiUrl}/register`, requestData, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     });
   }
@@ -62,7 +76,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
-    this.router.navigate(['/auth/login']); // Ou para '/home'
+    this.router.navigate(['/auth/login']);
   }
 
   isLoggedIn(): boolean {

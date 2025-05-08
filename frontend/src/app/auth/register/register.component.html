@@ -27,6 +27,14 @@
       </div>
   
       <div class="form-field">
+        <label for="institution">Instituição:</label>
+        <input type="text" id="institution" formControlName="institution">
+        <div *ngIf="registerForm.get('institution')?.invalid && (registerForm.get('institution')?.dirty || registerForm.get('institution')?.touched)" class="error-feedback">
+          <small *ngIf="registerForm.get('institution')?.errors?.['required']">Instituição é obrigatória.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
         <label for="password">Senha:</label>
         <input type="password" id="password" formControlName="password">
         <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)" class="error-feedback">
@@ -56,7 +64,6 @@
           <small *ngIf="registerForm.get('roles')?.errors?.['required']">Pelo menos um perfil deve ser selecionado.</small>
         </div>
       </div>
-  
   
       <button type="submit" [disabled]="registerForm.invalid || loading">
         {{ loading ? 'Registrando...' : 'Registrar' }}

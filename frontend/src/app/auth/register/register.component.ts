@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/auth.service'; // Importe o AuthService
+import { AuthService, RegistrationData } from '../../core/auth.service'; // Importar RegistrationData também
 
 // Validador customizado para senhas
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -44,7 +44,8 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
-      roles: [[], Validators.required] // Array para roles, inicialmente vazio
+      institution: ['', Validators.required],
+      roles: [['ALUNO'], Validators.required] // Inicializado com ALUNO como valor padrão
     }, { validators: passwordMatchValidator });
   }
 
@@ -59,24 +60,37 @@ export class RegisterComponent implements OnInit {
     this.errorMessage = null;
     this.successMessage = null;
 
-    const { nome, username, email, password, roles } = this.registerForm.value;
-    // O backend espera um Set<String> para roles, então enviamos como array
-    const registrationData = { nome, username, email, password, roles: roles };
+    // Extrair os valores do formulário
+    const { nome, username, email, password, institution, roles } = this.registerForm.value;
+    
+    // Criar o objeto de registro conforme esperado pelo backend
+    const registrationData: RegistrationData = {
+      nome,
+      username,
+      email,
+      password,
+      institution,
+      // Converte o array para o formato esperado pelo backend e faz o cast explicito para Set<string>
+      role: new Set<string>(roles as string[])
+    };
 
-
+    console.log('Enviando dados de registro:', registrationData);
+    
     this.authService.register(registrationData).subscribe({
       next: (response) => {
         this.loading = false;
         this.successMessage = 'Usuário registrado com sucesso! Você pode fazer login agora.';
-        console.log('Registration successful', response);
-        // Opcional: limpar o formulário ou redirecionar para login após um tempo
-        // this.registerForm.reset();
-        // setTimeout(() => this.router.navigate(['/auth/login']), 3000);
+        console.log('Registro bem-sucedido:', response);
+        setTimeout(() => this.router.navigate(['/auth/login']), 3000);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no registro. Tente novamente.';
-        console.error('Registration error', err);
+        console.error('Erro no registro:', err);
+        if (err.status === 403) {
+          this.errorMessage = 'Acesso negado. Verifique se você tem permissão para registrar um novo usuário.';
+        } else {
+          this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no registro. Tente novamente.';
+        }
       }
     });
   }
