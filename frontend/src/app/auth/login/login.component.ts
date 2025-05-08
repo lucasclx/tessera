@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; // Importe ReactiveFormsModule
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth.service'; // Ajuste o caminho se necessário
+import { AuthService } from '../../core/auth.service';
+import { CommonModule } from '@angular/common'; // Importe CommonModule
 
 @Component({
   selector: 'app-login',
+  standalone: true, // Certifique-se que está true
+  imports: [
+    CommonModule, // Adicione CommonModule
+    ReactiveFormsModule // Adicione ReactiveFormsModule
+  ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
-  // Certifique-se de que NÃO HÁ 'standalone: true,' aqui
-  // Certifique-se de que NÃO HÁ 'imports: [CommonModule, ReactiveFormsModule, ...],' aqui
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
