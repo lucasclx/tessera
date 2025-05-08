@@ -1,1 +1,30 @@
-<p>login works!</p>
+<div class="login-container">
+    <h2>Login do Sistema</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-field">
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" formControlName="username"
+               [ngClass]="{ 'is-invalid': loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched) }">
+        <div *ngIf="loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched)" class="error-feedback">
+          <small *ngIf="loginForm.get('username')?.errors?.['required']">Usuário é obrigatório.</small>
+        </div>
+      </div>
+  
+      <div class="form-field">
+        <label for="password">Senha:</label>
+        <input type="password" id="password" formControlName="password"
+               [ngClass]="{ 'is-invalid': loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched) }">
+        <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)" class="error-feedback">
+          <small *ngIf="loginForm.get('password')?.errors?.['required']">Senha é obrigatória.</small>
+        </div>
+      </div>
+  
+      <button type="submit" [disabled]="loginForm.invalid || loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+  
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>

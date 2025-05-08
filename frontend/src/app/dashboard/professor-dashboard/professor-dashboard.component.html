@@ -1,1 +1,15 @@
-<p>professor-dashboard works!</p>
+<div class="dashboard-container">
+    <h1>Dashboard do Professor</h1>
+    <p>Bem-vindo(a), {{ username }}!</p>
+  
+    <div *ngIf="dashboardData" class="data-section">
+      <h3>Dados do Servidor:</h3>
+      <p>{{ dashboardData }}</p>
+    </div>
+  
+    <div *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
+    </div>
+  
+    <button (click)="logout()">Sair</button>
+  </div>ng

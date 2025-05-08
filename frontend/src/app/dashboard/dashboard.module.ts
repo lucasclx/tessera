@@ -1,20 +1,17 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common'; // Essencial para *ngIf, etc.
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
-import { DashboardComponent } from './dashboard.component';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
 
-
 @NgModule({
   declarations: [
-    DashboardComponent,
-    ProfessorDashboardComponent,
+    ProfessorDashboardComponent, // Declarados aqui
     AlunoDashboardComponent
   ],
   imports: [
-    CommonModule,
+    CommonModule, // Para diretivas como *ngIf
     DashboardRoutingModule
   ]
 })
