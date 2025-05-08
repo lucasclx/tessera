@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { RoleGuard } from '../core/role.guard';
 
 const routes: Routes = [
@@ -18,8 +19,14 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { expectedRole: 'ALUNO' }
   },
-  // Redirecionamento padrão baseado no papel do usuário
-  { path: '', redirectTo: 'professor', pathMatch: 'full' }
+  {
+    path: 'admin',
+    component: AdminDashboardComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ADMIN' }
+  },
+  // Redirecionamento inteligente baseado no papel do usuário
+  { path: '', redirectTo: 'admin', pathMatch: 'full' }
 ];
 
 @NgModule({

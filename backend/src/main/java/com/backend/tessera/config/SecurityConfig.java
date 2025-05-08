@@ -1,3 +1,4 @@
+// Arquivo: src/main/java/com/backend/tessera/config/SecurityConfig.java
 package com.backend.tessera.config;
 
 import com.backend.tessera.security.JwtAuthenticationFilter;
@@ -41,6 +42,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 // Permitir acesso à API de autenticação sem autenticação
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll() // Permitir acesso a endpoints do actuator
                 // Permitir acesso a endpoints específicos por perfil
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
@@ -68,16 +70,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permissão para frontend em localhost:4200
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        // Permitir todos os métodos HTTP necessários
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Permitir todos os headers
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        // Expor headers que o frontend possa precisar
+        // Configuração mais permissiva para desenvolvimento
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        // Aplicar configuração para todos os endpoints
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

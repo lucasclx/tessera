@@ -22,8 +22,16 @@ export class JwtInterceptor implements HttpInterceptor {
     const token = this.authService.getToken();
     const isLoggedIn = this.authService.isLoggedIn();
     const isApiUrl = request.url.startsWith(environment.apiUrl);
+    
+    console.log('JwtInterceptor - URL:', request.url);
+    console.log('JwtInterceptor - isLoggedIn:', isLoggedIn);
+    console.log('JwtInterceptor - isApiUrl:', isApiUrl);
+    console.log('JwtInterceptor - token exists:', !!token);
 
-    if (isLoggedIn && isApiUrl && token) {
+    // Não adicionar token em requisições de autenticação 
+    const isAuthRequest = request.url.includes('/auth/');
+    if (isLoggedIn && isApiUrl && token && !isAuthRequest) {
+      console.log('JwtInterceptor - Adicionando token ao cabeçalho da requisição');
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -33,6 +41,8 @@ export class JwtInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
+        console.log('JwtInterceptor - Erro na requisição:', err.status, err.message);
+        
         // Intercepta erros 401 (Unauthorized) e redireciona para login
         if (err.status === 401) {
           console.log('JwtInterceptor: Token expirado ou inválido, redirecionando para login');

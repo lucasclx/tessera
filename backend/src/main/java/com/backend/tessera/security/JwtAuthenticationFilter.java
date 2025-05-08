@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService; // Usando sua implementação
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -34,6 +34,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authorizationHeader = request.getHeader("Authorization");
+        final String requestURI = request.getRequestURI();
+        
+        System.out.println("Request URI: " + requestURI);
+        System.out.println("Auth Header: " + (authorizationHeader != null ? 
+                authorizationHeader.substring(0, Math.min(20, authorizationHeader.length())) + "..." : "null"));
+
+        // Ignorar certas URLs (como login e registro)
+        if (requestURI.contains("/api/auth/") || requestURI.contains("/actuator/")) {
+            System.out.println("Pulando autenticação para endpoint público: " + requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String username = null;
         String jwt = null;
@@ -42,23 +54,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                System.out.println("Usuário extraído do token: " + username);
             } catch (ExpiredJwtException e) {
+                System.out.println("JWT Token expirado");
                 logger.warn("JWT Token expirado");
             } catch (Exception e) {
-                logger.error("Erro ao parsear JWT Token: ", e);
+                System.out.println("Erro ao processar JWT Token: " + e.getMessage());
+                e.printStackTrace();
+                logger.error("Erro ao processar JWT Token: ", e);
             }
+        } else {
+            System.out.println("Cabeçalho Authorization não encontrado ou sem prefixo Bearer");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                System.out.println("Detalhes do usuário carregados: " + userDetails.getUsername());
+                System.out.println("Autoridades: " + userDetails.getAuthorities());
+                
+                boolean isValid = jwtUtil.validateToken(jwt, userDetails);
+                System.out.println("Token válido? " + isValid);
+                
+                if (isValid) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Autenticação definida com sucesso no SecurityContextHolder");
+                } else {
+                    System.out.println("Token inválido, autenticação não realizada");
+                }
+            } catch (Exception e) {
+                System.out.println("Erro durante autenticação: " + e.getMessage());
+                e.printStackTrace();
             }
         }
+        
         filterChain.doFilter(request, response);
     }
 }

@@ -1,3 +1,4 @@
+// Arquivo: src/main/java/com/backend/tessera/model/User.java
 package com.backend.tessera.model;
 
 import jakarta.persistence.*;
@@ -61,7 +62,7 @@ public class User implements UserDetails {
     private boolean enabled = true;
 
     // Campo para rastrear data de criação
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     // Inicializa a data de criação antes de persistir
@@ -93,16 +94,6 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.username;
     }
 
     @Override

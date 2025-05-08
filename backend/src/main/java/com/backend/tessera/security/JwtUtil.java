@@ -1,3 +1,4 @@
+// Arquivo: src/main/java/com/backend/tessera/security/JwtUtil.java
 package com.backend.tessera.security;
 
 import io.jsonwebtoken.Claims;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
@@ -25,7 +27,7 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
 
-    private Key key;
+    private SecretKey key;
 
     @PostConstruct
     public void init() {
@@ -47,12 +49,18 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        // Correção: usar parserBuilder() ao invés de parser()
-        return Jwts.parserBuilder() 
-                   .setSigningKey(key)
-                   .build()
-                   .parseClaimsJws(token)
-                   .getBody();
+        try {
+            // Correção: modificando para trabalhar com SecretKey em vez de Key
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (Exception e) {
+            System.out.println("Erro ao extrair claims do token: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private Boolean isTokenExpired(String token) {
@@ -62,25 +70,48 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         String roles = userDetails.getAuthorities().stream()
-                         .map(GrantedAuthority::getAuthority)
-                         .map(s -> s.startsWith("ROLE_") ? s.substring(5) : s)
-                         .collect(Collectors.joining(","));
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
         claims.put("roles", roles);
+        
+        System.out.println("Gerando token para usuário: " + userDetails.getUsername());
+        System.out.println("Roles: " + roles);
+        
         return createToken(claims, userDetails.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(key) // A API moderna infere o algoritmo da chave (HS256 para hmacShaKeyFor)
-                .compact();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+        
+        System.out.println("Token válido de " + now + " até " + expiryDate);
+        
+        try {
+            // Atualizado para a sintaxe do JJWT 0.12.x
+            return Jwts.builder()
+                    .claims(claims)
+                    .subject(subject)
+                    .issuedAt(now)
+                    .expiration(expiryDate)
+                    .signWith(key)
+                    .compact();
+        } catch (Exception e) {
+            System.out.println("Erro ao criar token: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        try {
+            final String username = extractUsername(token);
+            boolean isValid = (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            System.out.println("Validando token para " + username + ": " + isValid);
+            return isValid;
+        } catch (Exception e) {
+            System.out.println("Erro na validação do token: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }

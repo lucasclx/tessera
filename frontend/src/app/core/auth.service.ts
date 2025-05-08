@@ -23,8 +23,8 @@ export interface RegistrationData {
   username: string;
   email: string;
   password: string;
-  institution: string; // Campo obrigatório
-  role: Set<string>; // Tipo específico Set<string>
+  institution: string;
+  role: Set<string>;
 }
 
 @Injectable({
@@ -41,6 +41,8 @@ export class AuthService {
       storedUser ? JSON.parse(storedUser) : null
     );
     this.currentUser = this.currentUserSubject.asObservable();
+    
+    console.log('AuthService inicializado. Usuário atual:', this.currentUserValue);
   }
 
   public get currentUserValue(): AuthResponse | null {
@@ -48,12 +50,17 @@ export class AuthService {
   }
 
   login(credentials: LoginData): Observable<AuthResponse> {
+    console.log('Enviando requisição de login para:', `${this.apiUrl}/login`);
+    console.log('Credenciais:', {username: credentials.username, password: '******'});
+    
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
         tap(user => {
+          console.log('Resposta do login:', user);
           if (user && user.token) {
             localStorage.setItem('currentUser', JSON.stringify(user));
             this.currentUserSubject.next(user);
+            console.log('Token armazenado no localStorage e currentUserSubject atualizado');
           }
         })
       );
@@ -74,24 +81,32 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('Realizando logout');
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
 
   isLoggedIn(): boolean {
-    return !!this.currentUserValue && !!this.currentUserValue.token;
+    const isLogged = !!this.currentUserValue && !!this.currentUserValue.token;
+    console.log('isLoggedIn check:', isLogged);
+    return isLogged;
   }
 
   hasRole(role: string): boolean {
     if (!this.isLoggedIn() || !this.currentUserValue?.roles) {
+      console.log('hasRole - Usuário não logado ou sem roles');
       return false;
     }
     // As roles vêm do backend como "PROFESSOR", "ALUNO" (sem "ROLE_")
-    return this.currentUserValue.roles.includes(role.toUpperCase());
+    const hasRole = this.currentUserValue.roles.includes(role.toUpperCase());
+    console.log(`hasRole check para ${role}:`, hasRole, 'Roles disponíveis:', this.currentUserValue.roles);
+    return hasRole;
   }
 
   getToken(): string | null {
-    return this.currentUserValue?.token || null;
+    const token = this.currentUserValue?.token || null;
+    console.log('getToken:', token ? token.substring(0, 15) + '...' : 'null');
+    return token;
   }
 }

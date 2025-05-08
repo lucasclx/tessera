@@ -5,16 +5,19 @@ import { CommonModule } from '@angular/common';
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 @NgModule({
   declarations: [
-    // Componentes standalone são importados, não declarados
+    // Não declarar componentes standalone aqui
   ],
   imports: [
     CommonModule,
     DashboardRoutingModule,
-    ProfessorDashboardComponent, // Componente standalone importado
-    AlunoDashboardComponent      // Componente standalone importado
+    // Importar componentes standalone
+    ProfessorDashboardComponent,
+    AlunoDashboardComponent,
+    AdminDashboardComponent
   ]
 })
 export class DashboardModule { }

@@ -1,0 +1,189 @@
+<div class="admin-dashboard">
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Painel Administrativo</h1>
+        <div class="admin-info">
+          <span>Administrador: {{ adminName }}</span>
+          <button class="btn btn-logout" (click)="logout()">Sair</button>
+        </div>
+      </div>
+    </header>
+  
+    <div class="container">
+      <!-- Mensagem de feedback -->
+      <div *ngIf="message.text" class="alert" [ngClass]="{'alert-success': message.type === 'success', 'alert-error': message.type === 'error'}">
+        {{ message.text }}
+        <button class="close-btn" (click)="message.text = ''">×</button>
+      </div>
+  
+      <div class="admin-content">
+        <!-- Painel lateral com navegação -->
+        <div class="sidebar">
+          <div class="nav-header">Gerenciamento</div>
+          <ul class="nav-menu">
+            <li [class.active]="viewMode === 'pending'">
+              <button (click)="loadPendingUsers()" [disabled]="loading.pendingUsers">
+                <i class="icon-clock"></i> Pendentes de Aprovação
+                <span *ngIf="pendingUsers.length > 0" class="badge">{{ pendingUsers.length }}</span>
+              </button>
+            </li>
+            <li [class.active]="viewMode === 'all'">
+              <button (click)="loadAllUsers()" [disabled]="loading.allUsers">
+                <i class="icon-users"></i> Todos os Usuários
+              </button>
+            </li>
+          </ul>
+        </div>
+  
+        <!-- Área principal do conteúdo -->
+        <div class="main-content">
+          <!-- Lista de usuários -->
+          <div class="users-list" [class.minimized]="selectedUser">
+            <h2>{{ viewMode === 'pending' ? 'Usuários Pendentes' : 'Todos os Usuários' }}</h2>
+            
+            <div *ngIf="viewMode === 'pending' && loading.pendingUsers || viewMode === 'all' && loading.allUsers" class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Carregando usuários...</p>
+            </div>
+  
+            <div *ngIf="viewMode === 'pending' && !loading.pendingUsers && pendingUsers.length === 0" class="empty-state">
+              <i class="icon-check-circle"></i>
+              <p>Não há usuários pendentes de aprovação.</p>
+            </div>
+  
+            <div *ngIf="viewMode === 'all' && !loading.allUsers && allUsers.length === 0" class="empty-state">
+              <i class="icon-users"></i>
+              <p>Não há usuários cadastrados no sistema.</p>
+            </div>
+  
+            <table *ngIf="(viewMode === 'pending' && !loading.pendingUsers && pendingUsers.length > 0) || 
+                         (viewMode === 'all' && !loading.allUsers && allUsers.length > 0)">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Usuário</th>
+                  <th>Email</th>
+                  <th>Papel</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of viewMode === 'pending' ? pendingUsers : allUsers" 
+                    [class.selected]="selectedUser?.id === user.id">
+                  <td>{{ user.nome }}</td>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span class="badge role-badge" [ngClass]="getRoleBadgeClass(user.role)">{{ user.role }}</span>
+                    <span *ngIf="user.requestedRole" class="badge role-badge requested" [ngClass]="getRoleBadgeClass(user.requestedRole)">
+                      → {{ user.requestedRole }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge status-badge" [ngClass]="getStatusBadgeClass(user.approved)">
+                      {{ user.approved ? 'Aprovado' : 'Pendente' }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <button class="btn btn-primary btn-sm" (click)="selectUser(user)">Gerenciar</button>
+                    <button class="btn btn-danger btn-sm" (click)="deleteUser(user.id)">Excluir</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+  
+          <!-- Detalhes do usuário selecionado -->
+          <div *ngIf="selectedUser" class="user-details">
+            <div class="details-header">
+              <h2>Gerenciar Usuário</h2>
+              <button class="btn btn-light" (click)="cancelSelection()">Voltar</button>
+            </div>
+  
+            <div class="user-info">
+              <h3>{{ selectedUser.nome }}</h3>
+              <p><strong>Usuário:</strong> {{ selectedUser.username }}</p>
+              <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+              <p><strong>Instituição:</strong> {{ selectedUser.institution }}</p>
+              <p><strong>Criado em:</strong> {{ getFormattedDate(selectedUser.createdAt) }}</p>
+              
+              <div class="badges">
+                <span class="badge role-badge" [ngClass]="getRoleBadgeClass(selectedUser.role)">
+                  {{ selectedUser.role }}
+                </span>
+                <span *ngIf="selectedUser.requestedRole" class="badge role-badge requested" [ngClass]="getRoleBadgeClass(selectedUser.requestedRole)">
+                  Solicitado: {{ selectedUser.requestedRole }}
+                </span>
+                <span class="badge status-badge" [ngClass]="getStatusBadgeClass(selectedUser.approved)">
+                  {{ selectedUser.approved ? 'Aprovado' : 'Pendente' }}
+                </span>
+                <span class="badge status-badge" [ngClass]="selectedUser.enabled ? 'badge-active' : 'badge-inactive'">
+                  {{ selectedUser.enabled ? 'Ativo' : 'Inativo' }}
+                </span>
+              </div>
+  
+              <div *ngIf="selectedUser.approvalDate" class="approval-info">
+                <p><strong>Data de aprovação:</strong> {{ getFormattedDate(selectedUser.approvalDate) }}</p>
+              </div>
+  
+              <div *ngIf="selectedUser.adminComments" class="admin-comments">
+                <p><strong>Comentários:</strong></p>
+                <p class="comments-text">{{ selectedUser.adminComments }}</p>
+              </div>
+            </div>
+  
+            <!-- Formulário de aprovação -->
+            <div class="approval-form">
+              <h4>Atualizar Aprovação</h4>
+              <form [formGroup]="approvalForm" (ngSubmit)="submitApproval()">
+                <div class="form-group">
+                  <label for="approved">Status de Aprovação:</label>
+                  <select id="approved" formControlName="approved" class="form-control">
+                    <option [ngValue]="true">Aprovado</option>
+                    <option [ngValue]="false">Rejeitado</option>
+                  </select>
+                </div>
+  
+                <div class="form-group">
+                  <label for="role">Papel:</label>
+                  <select id="role" formControlName="role" class="form-control">
+                    <option value="ALUNO">Aluno</option>
+                    <option value="PROFESSOR">Professor</option>
+                    <option value="ADMIN">Administrador</option>
+                  </select>
+                </div>
+  
+                <div class="form-group">
+                  <label for="adminComments">Comentários:</label>
+                  <textarea id="adminComments" formControlName="adminComments" class="form-control" rows="3"></textarea>
+                </div>
+  
+                <button type="submit" class="btn btn-primary" [disabled]="approvalForm.invalid || loading.approvalUpdate">
+                  {{ loading.approvalUpdate ? 'Salvando...' : 'Salvar Aprovação' }}
+                </button>
+              </form>
+            </div>
+  
+            <!-- Formulário de status -->
+            <div class="status-form">
+              <h4>Atualizar Status</h4>
+              <form [formGroup]="statusForm" (ngSubmit)="updateUserStatus()">
+                <div class="form-group">
+                  <label for="enabled">Status da Conta:</label>
+                  <select id="enabled" formControlName="enabled" class="form-control">
+                    <option [ngValue]="true">Ativo</option>
+                    <option [ngValue]="false">Inativo</option>
+                  </select>
+                </div>
+  
+                <button type="submit" class="btn btn-primary" [disabled]="statusForm.invalid || loading.statusUpdate">
+                  {{ loading.statusUpdate ? 'Salvando...' : 'Atualizar Status' }}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
