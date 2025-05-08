@@ -32,13 +32,26 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('LoginComponent ngOnInit disparado.'); // Log adicional
     if (this.authService.isLoggedIn()) {
+        console.log('Usuário já logado, redirecionando para o dashboard.'); // Log adicional
         this.redirectToDashboard();
     }
   }
 
+  // Método de log para o clique do botão (para teste)
+  logButtonClick(): void {
+    console.log('Botão ENTRAR clicado! (Evento de clique direto)');
+  }
+
   onSubmit(): void {
+    console.log('onSubmit foi chamado.'); // Log principal
+    console.log('Formulário válido:', !this.loginForm.invalid);
+    console.log('Valores do formulário:', this.loginForm.value);
+    console.log('Estado de loading:', this.loading);
+
     if (this.loginForm.invalid) {
+      console.log('Formulário inválido, marcando campos como touched.');
       this.loginForm.markAllAsTouched(); // Marca todos os campos como "tocados" para exibir erros
       return;
     }
@@ -46,23 +59,28 @@ export class LoginComponent implements OnInit {
     this.errorMessage = null;
     const { username, password } = this.loginForm.value;
 
+    console.log(`Tentando login com usuário: ${username}`); // Log antes da chamada de serviço
     this.authService.login({ username, password }).subscribe({
-      next: () => {
+      next: (response) => { // Adicionado response para log
+        console.log('Login bem-sucedido!', response); // Log de sucesso
         this.loading = false;
         this.redirectToDashboard();
       },
       error: (err) => {
+        console.error('Erro no login:', err); // Log de erro detalhado
         this.loading = false;
         this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no login. Verifique suas credenciais.';
-        console.error('Login error:', err);
       }
     });
   }
 
   private redirectToDashboard(): void {
+    console.log('redirectToDashboard foi chamado.'); // Log
     if (this.authService.hasRole('PROFESSOR')) {
+      console.log('Redirecionando para /dashboard/professor'); // Log
       this.router.navigate(['/dashboard/professor']);
     } else if (this.authService.hasRole('ALUNO')) {
+      console.log('Redirecionando para /dashboard/aluno'); // Log
       this.router.navigate(['/dashboard/aluno']);
     } else {
       this.errorMessage = 'Usuário não possui um perfil válido para acesso.';

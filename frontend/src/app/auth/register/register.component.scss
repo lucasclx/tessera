@@ -1,5 +1,5 @@
 /* src/app/auth/register/register.component.scss */
-@import '../login/login.component.scss'; // Importa estilos do login para reutilização
+@use '../login/login.component.scss'; // Changed from @import
 
 .register-container {
   @extend .login-container; // Herda estilos do login-container

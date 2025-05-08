@@ -23,17 +23,12 @@
         {{ errorMessage }}
       </div>
   
-      <div class="register-link"> Não tem uma conta? <a routerLink="/auth/register">Registre-se aqui</a>
-      </div>
-    </form>
-  </div>
-  
-      <button type="submit" [disabled]="loginForm.invalid || loading">
+      <button type="submit" (click)="logButtonClick()" [disabled]="loginForm.invalid || loading">
         {{ loading ? 'Entrando...' : 'Entrar' }}
       </button>
   
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
+      <div class="register-link">
+        Não tem uma conta? <a routerLink="/auth/register">Registre-se aqui</a>
       </div>
     </form>
-  </div>
+</div>
