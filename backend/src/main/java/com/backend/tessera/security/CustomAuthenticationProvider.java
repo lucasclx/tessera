@@ -47,10 +47,16 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
-        // Verificar se o usuário está aprovado - verificamos depois da senha para evitar enumeração
+        // Verificar se o usuário está aprovado
         if (!user.isApproved()) {
             System.out.println("Conta aguardando aprovação: " + username);
             throw new LockedException("Conta aguardando aprovação do administrador");
+        }
+        
+        // Verificar se o papel foi atribuído após aprovação
+        if (user.getRole() == null) {
+            System.out.println("Conta aprovada mas sem papel atribuído: " + username);
+            throw new DisabledException("Conta com configuração incompleta. Entre em contato com o administrador.");
         }
 
         // Verificar se a conta está habilitada

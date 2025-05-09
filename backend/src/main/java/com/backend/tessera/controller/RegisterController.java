@@ -44,25 +44,14 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Email já está em uso!"));
             }
 
-            // Determinar o papel inicial do usuário
-            Role assignedRole = Role.ALUNO;  // Papel padrão é ALUNO
-            Role requestedRole = null;      // Papel solicitado inicialmente null
+            // Determinar o papel solicitado pelo usuário
+            Role requestedRole = null;
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles != null && !strRoles.isEmpty()) {
                 String roleStr = strRoles.iterator().next().toUpperCase();
                 try {
-                    if (roleStr.equals("PROFESSOR")) {
-                        // Para PROFESSOR, definimos o papel solicitado
-                        requestedRole = Role.PROFESSOR;
-                    } else if (roleStr.equals("ALUNO")) {
-                        // Para ALUNO, não há papel solicitado
-                        assignedRole = Role.ALUNO;
-                    } else {
-                        return ResponseEntity
-                                .badRequest()
-                                .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
-                    }
+                    requestedRole = Role.valueOf(roleStr);
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity
                             .badRequest()
@@ -77,11 +66,22 @@ public class RegisterController {
             user.setEmail(signUpRequest.getEmail());
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
             user.setInstitution(signUpRequest.getInstitution());
-            user.setRole(assignedRole);
+            
+            // Definir o papel solicitado como requestedRole
             user.setRequestedRole(requestedRole);
+            
+            // Se nenhum papel foi solicitado, definir ALUNO como padrão para solicitação
+            if (requestedRole == null) {
+                user.setRequestedRole(Role.ALUNO);
+            }
+            
+            // Não atribuir nenhum papel ainda - será feito pelo administrador
+            // Deixar como null até a aprovação
+            user.setRole(null);
             
             // Definir aprovação como false para TODOS os usuários
             user.setApproved(false);
+            user.setEnabled(true); // Conta habilitada, mas não aprovada
             user.setAdminComments("Aguardando aprovação do administrador");
             
             // Salvar no banco de dados

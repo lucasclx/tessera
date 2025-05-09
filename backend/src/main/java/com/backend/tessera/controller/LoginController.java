@@ -49,14 +49,22 @@ public class LoginController {
         try {
             System.out.println("Tentando autenticar usuário: " + authRequest.getUsername());
             
-            // Primeiro verificamos se o usuário existe e está aprovado
+            // Primeiro verificamos se o usuário existe
             Optional<User> userOpt = userRepository.findByUsername(authRequest.getUsername());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
+                
+                // Verificação adicional antes de tentar autenticar
                 if (!user.isApproved()) {
                     System.out.println("Conta aguardando aprovação: " + authRequest.getUsername());
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                            .body(new MessageResponse("Sua conta está aguardando aprovação do administrador. Tente novamente mais tarde."));
+                }
+                
+                if (user.getRole() == null) {
+                    System.out.println("Conta aprovada mas sem papel atribuído: " + authRequest.getUsername());
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                           .body(new MessageResponse("Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador."));
                 }
                 
                 if (!user.isEnabled()) {
@@ -131,6 +139,13 @@ public class LoginController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                        .body(new MessageResponse("PENDING_APPROVAL"));
             } 
+            
+            // Verificar se o papel foi atribuído
+            if (user.getRole() == null) {
+                System.out.println("Usuário aprovado mas sem papel atribuído: " + username);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(new MessageResponse("ROLE_MISSING"));
+            }
             
             // Verificar se a conta está habilitada
             if (!user.isEnabled()) {

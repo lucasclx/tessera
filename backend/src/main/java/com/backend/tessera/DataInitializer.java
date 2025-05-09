@@ -32,7 +32,14 @@ public class DataInitializer implements CommandLineRunner {
             admin.setApproved(true); // O admin é sempre aprovado
             admin.setEnabled(true);
             
-            // Criar usuário professor (NECESSITA APROVAÇÃO - mas já aprovado para testes)
+            // Salvar o admin para permitir acesso ao sistema
+            userRepository.save(admin);
+            System.out.println(">>> Usuário administrador inicial criado: admin/admin123");
+            
+            // Criar outros usuários de exemplo (também pré-aprovados para facilitar testes)
+            // Em ambiente de produção, estes usuários não seriam criados automaticamente
+            
+            // Criar usuário professor (pré-aprovado para testes)
             User professor = new User();
             professor.setNome("Professor Exemplo");
             professor.setUsername("professor1");
@@ -43,7 +50,7 @@ public class DataInitializer implements CommandLineRunner {
             professor.setApproved(true); // Aprovado para testes
             professor.setEnabled(true);
             
-            // Criar usuário aluno (NECESSITA APROVAÇÃO - mas já aprovado para testes)
+            // Criar usuário aluno (pré-aprovado para testes)
             User aluno = new User();
             aluno.setNome("Aluno Exemplo");
             aluno.setUsername("aluno1");
@@ -61,12 +68,12 @@ public class DataInitializer implements CommandLineRunner {
             pendingUser.setPassword(passwordEncoder.encode("senha123"));
             pendingUser.setEmail("pendente@sistema.edu");
             pendingUser.setInstitution("Sistema Acadêmico");
-            pendingUser.setRole(Role.PROFESSOR); // O papel solicitado
+            pendingUser.setRequestedRole(Role.PROFESSOR); // O papel solicitado
+            pendingUser.setRole(null); // Sem papel atribuído até a aprovação
             pendingUser.setApproved(false); // Não aprovado
             pendingUser.setEnabled(true);
             pendingUser.setAdminComments("Aguardando aprovação do administrador");
 
-            userRepository.save(admin);
             userRepository.save(professor);
             userRepository.save(aluno);
             userRepository.save(pendingUser);

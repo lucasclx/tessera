@@ -26,6 +26,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new LockedException("Conta aguardando aprovação do administrador");
         }
         
+        // Verificar se o papel foi atribuído após aprovação
+        if (user.getRole() == null) {
+            throw new DisabledException("Conta com configuração incompleta. Entre em contato com o administrador.");
+        }
+        
         // Verificar se a conta está habilitada
         if (!user.isEnabled()) {
             throw new DisabledException("Conta desativada");

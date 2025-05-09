@@ -1,4 +1,3 @@
-// Arquivo: src/main/java/com/backend/tessera/model/User.java
 package com.backend.tessera.model;
 
 import jakarta.persistence.*;
@@ -10,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -41,8 +41,7 @@ public class User implements UserDetails {
     private String institution;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    private Role role;  // Papel atual - pode ser nulo até aprovação
 
     // Novos campos para o sistema de aprovação
     @Enumerated(EnumType.STRING)
@@ -93,6 +92,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role == null) {
+            // Se ainda não tem papel atribuído, retorna lista vazia de autoridades
+            return Collections.emptyList();
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
@@ -103,8 +106,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // Uma conta não aprovada é considerada bloqueada
-        return this.accountNonLocked && this.approved;
+        // Uma conta não aprovada ou sem papel é considerada bloqueada
+        return this.accountNonLocked && this.approved && this.role != null;
     }
 
     @Override

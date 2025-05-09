@@ -45,13 +45,18 @@ public class UserService {
         user.setApprovalDate(LocalDateTime.now());
         user.setAdminComments(adminComments);
         
-        // Se aprovado e um papel foi especificado, atualiza o papel do usuário
-        if (approved && role != null) {
+        // Se aprovado, o papel DEVE ser especificado
+        if (approved) {
+            if (role == null) {
+                throw new IllegalArgumentException("Um papel deve ser especificado ao aprovar um usuário");
+            }
+            
             user.setRole(role);
             user.setRequestedRole(null); // Limpa a solicitação após aprovar
         } 
-        // Se rejeitado, mantém o papel atual mas limpa a solicitação
-        else if (!approved) {
+        // Se rejeitado, mantém o papel como null mas limpa a solicitação
+        else {
+            // Não alterar o papel se rejeitado - deixar como null ou como estava
             user.setRequestedRole(null);
         }
         
