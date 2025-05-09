@@ -1,12 +1,32 @@
+<!-- src/app/app.component.html -->
 <nav class="navbar">
   <div class="navbar-container">
     <a class="navbar-brand" routerLink="/home">Sistema Acadêmico</a>
-    <ul class="navbar-nav">
+    
+    <!-- Menu para usuários não logados -->
+    <ul class="navbar-nav" *ngIf="!isLoggedIn">
       <li class="nav-item">
         <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/auth/login" routerLinkActive="active">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/auth/register" routerLinkActive="active">Registrar</a>
+      </li>
+    </ul>
+    
+    <!-- Menu para usuários logados -->
+    <ul class="navbar-nav" *ngIf="isLoggedIn">
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="getDashboardLink()" routerLinkActive="active">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" (click)="logout($event)">Sair</a>
+      </li>
+      <li class="nav-item user-info">
+        <span class="username">{{ username }}</span>
+        <span class="role-badge" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
       </li>
     </ul>
   </div>

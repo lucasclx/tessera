@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
+import { AuthService, ApprovalStatus } from '../../core/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit {
   errorMessage: string | null = null;
   loading = false;
   returnUrl: string = '/dashboard';
+  passwordVisible = false;
 
   constructor(
     private fb: FormBuilder,
@@ -47,6 +48,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  // Alterna a visibilidade da senha
+  togglePasswordVisibility(): void {
+    this.passwordVisible = !this.passwordVisible;
+  }
+
   onSubmit(): void {
     console.log('onSubmit foi chamado');
     
@@ -61,6 +67,37 @@ export class LoginComponent implements OnInit {
     const { username, password } = this.loginForm.value;
 
     console.log(`Tentando login com usuário: ${username}`);
+    
+    // Primeiro verificamos o status de aprovação do usuário
+    this.authService.checkApprovalStatus(username).subscribe({
+      next: (status) => {
+        if (status === ApprovalStatus.PENDING_APPROVAL) {
+          // Redirecionar para a página de aprovação pendente
+          this.loading = false;
+          this.router.navigate(['/auth/pending-approval'], { 
+            queryParams: { username: username }
+          });
+          return;
+        } else if (status === ApprovalStatus.ACCOUNT_DISABLED) {
+          // Conta desativada
+          this.loading = false;
+          this.errorMessage = 'Sua conta está desativada. Entre em contato com o administrador.';
+          return;
+        }
+        
+        // Se chegou aqui, o usuário está aprovado ou o status é desconhecido
+        // Prosseguimos com o login normal
+        this.performLogin(username, password);
+      },
+      error: (err) => {
+        // Se houver erro ao verificar o status, tentamos o login normal
+        console.warn('Erro ao verificar status de aprovação, tentando login direto:', err);
+        this.performLogin(username, password);
+      }
+    });
+  }
+  
+  private performLogin(username: string, password: string): void {
     this.authService.login({ username, password }).subscribe({
       next: (response) => {
         console.log('Login bem-sucedido!', response);
@@ -70,6 +107,15 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         console.error('Erro no login:', err);
         this.loading = false;
+        
+        // Verificar se o erro é devido a aprovação pendente
+        if (err.status === 403 && err.error?.message?.includes('aguardando aprovação')) {
+          this.router.navigate(['/auth/pending-approval'], { 
+            queryParams: { username: username }
+          });
+          return;
+        }
+        
         this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no login. Verifique suas credenciais.';
       }
     });
@@ -91,9 +137,12 @@ export class LoginComponent implements OnInit {
     } else if (this.authService.hasRole('ALUNO')) {
       console.log('Redirecionando para dashboard do aluno');
       this.router.navigate(['/dashboard/aluno']);
+    } else if (this.authService.hasRole('ADMIN')) {
+      console.log('Redirecionando para dashboard do administrador');
+      this.router.navigate(['/dashboard/admin']);
     } else {
       this.errorMessage = 'Usuário não possui um perfil válido para acesso.';
-      console.error("Usuário logado mas sem role PROFESSOR ou ALUNO:", this.authService.currentUserValue);
+      console.error("Usuário logado mas sem role PROFESSOR, ALUNO ou ADMIN:", this.authService.currentUserValue);
     }
   }
 }

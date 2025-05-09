@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthComponent } from './auth.component';
-import { LoginComponent } from './login/login.component'; // Importar o LoginComponent
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component'; 
+import { PendingApprovalComponent } from './pending-approval/pending-approval.component';
 
 const routes: Routes = [
   {
@@ -13,12 +15,18 @@ const routes: Routes = [
         component: LoginComponent
       },
       {
+        path: 'register', // Rota para /auth/register
+        component: RegisterComponent
+      },
+      {
+        path: 'pending-approval', // Rota para /auth/pending-approval
+        component: PendingApprovalComponent
+      },
+      {
         path: '', // Rota padrão dentro do módulo 'auth'
         redirectTo: 'login', // Redireciona 'auth/' para 'auth/login'
         pathMatch: 'full'
       }
-      // Você pode adicionar outras rotas de autenticação aqui, como 'register'
-      // { path: 'register', component: RegisterComponent },
     ]
   }
 ];

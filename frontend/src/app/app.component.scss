@@ -2,7 +2,7 @@
 .navbar {
     background-color: #343a40;
     padding: 1rem 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
   
     .navbar-container {
       display: flex;
@@ -17,6 +17,11 @@
       font-size: 1.5rem;
       text-decoration: none;
       font-weight: bold;
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: #007bff;
+      }
     }
   
     .navbar-nav {
@@ -24,17 +29,22 @@
       padding-left: 0;
       margin-bottom: 0;
       display: flex;
+      align-items: center;
   
       .nav-item {
         margin-left: 1.5rem;
+        
+        &:first-child {
+          margin-left: 0;
+        }
       }
   
       .nav-link {
-        color: #adb5bd;
+        color: #ced4da;
         text-decoration: none;
         font-size: 1rem;
         padding: 0.5rem 0;
-        transition: color 0.2s ease-in-out;
+        transition: color 0.2s ease;
   
         &:hover {
           color: #ffffff;
@@ -46,10 +56,78 @@
           border-bottom: 2px solid #007bff;
         }
       }
+      
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: 2rem;
+        
+        .username {
+          color: #ffffff;
+          font-weight: 500;
+          font-size: 0.9rem;
+        }
+        
+        .role-badge {
+          font-size: 0.7rem;
+          padding: 2px 6px;
+          border-radius: 10px;
+          margin-top: 3px;
+          
+          &.admin {
+            background-color: #9c27b0;
+            color: white;
+          }
+          
+          &.professor {
+            background-color: #1976d2;
+            color: white;
+          }
+          
+          &.aluno {
+            background-color: #4caf50;
+            color: white;
+          }
+        }
+      }
     }
   }
   
-  /* Ajuste para o conteúdo principal não ficar embaixo da navbar fixa (se for o caso) */
-  /* router-outlet + * {
-    padding-top: 80px; // Altura aproximada da navbar
-  } */
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 0.8rem 1rem;
+      
+      .navbar-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .navbar-brand {
+        margin-bottom: 0.5rem;
+      }
+      
+      .navbar-nav {
+        width: 100%;
+        flex-wrap: wrap;
+        
+        .nav-item {
+          margin-left: 0;
+          margin-right: 1rem;
+          margin-top: 0.5rem;
+        }
+        
+        .user-info {
+          margin-left: 0;
+          margin-top: 0.8rem;
+          flex-direction: row;
+          width: 100%;
+          justify-content: space-between;
+          
+          .role-badge {
+            margin-top: 0;
+          }
+        }
+      }
+    }
+  }

@@ -5,7 +5,8 @@ import {
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpErrorResponse
+  HttpErrorResponse,
+  HttpInterceptorFn
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -22,16 +23,9 @@ export class JwtInterceptor implements HttpInterceptor {
     const token = this.authService.getToken();
     const isLoggedIn = this.authService.isLoggedIn();
     const isApiUrl = request.url.startsWith(environment.apiUrl);
-    
-    console.log('JwtInterceptor - URL:', request.url);
-    console.log('JwtInterceptor - isLoggedIn:', isLoggedIn);
-    console.log('JwtInterceptor - isApiUrl:', isApiUrl);
-    console.log('JwtInterceptor - token exists:', !!token);
-
-    // Não adicionar token em requisições de autenticação 
     const isAuthRequest = request.url.includes('/auth/');
+    
     if (isLoggedIn && isApiUrl && token && !isAuthRequest) {
-      console.log('JwtInterceptor - Adicionando token ao cabeçalho da requisição');
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -40,25 +34,46 @@ export class JwtInterceptor implements HttpInterceptor {
     }
 
     return next.handle(request).pipe(
-      catchError((err: HttpErrorResponse) => {
-        console.log('JwtInterceptor - Erro na requisição:', err.status, err.message);
-        
-        // Intercepta erros 401 (Unauthorized) e redireciona para login
-        if (err.status === 401) {
-          console.log('JwtInterceptor: Token expirado ou inválido, redirecionando para login');
+      catchError((error: HttpErrorResponse) => {
+        // Interceptar erros 401 (Unauthorized) e redirecionar para login
+        if (error.status === 401) {
           this.authService.logout();
-          this.router.navigate(['/auth/login']);
+          this.router.navigate(['/auth/login'], { 
+            queryParams: { returnUrl: this.router.url, error: 'Sua sessão expirou. Por favor, faça login novamente.' } 
+          });
         }
         
-        // Intercepta erros 403 (Forbidden) e redireciona para a página de acesso negado
-        if (err.status === 403) {
-          console.log('JwtInterceptor: Acesso negado (403 Forbidden)');
-          // Opcionalmente redirecionar para uma página de acesso negado
-          // this.router.navigate(['/unauthorized']);
+        // Interceptar erros 403 (Forbidden)
+        if (error.status === 403) {
+          this.router.navigate(['/access-denied']);
         }
         
-        return throwError(() => err);
+        return throwError(() => error);
       })
     );
   }
 }
+
+// Para suporte ao novo sistema de interceptors no Angular standalone
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = new AuthService(null!, null!); // Não ideal, mas funcional para o interceptor
+  const token = authService.getToken();
+  const isLoggedIn = authService.isLoggedIn();
+  const isApiUrl = req.url.startsWith(environment.apiUrl);
+  const isAuthRequest = req.url.includes('/auth/');
+  
+  if (isLoggedIn && isApiUrl && token && !isAuthRequest) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Lidar com erros 401 aqui não é ideal sem acesso ao serviço e router
+      return throwError(() => error);
+    })
+  );
+};

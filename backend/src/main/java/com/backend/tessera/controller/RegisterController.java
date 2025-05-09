@@ -44,25 +44,28 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Email já está em uso!"));
             }
 
-            // Sempre atribui ALUNO como papel inicial
-            Role assignedRole = Role.ALUNO;
-            
-            // Captura o papel solicitado (se diferente de ALUNO)
+            // Determinar o papel inicial do usuário
+            Role assignedRole = null;
             Role requestedRole = null;
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles != null && !strRoles.isEmpty()) {
                 String roleStr = strRoles.iterator().next().toUpperCase();
                 try {
-                    Role role = Role.valueOf(roleStr);
-                    if (role != Role.ALUNO) {
-                        requestedRole = role;
-                    }
+                    requestedRole = Role.valueOf(roleStr);
+                    
+                    // ALTERAÇÃO: Todos os papéis (incluindo ALUNO) precisam de aprovação
+                    // Atribuímos papel pendente para todos
+                    assignedRole = requestedRole;
+                    
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity
                             .badRequest()
                             .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
                 }
+            } else {
+                // Papel padrão se nenhum foi especificado
+                assignedRole = Role.ALUNO;
             }
 
             // Construir o objeto usuário
@@ -74,25 +77,16 @@ public class RegisterController {
             user.setInstitution(signUpRequest.getInstitution());
             user.setRole(assignedRole);
             
-            // Definir aprovação baseada no papel
-            if (requestedRole != null) {
-                user.setRequestedRole(requestedRole);
-                user.setApproved(false); // Precisa de aprovação para mudar de papel
-                user.setAdminComments("Aguardando aprovação para o papel " + requestedRole.name());
-            } else {
-                user.setApproved(true); // ALUNO é aprovado automaticamente
-            }
-
+            // ALTERAÇÃO: Definir aprovação como false para TODOS os usuários
+            user.setApproved(false);
+            user.setAdminComments("Aguardando aprovação do administrador");
+            
             // Salvar no banco de dados
             userRepository.save(user);
             
             System.out.println("Usuário registrado com sucesso: " + user.getUsername());
 
-            String message = "Usuário registrado com sucesso!";
-            if (requestedRole != null) {
-                message += " Sua solicitação para o perfil " + requestedRole.name() + 
-                          " será analisada pelos administradores.";
-            }
+            String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores.";
 
             return ResponseEntity.ok(new MessageResponse(message));
         } catch (Exception e) {

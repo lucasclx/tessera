@@ -1,16 +1,207 @@
-<div class="dashboard-container aluno-dashboard">
-    <header class="dashboard-header">
-      <h1>Dashboard do Aluno</h1>
-      <button (click)="logout()" class="btn btn-logout">Sair</button>
-    </header>
-    <p class="welcome-message">Bem-vindo(a), {{ username || 'Aluno' }}!</p>
+<div class="dashboard-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>Portal do Aluno</h2>
+        <div class="user-profile">
+          <div class="profile-image">{{ username?.charAt(0) | uppercase }}</div>
+          <div class="profile-info">
+            <h3>{{ username || 'Aluno' }}</h3>
+            <span class="status">Aluno</span>
+          </div>
+        </div>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active">
+          <a href="#"><i class="icon-dashboard"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-courses"></i> Disciplinas</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-grades"></i> Notas</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-calendar"></i> Agenda</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-book"></i> Biblioteca</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-message"></i> Mensagens</a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button (click)="logout()" class="btn-logout">
+          <i class="icon-logout"></i> Sair
+        </button>
+      </div>
+    </nav>
   
-    <div *ngIf="dashboardData" class="data-section">
-      <h3>Dados do Servidor (Aluno):</h3>
-      <p>{{ dashboardData }}</p>
-    </div>
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-search">
+          <i class="icon-search"></i>
+          <input type="text" placeholder="Pesquisar..." />
+        </div>
+        <div class="header-actions">
+          <button class="btn-notification">
+            <i class="icon-notification"></i>
+            <span class="notification-badge">2</span>
+          </button>
+          <button class="btn-settings">
+            <i class="icon-settings"></i>
+          </button>
+        </div>
+      </header>
   
-    <div *ngIf="errorMessage" class="error-message">
-      <p>{{ errorMessage }}</p>
-    </div>
+      <div class="dashboard-content">
+        <section class="welcome-section">
+          <h1>Olá, {{ username || 'Aluno' }}!</h1>
+          <p>Bem-vindo ao seu portal acadêmico. Aqui você pode acompanhar suas notas, disciplinas e atividades.</p>
+        </section>
+  
+        <div class="dashboard-grid">
+          <div class="card card-summary">
+            <div class="card-header">
+              <h3>Resumo Acadêmico</h3>
+              <span class="card-icon">
+                <i class="icon-summary"></i>
+              </span>
+            </div>
+            <div class="card-content">
+              <div class="summary-item">
+                <span class="item-label">Disciplinas Cursando</span>
+                <span class="item-value">6</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Média Geral</span>
+                <span class="item-value">8.5</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Atividades Pendentes</span>
+                <span class="item-value">4</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Mensagens Não Lidas</span>
+                <span class="item-value">2</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-schedule">
+            <div class="card-header">
+              <h3>Próximas Aulas</h3>
+              <button class="btn-card-action">Ver Agenda</button>
+            </div>
+            <div class="card-content">
+              <div class="schedule-item">
+                <div class="schedule-time">08:00</div>
+                <div class="schedule-info">
+                  <h4>Matemática</h4>
+                  <p>Sala 105 - Prof. Carlos</p>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-time">10:30</div>
+                <div class="schedule-info">
+                  <h4>Física</h4>
+                  <p>Laboratório 3 - Profa. Ana</p>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-time">13:45</div>
+                <div class="schedule-info">
+                  <h4>História</h4>
+                  <p>Sala 209 - Prof. Roberto</p>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-assignments">
+            <div class="card-header">
+              <h3>Atividades Pendentes</h3>
+              <button class="btn-card-action">Ver Todas</button>
+            </div>
+            <div class="card-content">
+              <div class="assignment-item">
+                <div class="assignment-info">
+                  <h4>Relatório de Laboratório</h4>
+                  <p>Física - Entrega: 15/05</p>
+                </div>
+                <span class="assignment-status urgent">2 dias</span>
+              </div>
+              <div class="assignment-item">
+                <div class="assignment-info">
+                  <h4>Lista de Exercícios</h4>
+                  <p>Matemática - Entrega: 18/05</p>
+                </div>
+                <span class="assignment-status">5 dias</span>
+              </div>
+              <div class="assignment-item">
+                <div class="assignment-info">
+                  <h4>Resenha de Livro</h4>
+                  <p>Literatura - Entrega: 20/05</p>
+                </div>
+                <span class="assignment-status">1 semana</span>
+              </div>
+              <div class="assignment-item">
+                <div class="assignment-info">
+                  <h4>Trabalho em Grupo</h4>
+                  <p>História - Entrega: 25/05</p>
+                </div>
+                <span class="assignment-status">2 semanas</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-grades">
+            <div class="card-header">
+              <h3>Notas Recentes</h3>
+              <button class="btn-card-action">Ver Boletim</button>
+            </div>
+            <div class="card-content">
+              <div class="grade-item">
+                <div class="grade-info">
+                  <h4>Prova 1</h4>
+                  <p>Matemática</p>
+                </div>
+                <span class="grade-value good">8.5</span>
+              </div>
+              <div class="grade-item">
+                <div class="grade-info">
+                  <h4>Trabalho</h4>
+                  <p>História</p>
+                </div>
+                <span class="grade-value excellent">9.8</span>
+              </div>
+              <div class="grade-item">
+                <div class="grade-info">
+                  <h4>Experimento</h4>
+                  <p>Física</p>
+                </div>
+                <span class="grade-value average">7.0</span>
+              </div>
+              <div class="grade-item">
+                <div class="grade-info">
+                  <h4>Redação</h4>
+                  <p>Português</p>
+                </div>
+                <span class="grade-value good">8.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div *ngIf="dashboardData" class="server-data-section">
+          <h3>Dados do Servidor:</h3>
+          <p>{{ dashboardData }}</p>
+        </div>
+  
+        <div *ngIf="errorMessage" class="error-message">
+          <i class="icon-error"></i>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+    </main>
   </div>

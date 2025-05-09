@@ -3,8 +3,11 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
       <div class="form-field">
         <label for="username">Usuário:</label>
-        <input type="text" id="username" formControlName="username"
-               [ngClass]="{ 'is-invalid': loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched) }">
+        <input 
+          type="text" 
+          id="username" 
+          formControlName="username"
+          [ngClass]="{ 'is-invalid': loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched) }">
         <div *ngIf="loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched)" class="error-feedback">
           <small *ngIf="loginForm.get('username')?.errors?.['required']">Usuário é obrigatório.</small>
         </div>
@@ -12,13 +15,25 @@
   
       <div class="form-field">
         <label for="password">Senha:</label>
-        <input type="password" id="password" formControlName="password"
-               [ngClass]="{ 'is-invalid': loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched) }">
+        <div class="password-input-container">
+          <input 
+            [type]="passwordVisible ? 'text' : 'password'" 
+            id="password" 
+            formControlName="password"
+            [ngClass]="{ 'is-invalid': loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched) }">
+          
+          <button 
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()">
+            <i [class]="passwordVisible ? 'icon-eye-off' : 'icon-eye'"></i>
+          </button>
+        </div>
         <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)" class="error-feedback">
           <small *ngIf="loginForm.get('password')?.errors?.['required']">Senha é obrigatória.</small>
         </div>
       </div>
-
+  
       <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
@@ -31,4 +46,4 @@
         Não tem uma conta? <a routerLink="/auth/register">Registre-se aqui</a>
       </div>
     </form>
-</div>
+  </div>

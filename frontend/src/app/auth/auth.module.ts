@@ -6,7 +6,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AuthRoutingModule } from './auth-routing.module';
 import { AuthComponent } from './auth.component';
 import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component'; // Importe
+import { RegisterComponent } from './register/register.component';
+import { PendingApprovalComponent } from './pending-approval/pending-approval.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { RegisterComponent } from './register/register.component'; // Importe
     AuthRoutingModule,
     ReactiveFormsModule,
     LoginComponent,
-    RegisterComponent // Adicione RegisterComponent (standalone)
+    RegisterComponent,
+    PendingApprovalComponent // Adicione o componente de aprovação pendente
   ]
 })
 export class AuthModule { }

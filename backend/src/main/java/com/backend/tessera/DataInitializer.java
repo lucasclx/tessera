@@ -21,7 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Só cria se não houver usuários, para evitar duplicatas em reinicializações
         if (userRepository.count() == 0) {
-            // Criar usuário admin
+            // Criar usuário admin (SEMPRE APROVADO) - necessário para o funcionamento do sistema
             User admin = new User();
             admin.setNome("Administrador");
             admin.setUsername("admin");
@@ -29,10 +29,10 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setInstitution("Sistema Acadêmico");
             admin.setRole(Role.ADMIN);
-            admin.setApproved(true);
+            admin.setApproved(true); // O admin é sempre aprovado
             admin.setEnabled(true);
             
-            // Criar usuário professor
+            // Criar usuário professor (NECESSITA APROVAÇÃO - mas já aprovado para testes)
             User professor = new User();
             professor.setNome("Professor Exemplo");
             professor.setUsername("professor1");
@@ -40,10 +40,10 @@ public class DataInitializer implements CommandLineRunner {
             professor.setPassword(passwordEncoder.encode("senha123"));
             professor.setInstitution("Sistema Acadêmico");
             professor.setRole(Role.PROFESSOR);
-            professor.setApproved(true);
+            professor.setApproved(true); // Aprovado para testes
             professor.setEnabled(true);
             
-            // Criar usuário aluno
+            // Criar usuário aluno (NECESSITA APROVAÇÃO - mas já aprovado para testes)
             User aluno = new User();
             aluno.setNome("Aluno Exemplo");
             aluno.setUsername("aluno1");
@@ -51,20 +51,20 @@ public class DataInitializer implements CommandLineRunner {
             aluno.setPassword(passwordEncoder.encode("senha123"));
             aluno.setInstitution("Sistema Acadêmico");
             aluno.setRole(Role.ALUNO);
-            aluno.setApproved(true);
+            aluno.setApproved(true); // Aprovado para testes
             aluno.setEnabled(true);
 
-            // Criar usuário pendente de aprovação
+            // Criar usuário pendente de aprovação (para demonstração do processo)
             User pendingUser = new User();
             pendingUser.setNome("Usuário Pendente");
             pendingUser.setUsername("pendente1");
             pendingUser.setPassword(passwordEncoder.encode("senha123"));
             pendingUser.setEmail("pendente@sistema.edu");
             pendingUser.setInstitution("Sistema Acadêmico");
-            pendingUser.setRole(Role.ALUNO);
-            pendingUser.setRequestedRole(Role.PROFESSOR);
-            pendingUser.setApproved(false);
+            pendingUser.setRole(Role.PROFESSOR); // O papel solicitado
+            pendingUser.setApproved(false); // Não aprovado
             pendingUser.setEnabled(true);
+            pendingUser.setAdminComments("Aguardando aprovação do administrador");
 
             userRepository.save(admin);
             userRepository.save(professor);
@@ -75,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("    Admin: admin/admin123");
             System.out.println("    Professor: professor1/senha123");
             System.out.println("    Aluno: aluno1/senha123");
-            System.out.println("    Pendente: pendente1/senha123 (solicitação para professor)");
+            System.out.println("    Pendente: pendente1/senha123 (aguardando aprovação)");
         } else {
             System.out.println(">>> Usuários já existem no banco de dados. Nenhum usuário de teste foi criado.");
             

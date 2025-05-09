@@ -1,69 +1,98 @@
 /* src/app/auth/login/login.component.scss */
 .login-container {
     background-color: #ffffff;
-    padding: 35px 45px; // Aumentei um pouco o padding
-    border-radius: 10px; // Bordas um pouco mais arredondadas
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12); // Sombra um pouco mais pronunciada
+    padding: 35px 45px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
     width: 100%;
-    max-width: 420px; // Largura máxima um pouco maior
+    max-width: 420px;
     text-align: center;
-    border-top: 5px solid #007bff; // Detalhe de borda no topo
+    border-top: 5px solid #007bff;
   
     h2 {
-      margin-bottom: 30px; // Mais espaço abaixo do título
-      color: #2c3e50; // Cor do título mais escura
-      font-size: 2em;   // Título maior
+      margin-bottom: 30px;
+      color: #2c3e50;
+      font-size: 2em;
       font-weight: 600;
     }
   }
   
   .form-field {
-    margin-bottom: 25px; // Mais espaço entre os campos
+    margin-bottom: 25px;
     text-align: left;
   
     label {
       display: block;
-      margin-bottom: 10px; // Mais espaço abaixo do label
-      color: #34495e;    // Cor do label
-      font-weight: 500;  // Peso da fonte do label
+      margin-bottom: 10px;
+      color: #34495e;
+      font-weight: 500;
       font-size: 0.95em;
     }
   
     input[type="text"],
     input[type="password"] {
       width: 100%;
-      padding: 14px 16px; // Padding interno maior nos inputs
-      border: 1px solid #bdc3c7; // Borda sutil
-      border-radius: 6px;    // Borda do input mais arredondada
+      padding: 14px 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
       box-sizing: border-box;
       font-size: 1em;
       color: #2c3e50;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease; // Transição suave
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
   
       &:focus {
         border-color: #007bff;
         outline: none;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2); // Sombra de foco mais sutil
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
       }
   
-      &.is-invalid { // Estilo para quando o campo é inválido
-        border-color: #e74c3c; // Vermelho para erro
-        background-color: #fff6f6; // Fundo levemente avermelhado
+      &.is-invalid {
+        border-color: #e74c3c;
+        background-color: #fff6f6;
       }
     }
   
     .error-feedback {
-      margin-top: 8px; // Espaço para a mensagem de erro
+      margin-top: 8px;
       small {
         color: #e74c3c;
         font-size: 0.85em;
-        display: block; // Garante que o small ocupe a linha
+        display: block;
+      }
+    }
+    
+    .password-input-container {
+      position: relative;
+      
+      .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #95a5a6;
+        cursor: pointer;
+        padding: 5px;
+        
+        &:hover {
+          color: #34495e;
+        }
+        
+        i {
+          font-size: 1.2em;
+        }
+      }
+      
+      input[type="password"],
+      input[type="text"] {
+        padding-right: 40px;
       }
     }
   }
   
   button[type="submit"] {
-    background-image: linear-gradient(to right, #007bff, #0056b3); // Gradiente no botão
+    background-color: #007bff;
     color: white;
     padding: 14px 20px;
     border: none;
@@ -72,18 +101,18 @@
     font-size: 1.15em;
     font-weight: 500;
     width: 100%;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; // Transição para efeito de clique
-    text-transform: uppercase; // Letras maiúsculas
-    letter-spacing: 0.5px; // Espaçamento entre letras
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   
     &:hover {
-      transform: translateY(-2px); // Efeito de elevação no hover
+      transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 86, 179, 0.3);
+      background-color: #0069d9;
     }
   
     &:disabled {
-      background-image: none;
-      background-color: #ced4da; // Cinza para botão desabilitado
+      background-color: #ced4da;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
@@ -92,14 +121,16 @@
   
   .error-message {
     margin-top: 25px;
+    margin-bottom: 25px;
     color: #721c24;
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
-    padding: 12px 15px; // Padding um pouco maior
+    padding: 12px 15px;
     border-radius: 6px;
     font-size: 0.9em;
-    text-align: left; // Alinhar texto da mensagem de erro à esquerda
+    text-align: left;
   }
+  
   .register-link {
     margin-top: 25px;
     font-size: 0.9em;
@@ -112,4 +143,13 @@
         text-decoration: underline;
       }
     }
+  }
+  
+  /* Ícones temporários - você pode substituir por uma biblioteca de ícones */
+  .icon-eye:before {
+    content: "\1F441"; /* Emoji olho Unicode */
+  }
+  
+  .icon-eye-off:before {
+    content: "\1F5FF"; /* Um placeholder, idealmente você usaria um ícone real de olho riscado */
   }

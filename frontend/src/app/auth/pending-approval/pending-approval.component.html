@@ -1,0 +1,56 @@
+<div class="pending-approval-container">
+    <div class="approval-card">
+      <div class="approval-icon">
+        <i class="icon-clock"></i>
+      </div>
+      
+      <h1>Conta Aguardando Aprovação</h1>
+      
+      <p class="approval-message">
+        Obrigado por se registrar no Sistema Acadêmico, <strong>{{ username }}</strong>!
+      </p>
+      
+      <div class="approval-details">
+        <p>
+          Sua conta foi registrada com sucesso, mas precisa ser aprovada por um administrador 
+          antes que você possa acessar o sistema.
+        </p>
+        
+        <p>
+          Esse processo geralmente leva até 24 horas durante dias úteis.
+          Você receberá uma notificação quando sua conta for aprovada.
+        </p>
+        
+        <p *ngIf="accountDetails">
+          <strong>Detalhes da conta:</strong><br>
+          Nome: {{ accountDetails.nome }}<br>
+          Papel Solicitado: {{ accountDetails.requestedRole || accountDetails.role }}<br>
+          Data de Solicitação: {{ formatDate(accountDetails.createdAt) }}
+        </p>
+      </div>
+      
+      <div class="approval-actions">
+        <button class="btn btn-primary" (click)="checkStatus()">
+          <i *ngIf="loading" class="icon-loading"></i>
+          <span *ngIf="!loading">Verificar Status</span>
+          <span *ngIf="loading">Verificando...</span>
+        </button>
+        
+        <a routerLink="/auth/login" class="btn btn-secondary">Voltar para Login</a>
+      </div>
+      
+      <div *ngIf="statusMessage" class="status-message" [ngClass]="statusClass">
+        <i *ngIf="statusClass === 'status-error'" class="icon-error"></i>
+        <i *ngIf="statusClass === 'status-success'" class="icon-success"></i>
+        <i *ngIf="statusClass === 'status-warning'" class="icon-warning"></i>
+        {{ statusMessage }}
+      </div>
+      
+      <div class="contact-info">
+        <p>
+          Se você acredita que houve um erro ou deseja obter mais informações,
+          entre em contato com o administrador em <a href="mailto:admin@sistema.edu">admin&#64;sistema.edu</a>
+        </p>
+      </div>
+    </div>
+  </div>

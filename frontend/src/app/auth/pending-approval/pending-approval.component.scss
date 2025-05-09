@@ -1,0 +1,199 @@
+/* src/app/auth/pending-approval/pending-approval.component.scss */
+@use "sass:color";
+
+$primary-color: #1976d2;
+$primary-light: #e3f2fd;
+$success-color: #43a047;
+$warning-color: #ffb300;
+$error-color: #e53935;
+$text-primary: #263238;
+$text-secondary: #607d8b;
+$bg-color: #f5f7fa;
+$border-color: #eceff1;
+$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+
+.pending-approval-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $bg-color;
+  padding: 20px;
+}
+
+.approval-card {
+  max-width: 600px;
+  width: 100%;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: $card-shadow;
+  padding: 40px;
+  text-align: center;
+  
+  h1 {
+    font-size: 1.8rem;
+    color: $text-primary;
+    margin-top: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .approval-message {
+    font-size: 1.2rem;
+    color: $text-primary;
+    margin-bottom: 25px;
+  }
+}
+
+.approval-icon {
+  margin: 0 auto 20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: $primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  i {
+    font-size: 40px;
+    color: $primary-color;
+  }
+}
+
+.approval-details {
+  background-color: $bg-color;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+  margin-bottom: 25px;
+  
+  p {
+    margin: 0 0 15px 0;
+    color: $text-secondary;
+    line-height: 1.6;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.approval-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    
+    i {
+      margin-right: 8px;
+    }
+    
+    &.btn-primary {
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      
+      &:hover {
+        background-color: color.adjust($primary-color, $lightness: -10%);
+      }
+    }
+    
+    &.btn-secondary {
+      background-color: white;
+      color: $primary-color;
+      border: 1px solid $primary-color;
+      
+      &:hover {
+        background-color: $primary-light;
+      }
+    }
+  }
+}
+
+.status-message {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  
+  i {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+  
+  &.status-success {
+    background-color: rgba($success-color, 0.1);
+    color: $success-color;
+    border-left: 4px solid $success-color;
+  }
+  
+  &.status-warning {
+    background-color: rgba($warning-color, 0.1);
+    color: $warning-color;
+    border-left: 4px solid $warning-color;
+  }
+  
+  &.status-error {
+    background-color: rgba($error-color, 0.1);
+    color: $error-color;
+    border-left: 4px solid $error-color;
+  }
+}
+
+.contact-info {
+  font-size: 0.9rem;
+  color: $text-secondary;
+  
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Ícones (placeholders)
+.icon-clock:before { content: '⏳'; }
+.icon-loading:before { content: '🔄'; }
+.icon-error:before { content: '⚠️'; }
+.icon-success:before { content: '✅'; }
+.icon-warning:before { content: '⚠️'; }
+
+// Animação de carregamento
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.icon-loading {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .approval-card {
+    padding: 30px 20px;
+  }
+  
+  .approval-actions {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+}

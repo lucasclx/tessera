@@ -1,11 +1,10 @@
-// src/app/app-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
-import { HomeComponent } from './home/home.component';
+import { HomeComponent } from '../home/home.component';
 import { AuthGuard } from './core/auth.guard';
 import { RoleGuard } from './core/role.guard';
 
@@ -34,3 +33,6 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
+
+// Para suporte standalone
+export { routes };

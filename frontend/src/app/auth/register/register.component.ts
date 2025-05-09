@@ -1,9 +1,8 @@
-// src/app/auth/register/register.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, RegistrationData } from '../../core/auth.service'; // Importar RegistrationData também
+import { AuthService } from '../../core/auth.service';
 
 // Validador customizado para senhas
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -25,19 +24,28 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
     RouterLink
   ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-  registerForm: FormGroup;
+  registerForm!: FormGroup;
   errorMessage: string | null = null;
   successMessage: string | null = null;
   loading = false;
+  submitted = false;
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
+    this.createForm();
+  }
+
+  ngOnInit(): void { }
+
+  createForm(): void {
     this.registerForm = this.fb.group({
       nome: ['', Validators.required],
       username: ['', Validators.required],
@@ -45,42 +53,61 @@ export class RegisterComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
       institution: ['', Validators.required],
-      roles: [['ALUNO'], Validators.required] // Inicializado com ALUNO como valor padrão
+      role: ['ALUNO', Validators.required]
     }, { validators: passwordMatchValidator });
   }
 
-  ngOnInit(): void { }
+  // getter para facilitar acesso aos campos do formulário
+  get f(): { [key: string]: AbstractControl } { 
+    return this.registerForm.controls; 
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   onSubmit(): void {
+    this.submitted = true;
+    
     if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
       return;
     }
+    
     this.loading = true;
     this.errorMessage = null;
     this.successMessage = null;
 
-    // Extrair os valores do formulário
-    const { nome, username, email, password, institution, roles } = this.registerForm.value;
+    const formData = this.registerForm.value;
     
     // Criar o objeto de registro conforme esperado pelo backend
-    const registrationData: RegistrationData = {
-      nome,
-      username,
-      email,
-      password,
-      institution,
-      // Converte o array para o formato esperado pelo backend e faz o cast explicito para Set<string>
-      role: new Set<string>(roles as string[])
+    const registrationData = {
+      nome: formData.nome,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      institution: formData.institution,
+      role: new Set([formData.role]) // Converte para Set conforme esperado pelo API
     };
 
-    console.log('Enviando dados de registro:', registrationData);
-    
     this.authService.register(registrationData).subscribe({
       next: (response) => {
         this.loading = false;
         this.successMessage = 'Usuário registrado com sucesso! Você pode fazer login agora.';
-        console.log('Registro bem-sucedido:', response);
+        
+        // Se o perfil escolhido for professor, mostra uma mensagem adicional
+        if (formData.role === 'PROFESSOR') {
+          this.successMessage += ' Sua solicitação de perfil de Professor será analisada pelos administradores.';
+        }
+        
+        // Resetar o formulário
+        this.registerForm.reset();
+        this.submitted = false;
+        
+        // Redirecionar para login após 3 segundos
         setTimeout(() => this.router.navigate(['/auth/login']), 3000);
       },
       error: (err) => {

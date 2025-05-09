@@ -18,11 +18,17 @@ export class NavigationService {
    * @param returnUrl URL opcional para retornar após login
    */
   navigateAfterLogin(returnUrl?: string): void {
-    if (returnUrl && returnUrl !== '/login' && returnUrl !== '/register' && returnUrl !== '/') {
+    // Se houver uma URL de retorno específica e não for uma página de autenticação, usa ela
+    if (returnUrl && 
+        !returnUrl.includes('/login') && 
+        !returnUrl.includes('/register') && 
+        !returnUrl.includes('/auth') && 
+        returnUrl !== '/') {
       this.router.navigateByUrl(returnUrl);
       return;
     }
     
+    // Caso contrário, redireciona com base no perfil do usuário
     this.navigateToDashboard();
   }
   
@@ -30,15 +36,27 @@ export class NavigationService {
    * Navega para o dashboard apropriado com base no perfil do usuário
    */
   navigateToDashboard(): void {
-    if (this.authService.hasRole('ADMIN')) {
-      this.router.navigate(['/dashboard/admin']);
-    } else if (this.authService.hasRole('PROFESSOR')) {
-      this.router.navigate(['/dashboard/professor']);
-    } else if (this.authService.hasRole('ALUNO')) {
-      this.router.navigate(['/dashboard/aluno']);
-    } else {
-      // Fallback para home caso não tenha perfil específico
-      this.router.navigate(['/home']);
+    // Obter a role principal do usuário
+    const role = this.authService.getUserRole();
+    
+    console.log('Navegando para dashboard com base na role:', role);
+    
+    // Redirecionar com base na role
+    switch (role) {
+      case 'ADMIN':
+        this.router.navigate(['/dashboard/admin']);
+        break;
+      case 'PROFESSOR':
+        this.router.navigate(['/dashboard/professor']);
+        break;
+      case 'ALUNO':
+        this.router.navigate(['/dashboard/aluno']);
+        break;
+      default:
+        // Se não tiver uma role específica ou valid, redireciona para home
+        this.router.navigate(['/home']);
+        console.warn('Usuário sem role válida detectado:', 
+                    this.authService.currentUserValue?.roles || 'sem roles');
     }
   }
   
@@ -52,5 +70,20 @@ export class NavigationService {
     } else {
       this.router.navigate(['/auth/login']);
     }
+  }
+  
+  /**
+   * Verifica se o usuário tem permissão para acessar uma rota específica
+   * @param expectedRole Role esperada para acesso
+   * @returns boolean indicando se o usuário tem permissão
+   */
+  canAccessRoute(expectedRole: string): boolean {
+    // Verificar se o usuário está autenticado
+    if (!this.authService.isLoggedIn()) {
+      return false;
+    }
+    
+    // Verificar se o usuário tem a role esperada
+    return this.authService.hasRole(expectedRole);
   }
 }

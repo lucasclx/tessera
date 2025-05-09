@@ -1,16 +1,201 @@
-<div class="dashboard-container professor-dashboard">
-    <header class="dashboard-header">
-      <h1>Dashboard do Professor</h1>
-      <button (click)="logout()" class="btn btn-logout">Sair</button>
-    </header>
-    <p class="welcome-message">Bem-vindo(a), {{ username || 'Professor' }}!</p>
+<div class="dashboard-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>Painel Docente</h2>
+        <div class="user-profile">
+          <div class="profile-image">{{ username?.charAt(0) | uppercase }}</div>
+          <div class="profile-info">
+            <h3>{{ username || 'Professor' }}</h3>
+            <span class="status">Professor</span>
+          </div>
+        </div>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active">
+          <a href="#"><i class="icon-dashboard"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-classes"></i> Turmas</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-grades"></i> Avaliações</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-calendar"></i> Agenda</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-materials"></i> Materiais</a>
+        </li>
+        <li class="nav-item">
+          <a href="#"><i class="icon-messages"></i> Mensagens</a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button (click)="logout()" class="btn-logout">
+          <i class="icon-logout"></i> Sair
+        </button>
+      </div>
+    </nav>
   
-    <div *ngIf="dashboardData" class="data-section">
-      <h3>Dados do Servidor:</h3>
-      <p>{{ dashboardData }}</p>
-    </div>
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-search">
+          <i class="icon-search"></i>
+          <input type="text" placeholder="Pesquisar..." />
+        </div>
+        <div class="header-actions">
+          <button class="btn-notification">
+            <i class="icon-notification"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <button class="btn-settings">
+            <i class="icon-settings"></i>
+          </button>
+        </div>
+      </header>
   
-    <div *ngIf="errorMessage" class="error-message">
-      <p>{{ errorMessage }}</p>
-    </div>
+      <div class="dashboard-content">
+        <section class="welcome-section">
+          <h1>Olá, {{ username || 'Professor' }}!</h1>
+          <p>Bem-vindo ao seu painel docente. Aqui você pode gerenciar suas turmas, avaliações e materiais didáticos.</p>
+        </section>
+  
+        <div class="dashboard-grid">
+          <div class="card card-summary">
+            <div class="card-header">
+              <h3>Resumo</h3>
+              <span class="card-icon">
+                <i class="icon-summary"></i>
+              </span>
+            </div>
+            <div class="card-content">
+              <div class="summary-item">
+                <span class="item-label">Turmas Ativas</span>
+                <span class="item-value">4</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Total de Alunos</span>
+                <span class="item-value">86</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Avaliações Pendentes</span>
+                <span class="item-value">12</span>
+              </div>
+              <div class="summary-item">
+                <span class="item-label">Mensagens Não Lidas</span>
+                <span class="item-value">5</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-schedule">
+            <div class="card-header">
+              <h3>Próximas Aulas</h3>
+              <button class="btn-card-action">Ver Tudo</button>
+            </div>
+            <div class="card-content">
+              <div class="schedule-item">
+                <div class="schedule-time">08:00</div>
+                <div class="schedule-info">
+                  <h4>Matemática - 2º Ano</h4>
+                  <p>Sala 105 - Bloco B</p>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-time">10:30</div>
+                <div class="schedule-info">
+                  <h4>Física - 3º Ano</h4>
+                  <p>Laboratório 3 - Bloco C</p>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-time">13:45</div>
+                <div class="schedule-info">
+                  <h4>Reunião Pedagógica</h4>
+                  <p>Sala dos Professores</p>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-tasks">
+            <div class="card-header">
+              <h3>Tarefas Pendentes</h3>
+              <button class="btn-card-action">Ver Tudo</button>
+            </div>
+            <div class="card-content">
+              <div class="task-item">
+                <input type="checkbox" id="task1" />
+                <label for="task1">Corrigir provas do 3º Ano</label>
+                <span class="task-date">Hoje</span>
+              </div>
+              <div class="task-item">
+                <input type="checkbox" id="task2" />
+                <label for="task2">Preparar aula de Geometria</label>
+                <span class="task-date">Amanhã</span>
+              </div>
+              <div class="task-item">
+                <input type="checkbox" id="task3" />
+                <label for="task3">Enviar notas para secretaria</label>
+                <span class="task-date">Em 2 dias</span>
+              </div>
+              <div class="task-item">
+                <input type="checkbox" id="task4" />
+                <label for="task4">Atualizar plano de ensino</label>
+                <span class="task-date">Em 3 dias</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card card-messages">
+            <div class="card-header">
+              <h3>Mensagens Recentes</h3>
+              <button class="btn-card-action">Ver Tudo</button>
+            </div>
+            <div class="card-content">
+              <div class="message-item unread">
+                <div class="message-avatar">JA</div>
+                <div class="message-content">
+                  <div class="message-header">
+                    <h4>João Almeida</h4>
+                    <span class="message-date">09:45</span>
+                  </div>
+                  <p>Professor, gostaria de tirar uma dúvida sobre o trabalho...</p>
+                </div>
+              </div>
+              <div class="message-item unread">
+                <div class="message-avatar">MS</div>
+                <div class="message-content">
+                  <div class="message-header">
+                    <h4>Maria Silva</h4>
+                    <span class="message-date">Ontem</span>
+                  </div>
+                  <p>Sobre a prova da próxima semana, poderia confirmar...</p>
+                </div>
+              </div>
+              <div class="message-item">
+                <div class="message-avatar">CP</div>
+                <div class="message-content">
+                  <div class="message-header">
+                    <h4>Coordenação Pedagógica</h4>
+                    <span class="message-date">2 dias</span>
+                  </div>
+                  <p>Convocação para reunião de conselho na próxima...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div *ngIf="dashboardData" class="server-data-section">
+          <h3>Dados do Servidor:</h3>
+          <p>{{ dashboardData }}</p>
+        </div>
+  
+        <div *ngIf="errorMessage" class="error-message">
+          <i class="icon-error"></i>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+    </main>
   </div>
