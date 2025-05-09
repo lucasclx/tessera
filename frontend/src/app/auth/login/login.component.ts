@@ -46,6 +46,12 @@ export class LoginComponent implements OnInit {
       console.log('Usuário já está logado, redirecionando...');
       this.redirectToDashboard();
     }
+    
+    // Verifica se há mensagem de erro nos query params
+    const error = this.route.snapshot.queryParams['error'];
+    if (error) {
+      this.errorMessage = error;
+    }
   }
 
   // Alterna a visibilidade da senha
@@ -71,6 +77,8 @@ export class LoginComponent implements OnInit {
     // Primeiro verificamos o status de aprovação do usuário
     this.authService.checkApprovalStatus(username).subscribe({
       next: (status) => {
+        console.log('Status de aprovação:', status);
+        
         if (status === ApprovalStatus.PENDING_APPROVAL) {
           // Redirecionar para a página de aprovação pendente
           this.loading = false;

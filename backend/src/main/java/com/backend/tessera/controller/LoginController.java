@@ -3,6 +3,8 @@ package com.backend.tessera.controller;
 import com.backend.tessera.dto.AuthRequest;
 import com.backend.tessera.dto.AuthResponse;
 import com.backend.tessera.dto.MessageResponse;
+import com.backend.tessera.model.User;
+import com.backend.tessera.repository.UserRepository;
 import com.backend.tessera.security.JwtUtil;
 import com.backend.tessera.service.UserDetailsServiceImpl;
 
@@ -23,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,11 +40,31 @@ public class LoginController {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest authRequest) {
         try {
             System.out.println("Tentando autenticar usuário: " + authRequest.getUsername());
+            
+            // Primeiro verificamos se o usuário existe e está aprovado
+            Optional<User> userOpt = userRepository.findByUsername(authRequest.getUsername());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                if (!user.isApproved()) {
+                    System.out.println("Conta aguardando aprovação: " + authRequest.getUsername());
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                           .body(new MessageResponse("Sua conta está aguardando aprovação do administrador. Tente novamente mais tarde."));
+                }
+                
+                if (!user.isEnabled()) {
+                    System.out.println("Conta desativada: " + authRequest.getUsername());
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                           .body(new MessageResponse("Sua conta está desativada. Entre em contato com o administrador."));
+                }
+            }
             
             // Tenta autenticar o usuário
             Authentication authentication = authenticationManager.authenticate(
@@ -91,25 +114,40 @@ public class LoginController {
     @GetMapping("/check-approval/{username}")
     public ResponseEntity<?> checkApprovalStatus(@PathVariable String username) {
         try {
-            // Carregamos o usuário sem fazer verificações de aprovação
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            // Buscar o usuário pelo username
+            Optional<User> userOpt = userRepository.findByUsername(username);
             
-            // Só para verificar se o usuário existe, qualquer exceção indicará que não existe
-            return ResponseEntity.ok(new MessageResponse("Usuário autenticado com sucesso"));
-        } catch (LockedException e) {
-            // Usuário existe, mas está aguardando aprovação
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse("PENDING_APPROVAL"));
-        } catch (DisabledException e) {
-            // Usuário existe, mas está desativado
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse("ACCOUNT_DISABLED"));
-        } catch (UsernameNotFoundException e) {
-            // Usuário não existe
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                   .body(new MessageResponse("Usuário não encontrado"));
+            if (userOpt.isEmpty()) {
+                System.out.println("Usuário não encontrado: " + username);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                       .body(new MessageResponse("Usuário não encontrado"));
+            }
+            
+            User user = userOpt.get();
+            
+            // Verificar se o usuário está aprovado
+            if (!user.isApproved()) {
+                System.out.println("Usuário pendente de aprovação: " + username);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(new MessageResponse("PENDING_APPROVAL"));
+            } 
+            
+            // Verificar se a conta está habilitada
+            if (!user.isEnabled()) {
+                System.out.println("Usuário com conta desativada: " + username);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(new MessageResponse("ACCOUNT_DISABLED"));
+            }
+            
+            // Usuário está aprovado e ativo
+            System.out.println("Usuário aprovado e ativo: " + username);
+            return ResponseEntity.ok(new MessageResponse("APPROVED"));
         } catch (Exception e) {
-            // Outros erros
+            // Log do erro
+            System.err.println("Erro ao verificar status de aprovação: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Retornar erro genérico para o cliente
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                    .body(new MessageResponse("Erro ao verificar status: " + e.getMessage()));
         }

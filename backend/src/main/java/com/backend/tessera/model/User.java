@@ -103,7 +103,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.accountNonLocked;
+        // Uma conta não aprovada é considerada bloqueada
+        return this.accountNonLocked && this.approved;
     }
 
     @Override

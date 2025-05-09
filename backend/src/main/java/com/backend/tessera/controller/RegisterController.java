@@ -45,27 +45,29 @@ public class RegisterController {
             }
 
             // Determinar o papel inicial do usuário
-            Role assignedRole = null;
-            Role requestedRole = null;
+            Role assignedRole = Role.ALUNO;  // Papel padrão é ALUNO
+            Role requestedRole = null;      // Papel solicitado inicialmente null
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles != null && !strRoles.isEmpty()) {
                 String roleStr = strRoles.iterator().next().toUpperCase();
                 try {
-                    requestedRole = Role.valueOf(roleStr);
-                    
-                    // ALTERAÇÃO: Todos os papéis (incluindo ALUNO) precisam de aprovação
-                    // Atribuímos papel pendente para todos
-                    assignedRole = requestedRole;
-                    
+                    if (roleStr.equals("PROFESSOR")) {
+                        // Para PROFESSOR, definimos o papel solicitado
+                        requestedRole = Role.PROFESSOR;
+                    } else if (roleStr.equals("ALUNO")) {
+                        // Para ALUNO, não há papel solicitado
+                        assignedRole = Role.ALUNO;
+                    } else {
+                        return ResponseEntity
+                                .badRequest()
+                                .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
+                    }
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity
                             .badRequest()
                             .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
                 }
-            } else {
-                // Papel padrão se nenhum foi especificado
-                assignedRole = Role.ALUNO;
             }
 
             // Construir o objeto usuário
@@ -76,8 +78,9 @@ public class RegisterController {
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
             user.setInstitution(signUpRequest.getInstitution());
             user.setRole(assignedRole);
+            user.setRequestedRole(requestedRole);
             
-            // ALTERAÇÃO: Definir aprovação como false para TODOS os usuários
+            // Definir aprovação como false para TODOS os usuários
             user.setApproved(false);
             user.setAdminComments("Aguardando aprovação do administrador");
             

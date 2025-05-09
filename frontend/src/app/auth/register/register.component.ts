@@ -24,7 +24,7 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
     RouterLink
   ],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrl: './register.component.scss'
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
@@ -96,19 +96,16 @@ export class RegisterComponent implements OnInit {
     this.authService.register(registrationData).subscribe({
       next: (response) => {
         this.loading = false;
-        this.successMessage = 'Usuário registrado com sucesso! Você pode fazer login agora.';
-        
-        // Se o perfil escolhido for professor, mostra uma mensagem adicional
-        if (formData.role === 'PROFESSOR') {
-          this.successMessage += ' Sua solicitação de perfil de Professor será analisada pelos administradores.';
-        }
+        this.successMessage = 'Usuário registrado com sucesso! Sua conta será analisada pelos administradores.';
         
         // Resetar o formulário
         this.registerForm.reset();
         this.submitted = false;
         
-        // Redirecionar para login após 3 segundos
-        setTimeout(() => this.router.navigate(['/auth/login']), 3000);
+        // Redirecionar para a página de pendente de aprovação
+        setTimeout(() => this.router.navigate(['/auth/pending-approval'], { 
+          queryParams: { username: formData.username }
+        }), 3000);
       },
       error: (err) => {
         this.loading = false;

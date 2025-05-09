@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("Auth Header: " + (authorizationHeader != null ? 
                 authorizationHeader.substring(0, Math.min(20, authorizationHeader.length())) + "..." : "null"));
 
-        // Ignorar certas URLs (como login e registro)
+        // Ignorar certas URLs (como login, registro e verificação de aprovação)
         if (requestURI.contains("/api/auth/") || requestURI.contains("/actuator/")) {
             System.out.println("Pulando autenticação para endpoint público: " + requestURI);
             filterChain.doFilter(request, response);
@@ -58,13 +58,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token expirado");
                 logger.warn("JWT Token expirado");
+                // Não lancar exceção, deixar a autenticação ser rejeitada normalmente
+                filterChain.doFilter(request, response);
+                return;
             } catch (Exception e) {
                 System.out.println("Erro ao processar JWT Token: " + e.getMessage());
                 e.printStackTrace();
                 logger.error("Erro ao processar JWT Token: ", e);
+                // Não lancar exceção, deixar a autenticação ser rejeitada normalmente
+                filterChain.doFilter(request, response);
+                return;
             }
         } else {
             System.out.println("Cabeçalho Authorization não encontrado ou sem prefixo Bearer");
+            filterChain.doFilter(request, response);
+            return;
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -88,6 +96,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 System.out.println("Erro durante autenticação: " + e.getMessage());
                 e.printStackTrace();
+                // Não interromper o filtro em caso de erro, permitir que a cadeia de filtros continue
             }
         }
         

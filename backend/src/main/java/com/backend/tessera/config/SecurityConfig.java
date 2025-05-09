@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 
 @Configuration
@@ -52,7 +53,19 @@ public class SecurityConfig {
                 // Qualquer outra requisição precisa ser autenticada
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) -> {
+                // Tratamento especial para endpoints de auth para evitar redirecionamento para /error
+                if (request.getRequestURI().startsWith("/api/auth/")) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Acesso não autorizado\"}");
+                } else {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Autenticação necessária\"}");
+                }
+            }));
         
         // Para H2 console funcionar (se for usado)
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));

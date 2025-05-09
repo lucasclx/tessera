@@ -35,24 +35,28 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         // Buscar usuário pelo nome de usuário
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
+            System.out.println("Failed to find user '" + username + "'");
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
         User user = userOpt.get();
 
-        // Verificar se o usuário está aprovado
+        // Verificar a senha
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            System.out.println("Credenciais inválidas para: " + username);
+            throw new BadCredentialsException("Usuário ou senha inválidos");
+        }
+
+        // Verificar se o usuário está aprovado - verificamos depois da senha para evitar enumeração
         if (!user.isApproved()) {
+            System.out.println("Conta aguardando aprovação: " + username);
             throw new LockedException("Conta aguardando aprovação do administrador");
         }
 
         // Verificar se a conta está habilitada
         if (!user.isEnabled()) {
+            System.out.println("Conta desativada: " + username);
             throw new DisabledException("Conta desativada");
-        }
-
-        // Verificar a senha
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
         // Autenticação bem-sucedida
