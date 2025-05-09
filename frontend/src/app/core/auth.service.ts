@@ -1,4 +1,4 @@
-// src/app/core/auth.service.ts (Corrigido)
+// src/app/core/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
@@ -187,9 +187,12 @@ hasRole(role: string): boolean {
     console.log('hasRole - Usuário não logado ou sem roles');
     return false;
   }
-  // As roles vêm do backend como "PROFESSOR", "ALUNO" (sem "ROLE_")
-  const hasRole = this.currentUserValue.roles.includes(role.toUpperCase());
-  console.log(`hasRole check para ${role}:`, hasRole, 'Roles disponíveis:', this.currentUserValue.roles);
+  
+  // Verificação mais rigorosa - comparar com a role principal
+  const userRole = this.getUserRole();
+  const hasRole = userRole === role.toUpperCase();
+  
+  console.log(`hasRole check para ${role}:`, hasRole, 'Role principal:', userRole);
   return hasRole;
 }
 
@@ -203,11 +206,11 @@ getUserRole(): string | null {
   }
   
   // Ordem de prioridade: ADMIN > PROFESSOR > ALUNO
-  if (this.hasRole('ADMIN')) {
+  if (this.currentUserValue.roles.includes('ADMIN')) {
     return 'ADMIN';
-  } else if (this.hasRole('PROFESSOR')) {
+  } else if (this.currentUserValue.roles.includes('PROFESSOR')) {
     return 'PROFESSOR';
-  } else if (this.hasRole('ALUNO')) {
+  } else if (this.currentUserValue.roles.includes('ALUNO')) {
     return 'ALUNO';
   }
   

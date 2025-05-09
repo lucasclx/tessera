@@ -45,15 +45,16 @@ public class UserService {
         if (approved) {
             user.setStatus(AccountStatus.ATIVO);
             user.setApprovalDate(LocalDateTime.now());
+            user.setEnabled(true); // Habilitar a conta quando aprovada
             
             // Atualizar o papel se foi especificado e diferente do atual
             if (role != null && role != user.getRole()) {
                 user.setRole(role);
             }
         } else {
-            // Se estiver rejeitando a solicitação, manter como PENDENTE ou mudar para INATIVO
-            // Depende da regra de negócio - aqui manteremos como PENDENTE
+            // Se estiver rejeitando a solicitação, manter como PENDENTE
             user.setStatus(AccountStatus.PENDENTE);
+            user.setEnabled(false); // Desabilitar a conta quando rejeitada
         }
         
         // Atualizar comentários do administrador

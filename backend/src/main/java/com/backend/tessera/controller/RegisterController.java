@@ -79,13 +79,13 @@ public class RegisterController {
             
             // Definir status como PENDENTE para novos usuários
             user.setStatus(AccountStatus.PENDENTE);
-            user.setEnabled(true); // Conta habilitada, mas pendente de aprovação
+            user.setEnabled(false); // Conta não habilitada até ser aprovada
             user.setAdminComments("Aguardando aprovação do administrador");
             
             // Salvar no banco de dados
             userRepository.save(user);
             
-            System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus());
+            System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus() + ", Enabled: " + user.isEnabled());
 
             String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores.";
 

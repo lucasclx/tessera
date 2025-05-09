@@ -3,6 +3,7 @@ package com.backend.tessera.controller;
 import com.backend.tessera.dto.AuthRequest;
 import com.backend.tessera.dto.AuthResponse;
 import com.backend.tessera.dto.MessageResponse;
+import com.backend.tessera.model.AccountStatus; // Adicionado para clareza
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import com.backend.tessera.security.JwtUtil;
@@ -21,7 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+// Removido: import org.springframework.web.server.ResponseStatusException; (não mais usado aqui)
 import jakarta.validation.Valid;
 
 import java.util.Collection;
@@ -49,32 +50,26 @@ public class LoginController {
         try {
             System.out.println("Tentando autenticar usuário: " + authRequest.getUsername());
             
-            // Primeiro verificamos se o usuário existe
             Optional<User> userOpt = userRepository.findByUsername(authRequest.getUsername());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 
-                // Verificação adicional antes de tentar autenticar
-                if (!user.isApproved()) {
+                if (!user.isApproved() && user.getStatus() == AccountStatus.PENDENTE) { // Verifica explicitamente PENDENTE
                     System.out.println("Conta aguardando aprovação: " + authRequest.getUsername());
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                            .body(new MessageResponse("Sua conta está aguardando aprovação do administrador. Tente novamente mais tarde."));
                 }
                 
-                if (user.getRole() == null) {
+                if (user.getRole() == null && user.isApproved()) { // Aprovado mas sem role
                     System.out.println("Conta aprovada mas sem papel atribuído: " + authRequest.getUsername());
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                            .body(new MessageResponse("Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador."));
                 }
                 
-                if (!user.isEnabled()) {
-                    System.out.println("Conta desativada: " + authRequest.getUsername());
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                           .body(new MessageResponse("Sua conta está desativada. Entre em contato com o administrador."));
-                }
+                // A verificação de conta desativada (INATIVO ou !enabled) será tratada pelo CustomAuthenticationProvider
+                // e resultará em DisabledException.
             }
             
-            // Tenta autenticar o usuário
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
@@ -97,72 +92,83 @@ public class LoginController {
             
             AuthResponse response = new AuthResponse(token, userDetails.getUsername(), roles);
             return ResponseEntity.ok(response);
+
         } catch (BadCredentialsException e) {
             System.out.println("Credenciais inválidas para: " + authRequest.getUsername());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário ou senha inválidos", e);
-        } catch (LockedException e) {
-            System.out.println("Conta aguardando aprovação: " + authRequest.getUsername());
+            // MODIFICADO: Retornar ResponseEntity<MessageResponse> em vez de ResponseStatusException
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(new MessageResponse("Usuário ou senha inválidos"));
+        } catch (LockedException e) { // Tipicamente para contas PENDENTES via CustomAuthenticationProvider
+            System.out.println("Conta bloqueada (pendente/etc.): " + authRequest.getUsername());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse("Sua conta está aguardando aprovação do administrador. Tente novamente mais tarde."));
-        } catch (DisabledException e) {
+                   .body(new MessageResponse(e.getMessage())); // Usar a mensagem da exceção
+        } catch (DisabledException e) { // Tipicamente para contas INATIVAS ou enabled=false via CustomAuthenticationProvider
             System.out.println("Conta desativada: " + authRequest.getUsername());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse("Sua conta está desativada. Entre em contato com o administrador."));
+                   .body(new MessageResponse(e.getMessage())); // Usar a mensagem da exceção
         } catch (AuthenticationException e) {
             System.out.println("Erro de autenticação para: " + authRequest.getUsername() + " - " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                    .body(new MessageResponse("Erro de autenticação: " + e.getMessage()));
         } catch (Exception e) {
-            System.out.println("Erro inesperado na autenticação: " + e.getMessage());
+            System.err.println("Erro inesperado na autenticação para " + authRequest.getUsername() + ": " + e.getMessage());
             e.printStackTrace();
-            throw e;
+            // Considerar um erro mais genérico para o cliente em produção
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(new MessageResponse("Erro interno no servidor durante a autenticação."));
         }
     }
     
     @GetMapping("/check-approval/{username}")
     public ResponseEntity<?> checkApprovalStatus(@PathVariable String username) {
         try {
-            // Buscar o usuário pelo username
             Optional<User> userOpt = userRepository.findByUsername(username);
             
             if (userOpt.isEmpty()) {
-                System.out.println("Usuário não encontrado: " + username);
+                System.out.println("Usuário não encontrado (check-approval): " + username);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                        .body(new MessageResponse("Usuário não encontrado"));
             }
             
             User user = userOpt.get();
             
-            // Verificar se o usuário está aprovado
-            if (!user.isApproved()) {
-                System.out.println("Usuário pendente de aprovação: " + username);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                       .body(new MessageResponse("PENDING_APPROVAL"));
-            } 
-            
-            // Verificar se o papel foi atribuído
-            if (user.getRole() == null) {
-                System.out.println("Usuário aprovado mas sem papel atribuído: " + username);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                       .body(new MessageResponse("ROLE_MISSING"));
-            }
-            
-            // Verificar se a conta está habilitada
-            if (!user.isEnabled()) {
-                System.out.println("Usuário com conta desativada: " + username);
+            // MODIFICADO: Ordem das verificações
+            if (user.getStatus() == AccountStatus.INATIVO) {
+                System.out.println("Usuário com conta INATIVA (via check-approval): " + username);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                        .body(new MessageResponse("ACCOUNT_DISABLED"));
             }
             
-            // Usuário está aprovado e ativo
-            System.out.println("Usuário aprovado e ativo: " + username);
-            return ResponseEntity.ok(new MessageResponse("APPROVED"));
-        } catch (Exception e) {
-            // Log do erro
-            System.err.println("Erro ao verificar status de aprovação: " + e.getMessage());
-            e.printStackTrace();
+            // user.isApproved() verifica se status == AccountStatus.ATIVO
+            // Se não for ATIVO (e não for INATIVO, já tratado acima), então é PENDENTE
+            if (!user.isApproved()) { 
+                System.out.println("Usuário pendente de aprovação (check-approval): " + username);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(new MessageResponse("PENDING_APPROVAL"));
+            } 
             
-            // Retornar erro genérico para o cliente
+            // Se chegou aqui, usuário está ATIVO (isApproved() é true)
+            if (user.getRole() == null) {
+                System.out.println("Usuário aprovado mas sem papel atribuído (check-approval): " + username);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(new MessageResponse("ROLE_MISSING"));
+            }
+            
+            // Adicionalmente, mesmo que ATIVO, o campo 'enabled' pode estar false por alguma razão administrativa.
+            // O CustomAuthenticationProvider já verifica user.isEnabled() para login.
+            // Para check-approval, se status é ATIVO mas enabled é false, podemos considerar como desabilitado.
+            if (!user.isEnabled()) {
+                 System.out.println("Usuário ATIVO mas desabilitado (enabled=false) (check-approval): " + username);
+                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new MessageResponse("ACCOUNT_DISABLED"));
+            }
+            
+            System.out.println("Usuário aprovado e ativo (check-approval): " + username);
+            return ResponseEntity.ok(new MessageResponse("APPROVED"));
+
+        } catch (Exception e) {
+            System.err.println("Erro ao verificar status de aprovação para " + username + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                    .body(new MessageResponse("Erro ao verificar status: " + e.getMessage()));
         }

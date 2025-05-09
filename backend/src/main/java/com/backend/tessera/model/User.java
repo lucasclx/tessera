@@ -46,7 +46,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AccountStatus status = AccountStatus.PENDENTE; // Padrão é PENDENTE
+    private AccountStatus status = AccountStatus.PENDENTE;
 
     // Campo para a data de aprovação
     private LocalDateTime approvalDate;
@@ -58,7 +58,7 @@ public class User implements UserDetails {
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
-    private boolean enabled = true;
+    private boolean enabled = false; // Alterado para false por padrão
 
     // Campo para rastrear data de criação
     @Column(updatable = false)
@@ -77,6 +77,7 @@ public class User implements UserDetails {
         this.role = role;
         this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
         this.createdAt = LocalDateTime.now();
+        this.enabled = true; // Usuários iniciais já vêm habilitados
     }
 
     // Construtor completo para RegisterController
@@ -89,6 +90,7 @@ public class User implements UserDetails {
         this.role = role;
         this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
         this.createdAt = LocalDateTime.now();
+        this.enabled = false; // Novos usuários começam desabilitados
     }
 
     /**
@@ -101,7 +103,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Só retorna autoridades se o status for ATIVO
-        if (status == AccountStatus.ATIVO) {
+        if (status == AccountStatus.ATIVO && enabled) {
             return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
         return Collections.emptyList();
@@ -125,7 +127,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // A conta está habilitada se estiver ativa
+        // A conta está habilitada se estiver ativa E o campo enabled for true
         return this.enabled && (this.status == AccountStatus.ATIVO);
     }
 }

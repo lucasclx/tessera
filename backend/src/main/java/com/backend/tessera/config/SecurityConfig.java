@@ -15,8 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+// Removido: import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; (Já existe em PasswordEncoderConfig)
+// Removido: import org.springframework.security.crypto.password.PasswordEncoder; (Já existe em PasswordEncoderConfig)
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -44,30 +44,35 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                // Permitir acesso à API de autenticação sem autenticação
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll() // Permitir acesso a endpoints do actuator
-                // Permitir acesso a endpoints específicos por perfil
+                .requestMatchers("/actuator/**").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
-                // Qualquer outra requisição precisa ser autenticada
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) -> {
-                // Tratamento especial para endpoints de auth para evitar redirecionamento para /error
-                if (request.getRequestURI().startsWith("/api/auth/")) {
+            // MODIFICADO: Adicionado .accessDeniedHandler()
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    // Este é para quando a autenticação é necessária mas não foi fornecida ou falhou
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"message\": \"Acesso não autorizado\"}");
-                } else {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    // Você pode customizar a mensagem baseada na exceção se desejar mais detalhes
+                    // authException.printStackTrace(); // Para debug
+                    if (request.getRequestURI().startsWith("/api/auth/login")) { // Específico para falha no login
+                         response.getWriter().write("{\"message\": \"" + authException.getMessage() + "\"}");
+                    } else {
+                         response.getWriter().write("{\"message\": \"Autenticação necessária para acessar este recurso.\"}");
+                    }
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    // Este é para quando o usuário está autenticado mas não tem permissão (role errada, etc.)
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"message\": \"Autenticação necessária\"}");
-                }
-            }));
+                    response.getWriter().write("{\"message\": \"Acesso Proibido: Você não tem permissão para acessar este recurso.\"}");
+                })
+            );
         
-        // Para H2 console funcionar (se for usado)
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
         return http.build();
@@ -75,7 +80,6 @@ public class SecurityConfig {
     
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // Registrando nosso provedor de autenticação personalizado
         auth.authenticationProvider(customAuthenticationProvider);
     }
 
@@ -85,17 +89,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Configuração mais permissiva para desenvolvimento
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200")); // Seja específico se possível
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin")); // Adicionado Origin
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
