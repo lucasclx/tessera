@@ -1,5 +1,6 @@
 package com.backend.tessera.service;
 
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
@@ -23,7 +24,7 @@ public class UserService {
      */
     public List<User> findPendingApprovalUsers() {
         return userRepository.findAll().stream()
-                .filter(user -> !user.isApproved() || user.getRequestedRole() != null)
+                .filter(user -> user.getStatus() == AccountStatus.PENDENTE)
                 .collect(Collectors.toList());
     }
 
@@ -40,24 +41,24 @@ public class UserService {
         
         User user = userOpt.get();
         
-        // Atualiza o status de aprovação
-        user.setApproved(approved);
-        user.setApprovalDate(LocalDateTime.now());
-        user.setAdminComments(adminComments);
-        
-        // Se aprovado, o papel DEVE ser especificado
+        // Se estiver aprovando o usuário
         if (approved) {
-            if (role == null) {
-                throw new IllegalArgumentException("Um papel deve ser especificado ao aprovar um usuário");
-            }
+            user.setStatus(AccountStatus.ATIVO);
+            user.setApprovalDate(LocalDateTime.now());
             
-            user.setRole(role);
-            user.setRequestedRole(null); // Limpa a solicitação após aprovar
-        } 
-        // Se rejeitado, mantém o papel como null mas limpa a solicitação
-        else {
-            // Não alterar o papel se rejeitado - deixar como null ou como estava
-            user.setRequestedRole(null);
+            // Atualizar o papel se foi especificado e diferente do atual
+            if (role != null && role != user.getRole()) {
+                user.setRole(role);
+            }
+        } else {
+            // Se estiver rejeitando a solicitação, manter como PENDENTE ou mudar para INATIVO
+            // Depende da regra de negócio - aqui manteremos como PENDENTE
+            user.setStatus(AccountStatus.PENDENTE);
+        }
+        
+        // Atualizar comentários do administrador
+        if (adminComments != null) {
+            user.setAdminComments(adminComments);
         }
         
         return userRepository.save(user);
@@ -75,6 +76,19 @@ public class UserService {
         }
         
         User user = userOpt.get();
+        
+        // Atualiza o status com base no parâmetro enabled
+        if (enabled) {
+            // Se já está aprovado, apenas ativa
+            if (user.getStatus() == AccountStatus.ATIVO || user.getStatus() == AccountStatus.INATIVO) {
+                user.setStatus(AccountStatus.ATIVO);
+            }
+        } else {
+            // Desativa o usuário
+            user.setStatus(AccountStatus.INATIVO);
+        }
+        
+        // Atualiza o campo enabled para compatibilidade
         user.setEnabled(enabled);
         
         return userRepository.save(user);

@@ -1,4 +1,4 @@
-// src/app/auth/pending-approval/pending-approval.component.ts
+// src/app/auth/pending-approval/pending-approval.component.ts (Corrigido)
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -59,7 +59,7 @@ export class PendingApprovalComponent implements OnInit {
     // Por enquanto, usando dados simulados
     this.accountDetails = {
       nome: this.username || 'Usuário',
-      role: 'ALUNO',
+      role: 'Não atribuído',
       requestedRole: 'PROFESSOR',
       createdAt: new Date().toISOString()
     };
@@ -90,6 +90,10 @@ export class PendingApprovalComponent implements OnInit {
           case ApprovalStatus.ACCOUNT_DISABLED:
             this.statusClass = 'status-error';
             this.statusMessage = 'Sua conta foi desativada. Entre em contato com o administrador para mais informações.';
+            break;
+          case ApprovalStatus.ROLE_MISSING:
+            this.statusClass = 'status-error';
+            this.statusMessage = 'Sua conta foi aprovada mas não tem perfil atribuído. Entre em contato com o administrador.';
             break;
           default:
             this.statusClass = 'status-error';

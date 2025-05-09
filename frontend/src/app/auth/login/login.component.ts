@@ -1,4 +1,4 @@
-// src/app/auth/login/login.component.ts
+// src/app/auth/login/login.component.ts (Corrigido)
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
@@ -90,6 +90,11 @@ export class LoginComponent implements OnInit {
           // Conta desativada
           this.loading = false;
           this.errorMessage = 'Sua conta está desativada. Entre em contato com o administrador.';
+          return;
+        } else if (status === ApprovalStatus.ROLE_MISSING) {
+          // Conta sem papel atribuído
+          this.loading = false;
+          this.errorMessage = 'Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador.';
           return;
         }
         

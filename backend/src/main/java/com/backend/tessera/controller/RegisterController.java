@@ -1,5 +1,6 @@
 package com.backend.tessera.controller;
 
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.dto.SignupRequest;
@@ -44,14 +45,22 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Email já está em uso!"));
             }
 
-            // Determinar o papel solicitado pelo usuário
-            Role requestedRole = null;
+            // Determinar o papel a partir da solicitação
+            Role userRole = Role.ALUNO; // Papel padrão é ALUNO
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles != null && !strRoles.isEmpty()) {
                 String roleStr = strRoles.iterator().next().toUpperCase();
                 try {
-                    requestedRole = Role.valueOf(roleStr);
+                    if (roleStr.equals("PROFESSOR")) {
+                        userRole = Role.PROFESSOR;
+                    } else if (roleStr.equals("ALUNO")) {
+                        userRole = Role.ALUNO;
+                    } else {
+                        return ResponseEntity
+                                .badRequest()
+                                .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
+                    }
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity
                             .badRequest()
@@ -66,28 +75,17 @@ public class RegisterController {
             user.setEmail(signUpRequest.getEmail());
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
             user.setInstitution(signUpRequest.getInstitution());
+            user.setRole(userRole);
             
-            // Definir o papel solicitado como requestedRole
-            user.setRequestedRole(requestedRole);
-            
-            // Se nenhum papel foi solicitado, definir ALUNO como padrão para solicitação
-            if (requestedRole == null) {
-                user.setRequestedRole(Role.ALUNO);
-            }
-            
-            // Não atribuir nenhum papel ainda - será feito pelo administrador
-            // Deixar como null até a aprovação
-            user.setRole(null);
-            
-            // Definir aprovação como false para TODOS os usuários
-            user.setApproved(false);
-            user.setEnabled(true); // Conta habilitada, mas não aprovada
+            // Definir status como PENDENTE para novos usuários
+            user.setStatus(AccountStatus.PENDENTE);
+            user.setEnabled(true); // Conta habilitada, mas pendente de aprovação
             user.setAdminComments("Aguardando aprovação do administrador");
             
             // Salvar no banco de dados
             userRepository.save(user);
             
-            System.out.println("Usuário registrado com sucesso: " + user.getUsername());
+            System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus());
 
             String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores.";
 

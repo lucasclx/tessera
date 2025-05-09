@@ -1,5 +1,6 @@
 package com.backend.tessera.security;
 
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * Provedor de autenticação personalizado para verificar a aprovação dos usuários
+ * Provedor de autenticação personalizado para verificar o status dos usuários
  */
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
@@ -47,22 +48,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
-        // Verificar se o usuário está aprovado
-        if (!user.isApproved()) {
-            System.out.println("Conta aguardando aprovação: " + username);
+        // Verificar o status da conta
+        if (user.getStatus() == AccountStatus.PENDENTE) {
+            System.out.println("Conta pendente de aprovação: " + username);
             throw new LockedException("Conta aguardando aprovação do administrador");
-        }
-        
-        // Verificar se o papel foi atribuído após aprovação
-        if (user.getRole() == null) {
-            System.out.println("Conta aprovada mas sem papel atribuído: " + username);
-            throw new DisabledException("Conta com configuração incompleta. Entre em contato com o administrador.");
+        } else if (user.getStatus() == AccountStatus.INATIVO) {
+            System.out.println("Conta inativa: " + username);
+            throw new DisabledException("Conta desativada. Entre em contato com o administrador.");
         }
 
-        // Verificar se a conta está habilitada
+        // Verificar se a conta está habilitada (campo enabled)
         if (!user.isEnabled()) {
-            System.out.println("Conta desativada: " + username);
-            throw new DisabledException("Conta desativada");
+            System.out.println("Conta desabilitada: " + username);
+            throw new DisabledException("Conta desabilitada. Entre em contato com o administrador.");
         }
 
         // Autenticação bem-sucedida

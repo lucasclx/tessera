@@ -41,18 +41,18 @@ public class User implements UserDetails {
     private String institution;
 
     @Enumerated(EnumType.STRING)
-    private Role role;  // Papel atual - pode ser nulo até aprovação
+    @Column(nullable = false)
+    private Role role;
 
-    // Novos campos para o sistema de aprovação
     @Enumerated(EnumType.STRING)
-    private Role requestedRole; // Papel solicitado pelo usuário
+    @Column(nullable = false)
+    private AccountStatus status = AccountStatus.PENDENTE; // Padrão é PENDENTE
 
-    private boolean approved = false; // Status de aprovação
-
-    private LocalDateTime approvalDate; // Data de aprovação/rejeição
+    // Campo para a data de aprovação
+    private LocalDateTime approvalDate;
 
     @Column(length = 500)
-    private String adminComments; // Comentários do administrador
+    private String adminComments;
 
     // Campos para status da conta
     private boolean accountNonExpired = true;
@@ -75,7 +75,7 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.approved = true; // Usuários iniciais já vêm aprovados
+        this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
         this.createdAt = LocalDateTime.now();
     }
 
@@ -87,16 +87,24 @@ public class User implements UserDetails {
         this.password = password;
         this.institution = institution;
         this.role = role;
+        this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
         this.createdAt = LocalDateTime.now();
+    }
+
+    /**
+     * Verifica se a conta foi aprovada
+     */
+    public boolean isApproved() {
+        return this.status == AccountStatus.ATIVO;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (role == null) {
-            // Se ainda não tem papel atribuído, retorna lista vazia de autoridades
-            return Collections.emptyList();
+        // Só retorna autoridades se o status for ATIVO
+        if (status == AccountStatus.ATIVO) {
+            return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return Collections.emptyList();
     }
 
     @Override
@@ -106,8 +114,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // Uma conta não aprovada ou sem papel é considerada bloqueada
-        return this.accountNonLocked && this.approved && this.role != null;
+        // A conta está bloqueada se estiver pendente
+        return this.accountNonLocked && (this.status != AccountStatus.PENDENTE);
     }
 
     @Override
@@ -117,6 +125,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.enabled;
+        // A conta está habilitada se estiver ativa
+        return this.enabled && (this.status == AccountStatus.ATIVO);
     }
 }

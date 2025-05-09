@@ -1,5 +1,6 @@
 package com.backend.tessera;
 
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
@@ -21,7 +22,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Só cria se não houver usuários, para evitar duplicatas em reinicializações
         if (userRepository.count() == 0) {
-            // Criar usuário admin (SEMPRE APROVADO) - necessário para o funcionamento do sistema
+            // Criar usuário admin (SEMPRE ATIVO) - necessário para o funcionamento do sistema
             User admin = new User();
             admin.setNome("Administrador");
             admin.setUsername("admin");
@@ -29,17 +30,10 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setInstitution("Sistema Acadêmico");
             admin.setRole(Role.ADMIN);
-            admin.setApproved(true); // O admin é sempre aprovado
+            admin.setStatus(AccountStatus.ATIVO); // Admin está sempre ativo
             admin.setEnabled(true);
             
-            // Salvar o admin para permitir acesso ao sistema
-            userRepository.save(admin);
-            System.out.println(">>> Usuário administrador inicial criado: admin/admin123");
-            
-            // Criar outros usuários de exemplo (também pré-aprovados para facilitar testes)
-            // Em ambiente de produção, estes usuários não seriam criados automaticamente
-            
-            // Criar usuário professor (pré-aprovado para testes)
+            // Criar usuário professor (ATIVO para testes)
             User professor = new User();
             professor.setNome("Professor Exemplo");
             professor.setUsername("professor1");
@@ -47,10 +41,10 @@ public class DataInitializer implements CommandLineRunner {
             professor.setPassword(passwordEncoder.encode("senha123"));
             professor.setInstitution("Sistema Acadêmico");
             professor.setRole(Role.PROFESSOR);
-            professor.setApproved(true); // Aprovado para testes
+            professor.setStatus(AccountStatus.ATIVO); // Professor de teste já aprovado
             professor.setEnabled(true);
             
-            // Criar usuário aluno (pré-aprovado para testes)
+            // Criar usuário aluno (ATIVO para testes)
             User aluno = new User();
             aluno.setNome("Aluno Exemplo");
             aluno.setUsername("aluno1");
@@ -58,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
             aluno.setPassword(passwordEncoder.encode("senha123"));
             aluno.setInstitution("Sistema Acadêmico");
             aluno.setRole(Role.ALUNO);
-            aluno.setApproved(true); // Aprovado para testes
+            aluno.setStatus(AccountStatus.ATIVO); // Aluno de teste já aprovado
             aluno.setEnabled(true);
 
             // Criar usuário pendente de aprovação (para demonstração do processo)
@@ -68,12 +62,12 @@ public class DataInitializer implements CommandLineRunner {
             pendingUser.setPassword(passwordEncoder.encode("senha123"));
             pendingUser.setEmail("pendente@sistema.edu");
             pendingUser.setInstitution("Sistema Acadêmico");
-            pendingUser.setRequestedRole(Role.PROFESSOR); // O papel solicitado
-            pendingUser.setRole(null); // Sem papel atribuído até a aprovação
-            pendingUser.setApproved(false); // Não aprovado
+            pendingUser.setRole(Role.PROFESSOR); // Papel solicitado
+            pendingUser.setStatus(AccountStatus.PENDENTE); // Status pendente
             pendingUser.setEnabled(true);
             pendingUser.setAdminComments("Aguardando aprovação do administrador");
 
+            userRepository.save(admin);
             userRepository.save(professor);
             userRepository.save(aluno);
             userRepository.save(pendingUser);
@@ -96,7 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 admin.setPassword(passwordEncoder.encode("admin123"));
                 admin.setInstitution("Sistema Acadêmico");
                 admin.setRole(Role.ADMIN);
-                admin.setApproved(true);
+                admin.setStatus(AccountStatus.ATIVO);
                 admin.setEnabled(true);
                 
                 userRepository.save(admin);

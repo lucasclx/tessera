@@ -3,6 +3,7 @@ package com.backend.tessera.controller;
 import com.backend.tessera.dto.MessageResponse;
 import com.backend.tessera.dto.UserApprovalRequest;
 import com.backend.tessera.dto.UserDetailsResponse;
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
@@ -130,11 +131,11 @@ public class AdminController {
                 user.getEmail(),
                 user.getInstitution(),
                 user.getRole().name(),
-                user.getRequestedRole() != null ? user.getRequestedRole().name() : null,
-                user.isApproved(),
+                null, // requestedRole não é mais usado
+                user.isApproved(), // Converter o status para o conceito de "aprovado"
                 user.getApprovalDate(),
                 user.getAdminComments(),
-                user.isEnabled(),
+                user.getStatus() == AccountStatus.ATIVO, // Converter o status para o conceito de "ativo"
                 user.getCreatedAt()
         );
     }

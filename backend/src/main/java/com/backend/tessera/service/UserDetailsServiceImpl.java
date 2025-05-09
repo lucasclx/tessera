@@ -1,5 +1,6 @@
 package com.backend.tessera.service;
 
+import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +22,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
         
-        // Verificar se o usuário está aprovado
-        if (!user.isApproved()) {
+        // Verificar o status da conta
+        if (user.getStatus() == AccountStatus.PENDENTE) {
             throw new LockedException("Conta aguardando aprovação do administrador");
-        }
-        
-        // Verificar se o papel foi atribuído após aprovação
-        if (user.getRole() == null) {
-            throw new DisabledException("Conta com configuração incompleta. Entre em contato com o administrador.");
-        }
-        
-        // Verificar se a conta está habilitada
-        if (!user.isEnabled()) {
+        } else if (user.getStatus() == AccountStatus.INATIVO) {
             throw new DisabledException("Conta desativada");
+        }
+        
+        // Verificar se a conta está habilitada (campo enabled)
+        if (!user.isEnabled()) {
+            throw new DisabledException("Conta desabilitada");
         }
         
         return user;

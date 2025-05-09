@@ -1,4 +1,4 @@
-// src/app/core/auth.service.ts
+// src/app/core/auth.service.ts (Corrigido)
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
@@ -31,6 +31,7 @@ export interface RegistrationData {
 export enum ApprovalStatus {
   APPROVED = 'APPROVED',
   PENDING_APPROVAL = 'PENDING_APPROVAL',
+  ROLE_MISSING = 'ROLE_MISSING',
   ACCOUNT_DISABLED = 'ACCOUNT_DISABLED',
   UNKNOWN = 'UNKNOWN'
 }
@@ -70,6 +71,8 @@ export class AuthService {
       console.log('Resposta do check-approval:', response);
       if (response && response.message === 'APPROVED') {
         return ApprovalStatus.APPROVED;
+      } else if (response && response.message === 'ROLE_MISSING') {
+        return ApprovalStatus.ROLE_MISSING;
       }
       return ApprovalStatus.UNKNOWN;
     }),
@@ -81,6 +84,8 @@ export class AuthService {
           return of(ApprovalStatus.PENDING_APPROVAL);
         } else if (error.error && error.error.message === 'ACCOUNT_DISABLED') {
           return of(ApprovalStatus.ACCOUNT_DISABLED);
+        } else if (error.error && error.error.message === 'ROLE_MISSING') {
+          return of(ApprovalStatus.ROLE_MISSING);
         }
       } else if (error.status === 404) {
         console.log('Usuário não encontrado');
@@ -108,6 +113,8 @@ login(credentials: LoginData): Observable<AuthResponse> {
         return throwError(() => new Error('Sua conta está aguardando aprovação do administrador.'));
       } else if (status === ApprovalStatus.ACCOUNT_DISABLED) {
         return throwError(() => new Error('Sua conta está desativada. Entre em contato com o administrador.'));
+      } else if (status === ApprovalStatus.ROLE_MISSING) {
+        return throwError(() => new Error('Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador.'));
       }
       
       // Se estiver aprovado ou status desconhecido, prosseguimos com o login normal
