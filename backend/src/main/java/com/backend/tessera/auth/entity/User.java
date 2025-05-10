@@ -1,8 +1,9 @@
-package com.backend.tessera.model;
+package com.backend.tessera.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.NoArgsConstructor; // Adicionado
+import lombok.AllArgsConstructor; // Adicionado (opcional, mas bom para construtores completos)
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,8 @@ import java.util.List;
     @UniqueConstraint(columnNames = "email")
 })
 @Data
-@NoArgsConstructor
+@NoArgsConstructor // Garante que um construtor sem argumentos seja gerado pelo Lombok
+@AllArgsConstructor // Opcional: gera um construtor com todos os argumentos
 public class User implements UserDetails {
 
     @Id
@@ -41,72 +43,76 @@ public class User implements UserDetails {
     private String institution;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true) 
     private Role role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountStatus status = AccountStatus.PENDENTE;
 
-    // Campo para a data de aprovação
     private LocalDateTime approvalDate;
 
     @Column(length = 500)
     private String adminComments;
 
-    // Campos para status da conta
     private boolean accountNonExpired = true;
-    private boolean accountNonLocked = true;
+    private boolean accountNonLocked = true; 
     private boolean credentialsNonExpired = true;
-    private boolean enabled = false; // Alterado para false por padrão
 
-    // Campo para rastrear data de criação
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean enabled = false; 
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // Inicializa a data de criação antes de persistir
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (this.status == AccountStatus.ATIVO && this.approvalDate == null) { // Garante approvalDate se ATIVO na criação
+            this.approvalDate = LocalDateTime.now();
+        }
     }
 
-    // Construtor usado pelo DataInitializer
-    public User(String username, String password, Role role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
-        this.createdAt = LocalDateTime.now();
-        this.enabled = true; // Usuários iniciais já vêm habilitados
-    }
-
-    // Construtor completo para RegisterController
-    public User(String nome, String username, String email, String password, String institution, Role role) {
+    // Construtor customizado (pode ser usado ou substituído pelo @AllArgsConstructor se todos os campos estiverem incluídos)
+    // Se você mantiver este, certifique-se de que ele inicialize todos os campos que @AllArgsConstructor inicializaria
+    // ou remova-o se @AllArgsConstructor for suficiente.
+    public User(String nome, String username, String email, String password, String institution, Role role, AccountStatus status, boolean enabled) {
         this.nome = nome;
         this.username = username;
         this.email = email;
-        this.password = password;
+        this.password = password; // Assume que já está encodado
         this.institution = institution;
         this.role = role;
-        this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
-        this.createdAt = LocalDateTime.now();
-        this.enabled = false; // Novos usuários começam desabilitados
+        this.status = status;
+        this.enabled = enabled;
+        // this.createdAt = LocalDateTime.now(); // @PrePersist cuidará disso
+        // if (status == AccountStatus.ATIVO) { // @PrePersist cuidará disso
+        //     this.approvalDate = LocalDateTime.now();
+        // }
+        // Inicialize outros campos como accountNonExpired, etc., se necessário aqui.
+        this.accountNonExpired = true;
+        this.accountNonLocked = true;
+        this.credentialsNonExpired = true;
     }
 
-    /**
-     * Verifica se a conta foi aprovada
-     */
-    public boolean isApproved() {
-        return this.status == AccountStatus.ATIVO;
-    }
 
+    // Métodos UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Só retorna autoridades se o status for ATIVO
-        if (status == AccountStatus.ATIVO && enabled) {
+        if (role != null && status == AccountStatus.ATIVO && enabled) {
             return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
     }
 
     @Override
@@ -116,8 +122,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // A conta está bloqueada se estiver pendente
-        return this.accountNonLocked && (this.status != AccountStatus.PENDENTE);
+        return this.accountNonLocked;
     }
 
     @Override
@@ -127,7 +132,10 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // A conta está habilitada se estiver ativa E o campo enabled for true
-        return this.enabled && (this.status == AccountStatus.ATIVO);
+        return this.status == AccountStatus.ATIVO && this.enabled;
+    }
+
+    public boolean isEnabledField() {
+        return this.enabled;
     }
 }

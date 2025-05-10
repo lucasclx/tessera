@@ -1,9 +1,10 @@
 package com.backend.tessera;
 
-import com.backend.tessera.model.AccountStatus;
-import com.backend.tessera.model.Role;
-import com.backend.tessera.model.User;
-import com.backend.tessera.repository.UserRepository;
+import com.backend.tessera.auth.entity.AccountStatus;
+import com.backend.tessera.auth.entity.Role;
+import com.backend.tessera.auth.entity.User;
+import com.backend.tessera.auth.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

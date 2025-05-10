@@ -1,35 +1,52 @@
-<!-- src/app/app.component.html -->
-<nav class="navbar">
-  <div class="navbar-container">
-    <a class="navbar-brand" routerLink="/home">Sistema Acadêmico</a>
-    
-    <!-- Menu para usuários não logados -->
-    <ul class="navbar-nav" *ngIf="!isLoggedIn">
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/auth/login" routerLinkActive="active">Login</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/auth/register" routerLinkActive="active">Registrar</a>
-      </li>
-    </ul>
-    
-    <!-- Menu para usuários logados -->
-    <ul class="navbar-nav" *ngIf="isLoggedIn">
-      <li class="nav-item">
-        <a class="nav-link" [routerLink]="getDashboardLink()" routerLinkActive="active">Dashboard</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" (click)="logout($event)">Sair</a>
-      </li>
-      <li class="nav-item user-info">
-        <span class="username">{{ username }}</span>
-        <span class="role-badge" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
-      </li>
-    </ul>
-  </div>
-</nav>
+<mat-toolbar color="primary" class="main-toolbar">
+  <a mat-button routerLink="/home" class="toolbar-brand">
+    <mat-icon>school</mat-icon>
+    <span>Sistema Acadêmico</span>
+  </a>
 
-<router-outlet></router-outlet>
+  <span class="toolbar-spacer"></span>
+
+  <ng-container *ngIf="!isLoggedIn">
+    <a mat-button routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+      <mat-icon>home</mat-icon> Home
+    </a>
+    <a mat-button routerLink="/auth/login" routerLinkActive="active-link">
+      <mat-icon>login</mat-icon> Entrar
+    </a>
+    <a mat-stroked-button routerLink="/auth/register" routerLinkActive="active-link" class="register-button">
+      <mat-icon>person_add</mat-icon> Registrar-se
+    </a>
+  </ng-container>
+
+  <ng-container *ngIf="isLoggedIn">
+    <a mat-button [routerLink]="getDashboardLink()" routerLinkActive="active-link">
+      <mat-icon>dashboard</mat-icon> Dashboard
+    </a>
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" [matTooltip]="username || 'Usuário'">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item disabled>
+        <mat-icon>person</mat-icon>
+        <span>{{ username }}</span>
+      </button>
+      <button mat-menu-item disabled>
+        <mat-icon>verified_user</mat-icon>
+        <span class="role-badge" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout($event)">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>
+  </ng-container>
+
+  <button mat-icon-button (click)="toggleTheme()" [matTooltip]="isDarkMode ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
+    <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="main-content-area">
+  <router-outlet></router-outlet>
+</div>

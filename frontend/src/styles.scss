@@ -1,385 +1,273 @@
-/* Importação de fontes */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* src/styles.scss */
 
-/* Variáveis de cores e tema */
+// 1. Importe o tema customizado do Angular Material ANTES de qualquer outra coisa.
+@import 'custom-theme';
+
+// 2. Importe as fontes (Poppins já está no seu custom-theme.scss via define-typography-config)
+// Se você importou Material Icons via CSS no custom-theme, não precisa duplicar.
+// Se preferir via index.html, remova o @import do custom-theme.scss
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp');
+
+
+// 3. Variáveis CSS Globais (podem coexistir ou ser usadas para elementos não-Material)
+// Muitas dessas cores agora virão do tema Material, mas podem ser úteis para consistência
+// em elementos customizados fora do escopo do Angular Material.
 :root {
-  --primary-color: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #60a5fa;
-  --secondary-color: #0f172a;
-  --secondary-dark: #0a101c; /* Substituição da função darken */
-  --accent-color: #f59e0b;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --info-color: #3b82f6;
+  // Cores primárias do tema Material (geralmente não precisa redefinir aqui se o tema Material está aplicado)
+  // --primary-color: mat.get-color-from-palette($sistema-primary, 500);
+  // --primary-dark: mat.get-color-from-palette($sistema-primary, 700);
+  // --primary-light: mat.get-color-from-palette($sistema-primary, 300);
+  // --accent-color: mat.get-color-from-palette($sistema-accent, 500);
+
+  --success-color: #10b981; // Pode manter para classes utilitárias
+  --warning-color: #f59e0b; // Pode manter
+  --danger-color: #ef4444;  // Pode manter
+  --info-color: #3b82f6;   // Pode manter
+
   --light-color: #f8fafc;
-  --dark-color: #0f172a;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-light: #f8fafc;
-  --border-color: #e2e8f0;
-  --background-light: #f8fafc;
-  --background-dark: #0f172a;
+  --dark-color: #0f172a; // Para elementos customizados em modo escuro, se necessário
+
+  --text-primary-light-theme: #1e293b; // Texto em tema claro
+  --text-secondary-light-theme: #64748b;
+  --text-primary-dark-theme: rgba(255, 255, 255, 0.87); // Texto em tema escuro
+  --text-secondary-dark-theme: rgba(255, 255, 255, 0.6);
+
+  --border-color-light-theme: #e2e8f0;
+  --border-color-dark-theme: rgba(255, 255, 255, 0.12);
+
+  --background-light: #f8fafc; // Fundo padrão para tema claro
+  --background-dark: #121212;  // Fundo padrão para tema escuro
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --font-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --border-radius: 0.375rem;
 
-  /* Cores com valores RGB para uso em rgba */
+  --font-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --border-radius: 0.375rem; // Ou use a variável do Material: mat.$shape-medium-component-radius
+
+  // Cores RGB para uso em rgba (se necessário fora do Material)
   --primary-color-rgb: 37, 99, 235;
   --success-color-rgb: 16, 185, 129;
   --warning-color-rgb: 245, 158, 11;
   --danger-color-rgb: 239, 68, 68;
 }
 
-/* Reset e estilos base */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+// 4. Reset e estilos base (Angular Material já aplica um reset e normalização)
+// Mantenha apenas o essencial que não é coberto pelo Material.
 html, body {
   height: 100%;
-  font-family: var(--font-primary);
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text-primary);
+  margin: 0; // Material core já faz isso
+  padding: 0; // Material core já faz isso
+  font-family: var(--font-primary); // Material typography irá sobrescrever isso na maioria dos casos
+  font-size: 16px; // Controlado pela tipografia do Material
+  line-height: 1.5; // Controlado pela tipografia do Material
+  // background-color e color serão definidos pelo tema claro/escuro
+}
+
+body {
   background-color: var(--background-light);
+  color: var(--text-primary-light-theme);
 }
 
-/* Tipografia */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
+.dark-theme-mode {
+  background-color: var(--background-dark);
+  color: var(--text-primary-dark-theme);
 }
 
-h1 {
-  font-size: 2.25rem;
-}
 
-h2 {
-  font-size: 1.875rem;
-}
-
-h3 {
-  font-size: 1.5rem;
-}
-
-p {
-  margin-bottom: 1rem;
-}
-
+// 5. Tipografia (Será majoritariamente controlada pelo Angular Material Typography)
+// Remova definições de h1-h6, p, a, se você quer que o Material controle totalmente.
+// Mantenha apenas se tiver elementos customizados que não usam classes do Material.
 a {
-  color: var(--primary-color);
+  // color: var(--primary-color); // Virá do tema Material
   text-decoration: none;
   transition: color 0.2s ease;
-  
+
   &:hover {
-    color: var(--primary-dark);
+    // color: var(--primary-dark); // Virá do tema Material
     text-decoration: underline;
   }
 }
 
-/* Botões */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.5;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius);
-  transition: all 0.2s ease-in-out;
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
-  }
-  
-  &:disabled {
-    opacity: 0.65;
-    pointer-events: none;
-  }
-  
-  &.btn-primary {
-    color: white;
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    
-    &:hover {
-      background-color: var(--primary-dark);
-      border-color: var(--primary-dark);
-    }
-  }
-  
-  &.btn-secondary {
-    color: white;
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
-    
-    &:hover {
-      background-color: var(--secondary-dark);
-      border-color: var(--secondary-dark);
-    }
-  }
-  
-  &.btn-success {
-    color: white;
-    background-color: var(--success-color);
-    border-color: var(--success-color);
-    
-    &:hover {
-      background-color: #0b906a; /* Valor mais escuro calculado */
-      border-color: #0b906a;
-    }
-  }
-  
-  &.btn-danger {
-    color: white;
-    background-color: var(--danger-color);
-    border-color: var(--danger-color);
-    
-    &:hover {
-      background-color: #dd2c2c; /* Valor mais escuro calculado */
-      border-color: #dd2c2c;
-    }
-  }
-  
-  &.btn-outline-primary {
-    color: var(--primary-color);
-    background-color: transparent;
-    border-color: var(--primary-color);
-    
-    &:hover {
-      color: white;
-      background-color: var(--primary-color);
-    }
-  }
-}
+// 6. Botões (Serão substituídos por mat-button)
+// Remova a classe .btn e suas variantes, a menos que você tenha botões customizados
+// que NÃO devem seguir o estilo Material.
+/*
+.btn { ... }
+.btn-primary { ... }
+...
+*/
 
-/* Container */
+// 7. Container (Pode manter para layout geral, ou usar Angular Flex Layout / CSS Grid)
 .container {
   width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
   margin-left: auto;
   margin-right: auto;
-  
-  @media (min-width: 640px) {
-    max-width: 640px;
+
+  @media (min-width: 600px) { // Breakpoints do Material Design
+    max-width: 90%;
   }
-  
-  @media (min-width: 768px) {
-    max-width: 768px;
+
+  @media (min-width: 960px) {
+    max-width: 80%;
   }
-  
-  @media (min-width: 1024px) {
-    max-width: 1024px;
-  }
-  
+
   @media (min-width: 1280px) {
-    max-width: 1280px;
+    max-width: 1200px; // Ou um valor fixo
   }
 }
 
-/* Cards */
-.card {
-  background-color: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  
-  .card-header {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .card-body {
-    padding: 1rem;
-  }
-  
-  .card-footer {
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
-  }
-}
+// 8. Cards (Serão substituídos por mat-card)
+// Remova a classe .card e suas sub-classes, a menos que para cards não-Material.
+/*
+.card { ... }
+.card-header { ... }
+...
+*/
 
-/* Forms */
-.form-group {
-  margin-bottom: 1rem;
-  
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-  
-  .form-control {
-    display: block;
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--text-primary);
-    background-color: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    
-    &:focus {
-      border-color: var(--primary-color);
-      outline: 0;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
-    }
-    
-    &.is-invalid {
-      border-color: var(--danger-color);
-    }
-  }
-  
-  .invalid-feedback {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: var(--danger-color);
-  }
-}
+// 9. Forms (Serão substituídos por mat-form-field, mat-input, etc.)
+// Remova .form-group, .form-control, etc.
+/*
+.form-group { ... }
+.form-control { ... }
+...
+*/
 
-/* Utilitários */
+// 10. Utilitários (Muitos podem ser úteis, mas verifique se há equivalentes no Material ou CDK)
 .text-center {
   text-align: center;
 }
+// ... mantenha os utilitários de espaçamento (mt-1, mb-1, etc.) e flex, eles ainda são úteis.
+.d-flex { display: flex; }
+.flex-column { flex-direction: column; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
 
-.text-right {
-  text-align: right;
-}
+.mt-1 { margin-top: 0.25rem !important; } // Use !important com cautela
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.mt-5 { margin-top: 3rem !important; }
 
-.d-flex {
-  display: flex;
-}
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mb-5 { margin-bottom: 3rem !important; }
 
-.flex-column {
-  flex-direction: column;
-}
+.ml-1 { margin-left: 0.25rem !important; }
+.ml-2 { margin-left: 0.5rem !important; }
+.ml-3 { margin-left: 1rem !important; }
 
-.justify-content-between {
-  justify-content: space-between;
-}
+.mr-1 { margin-right: 0.25rem !important; }
+.mr-2 { margin-right: 0.5rem !important; }
+.mr-3 { margin-right: 1rem !important; }
 
-.align-items-center {
-  align-items: center;
-}
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+.p-5 { padding: 3rem !important; }
 
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.mt-5 { margin-top: 3rem; }
 
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-5 { margin-bottom: 3rem; }
-
-.ml-1 { margin-left: 0.25rem; }
-.ml-2 { margin-left: 0.5rem; }
-.ml-3 { margin-left: 1rem; }
-
-.mr-1 { margin-right: 0.25rem; }
-.mr-2 { margin-right: 0.5rem; }
-.mr-3 { margin-right: 1rem; }
-
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.p-3 { padding: 1rem; }
-.p-4 { padding: 1.5rem; }
-.p-5 { padding: 3rem; }
-
-/* Alertas */
+// 11. Alertas (Podem ser substituídos por MatSnackBar ou manter para mensagens não-Material)
+// Se mantiver, estilize para se alinhar com o Material Design.
 .alert {
   position: relative;
-  padding: 1rem; /* Corrigido de 'a.rem' para '1rem' */
+  padding: 0.75rem 1.25rem;
   margin-bottom: 1rem;
   border: 1px solid transparent;
-  border-radius: var(--border-radius);
-  
+  border-radius: var(--border-radius); // Usar a variável de borda
+  display: flex;
+  align-items: center;
+
+  .material-icons, .material-icons-outlined { // Para usar ícones do Material dentro dos alertas customizados
+    margin-right: 0.5rem;
+    font-size: 1.5rem; // Ajustar tamanho do ícone
+  }
+
   &.alert-success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
+    color: mat.get-color-from-palette($sistema-primary, 700); // Exemplo
+    background-color: mat.get-color-from-palette($sistema-primary, 50, 0.3); // Tom claro com opacidade
+    border-color: mat.get-color-from-palette($sistema-primary, 200);
   }
-  
+
   &.alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+    color: mat.get-color-from-palette($sistema-warn, 700);
+    background-color: mat.get-color-from-palette($sistema-warn, 50, 0.3);
+    border-color: mat.get-color-from-palette($sistema-warn, 200);
   }
-  
-  &.alert-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-  }
-  
-  &.alert-info {
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-  }
+   // Adicione .alert-warning, .alert-info se necessário
 }
 
-/* Badges */
+// 12. Badges (Podem ser substituídos por matBadge ou manter para customizados)
+// Se mantiver, estilize para se alinhar com o Material Design.
 .badge {
   display: inline-block;
-  padding: 0.25em 0.6em;
+  padding: 0.35em 0.65em;
   font-size: 75%;
   font-weight: 700;
   line-height: 1;
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: var(--border-radius);
-  
+  border-radius: 10rem; // Mais arredondado como os chips/badges do Material
+
   &.badge-primary {
-    color: white;
-    background-color: var(--primary-color);
+    color: mat.get-color-from-palette($sistema-primary, default-contrast);
+    background-color: mat.get-color-from-palette($sistema-primary);
   }
-  
-  &.badge-secondary {
-    color: white;
-    background-color: var(--secondary-color);
+  // ... outras variantes de badge
+}
+
+// Estilo global para full-width nos componentes Material quando necessário
+.full-width {
+  width: 100%;
+}
+
+// Ajustes para mat-form-field
+.mat-mdc-form-field-infix {
+  min-height: 52px; // Ajuste para melhor visual com Poppins
+}
+
+// Ajustes para scrollbars para um look mais moderno (opcional)
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0,0,0,0.3);
+}
+
+// Estilos específicos para o modo escuro que não são cobertos pelo tema Material
+.dark-theme-mode {
+  ::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
   }
-  
-  &.badge-success {
-    color: white;
-    background-color: var(--success-color);
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.2);
   }
-  
-  &.badge-danger {
-    color: white;
-    background-color: var(--danger-color);
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255,255,255,0.3);
   }
-  
-  &.badge-warning {
-    color: var(--text-primary);
-    background-color: var(--warning-color);
-  }
-  
-  &.badge-info {
-    color: white;
-    background-color: var(--info-color);
+
+  a {
+    color: mat.get-color-from-palette($sistema-accent, 300); // Um accent mais claro para links no escuro
+    &:hover {
+      color: mat.get-color-from-palette($sistema-accent, 100);
+    }
   }
 }

@@ -1,4 +1,3 @@
-//Arquivo: src/main/java/com/backend/tessera/config/SecurityConfig.java
 package com.backend.tessera.config;
 
 import com.backend.tessera.security.CustomAuthenticationProvider;
@@ -15,8 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-// Removido: import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; (Já existe em PasswordEncoderConfig)
-// Removido: import org.springframework.security.crypto.password.PasswordEncoder; (Já existe em PasswordEncoderConfig)
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -33,7 +30,7 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
 
@@ -44,40 +41,38 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll() 
-                .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
-                .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
+                .requestMatchers("/api/auth/**").permitAll() // Login, Register, Check-Approval (agora parte do módulo Auth)
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // AdminController (agora parte do módulo Auth)
+                .requestMatchers("/api/dashboard/professor/**").hasRole("PROFESSOR") // DashboardController (agora parte do módulo Auth)
+                .requestMatchers("/api/dashboard/aluno/**").hasRole("ALUNO") // DashboardController (agora parte do módulo Auth)
+                .requestMatchers("/actuator/**").permitAll()
+                // Adicionar aqui as regras para os novos módulos (monografia, versao, etc.) quando os controllers forem criados
+                // Ex: .requestMatchers("/api/monografia/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // MODIFICADO: Adicionado .accessDeniedHandler()
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {
-                    // Este é para quando a autenticação é necessária mas não foi fornecida ou falhou
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    // Você pode customizar a mensagem baseada na exceção se desejar mais detalhes
-                    // authException.printStackTrace(); // Para debug
-                    if (request.getRequestURI().startsWith("/api/auth/login")) { // Específico para falha no login
+                    if (request.getRequestURI().startsWith("/api/auth/login")) {
                          response.getWriter().write("{\"message\": \"" + authException.getMessage() + "\"}");
                     } else {
                          response.getWriter().write("{\"message\": \"Autenticação necessária para acessar este recurso.\"}");
                     }
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    // Este é para quando o usuário está autenticado mas não tem permissão (role errada, etc.)
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"message\": \"Acesso Proibido: Você não tem permissão para acessar este recurso.\"}");
                 })
             );
-        
+
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
         return http.build();
     }
-    
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(customAuthenticationProvider);
@@ -91,13 +86,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200")); // Seja específico se possível
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin")); // Adicionado Origin
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

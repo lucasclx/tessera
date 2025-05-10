@@ -1,49 +1,56 @@
-<div class="login-container">
-    <h2>Login do Sistema</h2>
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-      <div class="form-field">
-        <label for="username">Usuário:</label>
-        <input 
-          type="text" 
-          id="username" 
-          formControlName="username"
-          [ngClass]="{ 'is-invalid': loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched) }">
-        <div *ngIf="loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched)" class="error-feedback">
-          <small *ngIf="loginForm.get('username')?.errors?.['required']">Usuário é obrigatório.</small>
-        </div>
-      </div>
-  
-      <div class="form-field">
-        <label for="password">Senha:</label>
-        <div class="password-input-container">
-          <input 
-            [type]="passwordVisible ? 'text' : 'password'" 
-            id="password" 
-            formControlName="password"
-            [ngClass]="{ 'is-invalid': loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched) }">
-          
-          <button 
-            type="button"
-            class="toggle-password"
-            (click)="togglePasswordVisibility()">
-            <i [class]="passwordVisible ? 'icon-eye-off' : 'icon-eye'"></i>
+<div class="auth-page-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="title-icon">lock_open</mat-icon>
+        Login do Sistema
+      </mat-card-title>
+      <mat-card-subtitle>Acesse sua conta para continuar</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuário</mat-label>
+          <input matInput formControlName="username" required autocomplete="username">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="usernameFc?.hasError('required')">
+            Usuário é obrigatório.
+          </mat-error>
+          <mat-error *ngIf="usernameFc?.hasError('minlength')">
+            Usuário deve ter pelo menos 3 caracteres.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Senha</mat-label>
+          <input matInput [type]="passwordVisible ? 'text' : 'password'" formControlName="password" required autocomplete="current-password">
+          <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" [attr.aria-label]="'Mostrar/ocultar senha'" [attr.aria-pressed]="passwordVisible">
+            <mat-icon>{{passwordVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
           </button>
+          <mat-error *ngIf="passwordFc?.hasError('required')">
+            Senha é obrigatória.
+          </mat-error>
+           <mat-error *ngIf="passwordFc?.hasError('minlength')">
+            Senha deve ter no mínimo 6 caracteres.
+          </mat-error>
+        </mat-form-field>
+
+        <div *ngIf="errorMessage" class="error-message-box alert alert-danger">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
         </div>
-        <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)" class="error-feedback">
-          <small *ngIf="loginForm.get('password')?.errors?.['required']">Senha é obrigatória.</small>
-        </div>
-      </div>
-  
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-  
-      <button type="submit" [disabled]="loginForm.invalid || loading">
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
-  
-      <div class="register-link">
-        Não tem uma conta? <a routerLink="/auth/register">Registre-se aqui</a>
-      </div>
-    </form>
-  </div>
+
+        <button mat-raised-button color="primary" type="submit" class="full-width login-button" [disabled]="loginForm.invalid || loading">
+          <mat-icon *ngIf="!loading">login</mat-icon>
+          <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="24" class="button-spinner"></mat-progress-spinner>
+          {{ loading ? 'Entrando...' : 'Entrar' }}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions class="login-actions">
+      <a routerLink="/auth/register" mat-button color="accent">Não tem uma conta? Registre-se aqui</a>
+      </mat-card-actions>
+  </mat-card>
+</div>

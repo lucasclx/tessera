@@ -1,6 +1,6 @@
 package com.backend.tessera.security;
 
-import com.backend.tessera.service.UserDetailsServiceImpl;
+import com.backend.tessera.auth.service.UserDetailsServiceImpl; // Atualizado
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private UserDetailsServiceImpl userDetailsService; // Vem de auth.service
 
     @Override
     protected void doFilterInternal(
@@ -35,17 +35,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authorizationHeader = request.getHeader("Authorization");
         final String requestURI = request.getRequestURI();
-        
-        System.out.println("Request URI: " + requestURI);
-        System.out.println("Auth Header: " + (authorizationHeader != null ? 
-                authorizationHeader.substring(0, Math.min(20, authorizationHeader.length())) + "..." : "null"));
 
-        // Ignorar certas URLs (como login, registro e verificação de aprovação)
-        if (requestURI.contains("/api/auth/") || requestURI.contains("/actuator/")) {
-            System.out.println("Pulando autenticação para endpoint público: " + requestURI);
+        // System.out.println("Request URI: " + requestURI);
+        // System.out.println("Auth Header: " + (authorizationHeader != null ?
+        //         authorizationHeader.substring(0, Math.min(20, authorizationHeader.length())) + "..." : "null"));
+
+        // Endpoints que não exigem JWT para acesso inicial. A segurança deles é definida no SecurityConfig.
+        if (requestURI.startsWith("/api/auth/") || // Login, Register, Check-Approval
+            requestURI.startsWith("/actuator/")) {
+            // System.out.println("Pulando filtro JWT para endpoint público: " + requestURI);
             filterChain.doFilter(request, response);
             return;
         }
+        // Os demais endpoints, incluindo /api/admin/** e /api/dashboard/**, passarão pela validação do token.
 
         String username = null;
         String jwt = null;
@@ -54,52 +56,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                System.out.println("Usuário extraído do token: " + username);
+                // System.out.println("Usuário extraído do token: " + username);
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token expirado");
-                logger.warn("JWT Token expirado");
-                // Não lancar exceção, deixar a autenticação ser rejeitada normalmente
-                filterChain.doFilter(request, response);
+                System.out.println("JWT Token expirado para " + e.getClaims().getSubject());
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // response.setContentType("application/json");
+                // response.getWriter().write("{\"message\": \"Token expirado.\"}");
+                filterChain.doFilter(request, response); // Deixa o SecurityConfig lidar com a resposta de não autorizado
                 return;
             } catch (Exception e) {
                 System.out.println("Erro ao processar JWT Token: " + e.getMessage());
-                e.printStackTrace();
-                logger.error("Erro ao processar JWT Token: ", e);
-                // Não lancar exceção, deixar a autenticação ser rejeitada normalmente
-                filterChain.doFilter(request, response);
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // response.setContentType("application/json");
+                // response.getWriter().write("{\"message\": \"Token inválido.\"}");
+                filterChain.doFilter(request, response); // Deixa o SecurityConfig lidar
                 return;
             }
         } else {
-            System.out.println("Cabeçalho Authorization não encontrado ou sem prefixo Bearer");
+             //System.out.println("Cabeçalho Authorization não encontrado ou sem prefixo Bearer para: " + requestURI);
+             // Para endpoints que não são /api/auth/** ou /actuator/**, isso resultará em falha de autenticação
+             // que será tratada pelo authenticationEntryPoint no SecurityConfig
             filterChain.doFilter(request, response);
             return;
         }
 
+
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                System.out.println("Detalhes do usuário carregados: " + userDetails.getUsername());
-                System.out.println("Autoridades: " + userDetails.getAuthorities());
-                
+                // System.out.println("Detalhes do usuário carregados para validação JWT: " + userDetails.getUsername());
+                // System.out.println("Autoridades para validação JWT: " + userDetails.getAuthorities());
+
                 boolean isValid = jwtUtil.validateToken(jwt, userDetails);
-                System.out.println("Token válido? " + isValid);
-                
+                // System.out.println("Token válido para " + username + "? " + isValid);
+
                 if (isValid) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println("Autenticação definida com sucesso no SecurityContextHolder");
+                    // System.out.println("Autenticação JWT definida com sucesso no SecurityContextHolder para: " + username);
                 } else {
-                    System.out.println("Token inválido, autenticação não realizada");
+                    System.out.println("Token JWT inválido, autenticação não realizada para: " + username);
+                    // SecurityContextHolder.clearContext(); // Garante que não haja contexto de segurança antigo
                 }
             } catch (Exception e) {
-                System.out.println("Erro durante autenticação: " + e.getMessage());
-                e.printStackTrace();
-                // Não interromper o filtro em caso de erro, permitir que a cadeia de filtros continue
+                System.out.println("Erro durante a validação do token ou carregamento do UserDetails: " + e.getMessage());
+                // SecurityContextHolder.clearContext();
             }
+        } else if (username == null) {
+            System.out.println("Username não extraído do token, ou token não fornecido onde esperado.");
         }
-        
+
+
         filterChain.doFilter(request, response);
     }
 }

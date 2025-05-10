@@ -1,26 +1,60 @@
-<div class="home-container">
-  <header>
+<div class="home-container" fxLayout="column" fxLayoutAlign="center center">
+  <header class="home-header">
     <h1>Bem-vindo(a) ao Sistema Acadêmico</h1>
-    <p>Sua plataforma para gerenciar atividades acadêmicas.</p>
+    <p class="mat-h4">Sua plataforma para gerenciar atividades acadêmicas de forma moderna e eficiente.</p>
   </header>
 
-  <section class="features">
-    <div class="feature-card">
-      <h3>Para Alunos</h3>
-      <p>Acesse suas notas, materiais de aula e muito mais.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Para Professores</h3>
-      <p>Gerencie suas turmas, lance notas e interaja com seus alunos.</p>
-    </div>
+  <section class="features-section" fxLayout="row wrap" fxLayoutAlign="center" fxLayoutGap="24px grid">
+    <mat-card class="feature-card" appearance="outlined">
+      <mat-card-header>
+        <mat-icon mat-card-avatar svgIcon="student" class="feature-icon"></mat-icon> <mat-card-title>Para Alunos</mat-card-title>
+        <mat-card-subtitle>Seu Ambiente de Aprendizagem</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Acesse suas notas, materiais de aula, calendário acadêmico e interaja com seus professores e colegas.</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-stroked-button color="primary" routerLink="/auth/login">Acessar como Aluno</a>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="feature-card" appearance="outlined">
+      <mat-card-header>
+        <mat-icon mat-card-avatar svgIcon="teacher" class="feature-icon"></mat-icon> <mat-card-title>Para Professores</mat-card-title>
+        <mat-card-subtitle>Ferramentas para o Ensino</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Gerencie suas turmas, lance notas, disponibilize materiais e acompanhe o progresso dos seus alunos.</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-stroked-button color="primary" routerLink="/auth/login">Acessar como Professor</a>
+      </mat-card-actions>
+    </mat-card>
+
+     <mat-card class="feature-card" appearance="outlined" *ngIf="false"> <mat-card-header>
+        <mat-icon mat-card-avatar svgIcon="admin_panel" class="feature-icon"></mat-icon>
+        <mat-card-title>Para Administradores</mat-card-title>
+        <mat-card-subtitle>Gestão Completa do Sistema</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Administre usuários, cursos, permissões e configurações gerais da plataforma acadêmica.</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-stroked-button color="primary" routerLink="/auth/login">Acessar como Admin</a>
+      </mat-card-actions>
+    </mat-card>
   </section>
 
-  <section class="actions">
-    <a routerLink="/auth/login" class="btn btn-primary">Entrar</a>
-    <a routerLink="/auth/register" class="btn btn-secondary">Registrar-se</a>
+  <section class="actions-section" fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="16px">
+    <a mat-raised-button color="primary" routerLink="/auth/login" class="home-main-action">
+      <mat-icon>login</mat-icon> Entrar no Sistema
+    </a>
+    <a mat-stroked-button color="accent" routerLink="/auth/register" class="home-main-action">
+      <mat-icon>person_add</mat-icon> Não tem uma conta? Registre-se
+    </a>
   </section>
 
-  <footer>
-    <p>&copy; 2025 Sistema Acadêmico. Todos os direitos reservados.</p>
-  </footer>
+  <footer class="home-footer">
+    <p>&copy; {{ currentYear }} Sistema Acadêmico. Todos os direitos reservados.</p>
+    </footer>
 </div>

@@ -1,4 +1,4 @@
-package com.backend.tessera.controller;
+package com.backend.tessera.auth.controller; // Pacote atualizado
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,7 @@ public class DashboardControllerTests {
     @Test
     @WithMockUser(username = "adminTest", roles = {"ADMIN"})
     void testGetProfessorData_AsAdmin_Forbidden() throws Exception {
-        // Admin não tem acesso direto ao dashboard de professor, a menos que também tenha o perfil PROFESSOR
-        // Se a regra é estritamente ROLE_PROFESSOR, então será Forbidden.
+        // Admin não tem acesso direto ao dashboard de professor, a menos que explicitamente permitido ou tenha a role PROFESSOR
         mockMvc.perform(get("/api/dashboard/professor/data"))
                 .andExpect(status().isForbidden());
     }
@@ -51,7 +50,7 @@ public class DashboardControllerTests {
         mockMvc.perform(get("/api/dashboard/professor/data"))
                 .andExpect(status().isForbidden());
     }
-    
+
     @Test
     @WithMockUser(username = "professorTest", roles = {"PROFESSOR"})
     void testGetAlunoData_AsProfessor_Forbidden() throws Exception {
@@ -62,12 +61,12 @@ public class DashboardControllerTests {
     @Test
     void testGetProfessorData_Unauthenticated() throws Exception {
         mockMvc.perform(get("/api/dashboard/professor/data"))
-                .andExpect(status().isUnauthorized()); // Ou forbidden, dependendo da config de entry point
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testGetAlunoData_Unauthenticated() throws Exception {
         mockMvc.perform(get("/api/dashboard/aluno/data"))
-                 .andExpect(status().isUnauthorized()); // Ou forbidden
+                 .andExpect(status().isUnauthorized());
     }
 }

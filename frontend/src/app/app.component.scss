@@ -1,133 +1,87 @@
 /* src/app/app.component.scss */
-.navbar {
-    background-color: #343a40;
-    padding: 1rem 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  
-    .navbar-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-  
-    .navbar-brand {
-      color: #ffffff;
-      font-size: 1.5rem;
-      text-decoration: none;
-      font-weight: bold;
-      transition: color 0.2s ease;
-      
-      &:hover {
-        color: #007bff;
-      }
-    }
-  
-    .navbar-nav {
-      list-style: none;
-      padding-left: 0;
-      margin-bottom: 0;
-      display: flex;
-      align-items: center;
-  
-      .nav-item {
-        margin-left: 1.5rem;
-        
-        &:first-child {
-          margin-left: 0;
-        }
-      }
-  
-      .nav-link {
-        color: #ced4da;
-        text-decoration: none;
-        font-size: 1rem;
-        padding: 0.5rem 0;
-        transition: color 0.2s ease;
-  
-        &:hover {
-          color: #ffffff;
-        }
-  
-        &.active {
-          color: #ffffff;
-          font-weight: 500;
-          border-bottom: 2px solid #007bff;
-        }
-      }
-      
-      .user-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-left: 2rem;
-        
-        .username {
-          color: #ffffff;
-          font-weight: 500;
-          font-size: 0.9rem;
-        }
-        
-        .role-badge {
-          font-size: 0.7rem;
-          padding: 2px 6px;
-          border-radius: 10px;
-          margin-top: 3px;
-          
-          &.admin {
-            background-color: #9c27b0;
-            color: white;
-          }
-          
-          &.professor {
-            background-color: #1976d2;
-            color: white;
-          }
-          
-          &.aluno {
-            background-color: #4caf50;
-            color: white;
-          }
-        }
-      }
+@use '@angular/material' as mat;
+
+.main-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000; // Para ficar acima de outros conteúdos
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); // Sombra sutil
+
+  .toolbar-brand {
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+
+    .mat-icon {
+      margin-right: 8px;
     }
   }
-  
-  @media (max-width: 768px) {
-    .navbar {
-      padding: 0.8rem 1rem;
-      
-      .navbar-container {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      .navbar-brand {
-        margin-bottom: 0.5rem;
-      }
-      
-      .navbar-nav {
-        width: 100%;
-        flex-wrap: wrap;
-        
-        .nav-item {
-          margin-left: 0;
-          margin-right: 1rem;
-          margin-top: 0.5rem;
-        }
-        
-        .user-info {
-          margin-left: 0;
-          margin-top: 0.8rem;
-          flex-direction: row;
-          width: 100%;
-          justify-content: space-between;
-          
-          .role-badge {
-            margin-top: 0;
-          }
-        }
-      }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  a.mat-mdc-button, button.mat-mdc-button { // MDC-based components
+    text-transform: none; // Para não deixar os botões em maiúsculas por padrão
+    font-weight: 500;
+    margin-left: 8px;
+
+    .mat-icon {
+      margin-right: 4px;
+      vertical-align: middle;
     }
   }
+
+  .register-button { // Para o botão de registrar-se se quiser um destaque diferente
+    // Exemplo: cor de destaque (accent)
+    // Para usar a cor de acento do tema Material:
+    // color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, accent));
+    // border-color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, accent));
+  }
+
+  .active-link {
+    // O Angular Material pode não adicionar uma classe 'active' diretamente nos botões de toolbar.
+    // routerLinkActive pode precisar de um elemento wrapper ou estilo customizado.
+    // Uma abordagem é usar um sublinhado ou cor de fundo sutil.
+    // Exemplo com cor de fundo ao invés de borda:
+    // background-color: rgba(255,255,255,0.1); // Se a toolbar for escura
+    // Para toolbar primária, pode ser uma variação da cor primária
+    // background-color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, primary), 700); // Mais escuro
+    // Ou usar um indicador visual como:
+    border-bottom: 3px solid mat.get-color-from-palette(mat.get-theme-color($sistema-light-theme, accent));
+    // Ajuste para o tema escuro se necessário
+    .dark-theme-mode & {
+       border-bottom: 3px solid mat.get-color-from-palette(mat.get-theme-color($sistema-dark-theme, accent));
+    }
+  }
+
+  .role-badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    color: white; // Cor do texto do badge
+
+    &.badge-admin {
+      background-color: mat.get-color-from-palette(mat.$purple-palette, 500);
+    }
+    &.badge-professor {
+      background-color: mat.get-color-from-palette(mat.$blue-palette, 500);
+    }
+    &.badge-aluno {
+      background-color: mat.get-color-from-palette(mat.$green-palette, 500);
+    }
+  }
+}
+
+.main-content-area {
+  padding: 16px; // Adiciona um padding geral ao redor do router-outlet
+}
+
+// Estilos para o menu do usuário
+.mat-mdc-menu-item .mat-icon { // MDC-based components
+  vertical-align: middle;
+  margin-right: 8px;
+}

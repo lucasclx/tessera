@@ -1,6 +1,6 @@
-// Arquivo: src/main/java/com/backend/tessera/security/JwtUtil.java
 package com.backend.tessera.security;
 
+import com.backend.tessera.auth.entity.User; // Atualizado se necessário, mas UserDetails é a interface
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -31,7 +31,6 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        // Esta chave é específica para algoritmos HMAC-SHA (HS256, HS384, HS512)
         this.key = Keys.hmacShaKeyFor(secretString.getBytes());
     }
 
@@ -50,7 +49,6 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         try {
-            // Correção: modificando para trabalhar com SecretKey em vez de Key
             return Jwts.parser()
                     .verifyWith(key)
                     .build()
@@ -69,25 +67,25 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        // As roles já vêm com o prefixo ROLE_ da implementação de UserDetails em User.java
         String roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         claims.put("roles", roles);
-        
+
         System.out.println("Gerando token para usuário: " + userDetails.getUsername());
-        System.out.println("Roles: " + roles);
-        
+        System.out.println("Roles no token: " + roles);
+
         return createToken(claims, userDetails.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-        
+
         System.out.println("Token válido de " + now + " até " + expiryDate);
-        
+
         try {
-            // Atualizado para a sintaxe do JJWT 0.12.x
             return Jwts.builder()
                     .claims(claims)
                     .subject(subject)
