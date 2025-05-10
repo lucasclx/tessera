@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AlunoDashboardComponent } from './aluno-dashboard/aluno-dashboard.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
-import { RoleGuard } from '../core/role.guard';
+import { RoleGuard } from '../core/guards/role.guard';
 
 const routes: Routes = [
   {

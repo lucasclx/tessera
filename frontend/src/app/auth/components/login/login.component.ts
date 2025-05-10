@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService, ApprovalStatus } from '../../core/auth.service'; // Mantido
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material.module'; // Adicionado
-import { NavigationService } from '../../core/navigation.service'; // Importar para navegação pós-login
+import { NavigationService } from '../../core/services/navigation.service'; // Importar para navegação pós-login
 
 @Component({
   selector: 'app-login',

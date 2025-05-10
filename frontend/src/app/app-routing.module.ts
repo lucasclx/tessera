@@ -5,8 +5,8 @@ import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { HomeComponent } from '../home/home.component';
-import { AuthGuard } from './core/auth.guard';
-import { RoleGuard } from './core/role.guard';
+import { AuthGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },

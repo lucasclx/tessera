@@ -1,35 +1,23 @@
 // src/app/app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // Importado
 
 import { AppRoutingModule } from './app-routing.module';
-import { JwtInterceptor } from './core/jwt.interceptor';
-import { AuthModule } from './auth/auth.module';
 import { AppComponent } from './app.component';
-import { MaterialModule } from './material.module'; // Importado
-import { HomeComponent } from '../home/home.component'; // Importar HomeComponent se for standalone e usado aqui
-// Se HomeComponent não for standalone, ele deve ser declarado em um módulo e importado aqui
+import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
-    // AppComponent é standalone, então não é declarado aqui.
-    // Se HomeComponent não for standalone, declare-o no seu módulo respectivo.
+    AppComponent,
+    // Outros componentes que ainda não foram migrados
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule, // Adicionado
-    AppRoutingModule,
-    HttpClientModule,
-    MaterialModule, // Adicionado
-    AuthModule, // AuthModule já importa ReactiveFormsModule
-    AppComponent, // Importado como standalone
-    HomeComponent // Importar HomeComponent se for standalone e usado no app.module ou app-routing
+    CoreModule, // Importante: Core deve ser importado antes dos outros módulos
+    SharedModule,
+    AppRoutingModule // Importante: AppRoutingModule deve ser o último
   ],
-  providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
-  ],
-  bootstrap: [AppComponent] // AppComponent é o componente raiz
+  bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,34 +1,16 @@
+// src/app/auth/auth-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthComponent } from './auth.component';
-import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component'; 
-import { PendingApprovalComponent } from './pending-approval/pending-approval.component';
+
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
+import { PendingApprovalComponent } from './components/pending-approval/pending-approval.component';
 
 const routes: Routes = [
-  {
-    path: '', // O prefixo 'auth' já foi definido no AppRoutingModule
-    component: AuthComponent, // AuthComponent contém o <router-outlet> para as rotas abaixo
-    children: [
-      {
-        path: 'login', // Rota para /auth/login
-        component: LoginComponent
-      },
-      {
-        path: 'register', // Rota para /auth/register
-        component: RegisterComponent
-      },
-      {
-        path: 'pending-approval', // Rota para /auth/pending-approval
-        component: PendingApprovalComponent
-      },
-      {
-        path: '', // Rota padrão dentro do módulo 'auth'
-        redirectTo: 'login', // Redireciona 'auth/' para 'auth/login'
-        pathMatch: 'full'
-      }
-    ]
-  }
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'pending-approval', component: PendingApprovalComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
 
 @NgModule({

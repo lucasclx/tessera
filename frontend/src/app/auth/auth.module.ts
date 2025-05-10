@@ -1,26 +1,33 @@
 // src/app/auth/auth.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms'; // Já estava aqui
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { AuthRoutingModule } from './auth-routing.module';
-import { AuthComponent } from './auth.component';
-// Componentes Standalone são importados individualmente onde são usados ou no routing module
-// LoginComponent, RegisterComponent, PendingApprovalComponent são standalone.
-import { MaterialModule } from '../material.module'; // Importar MaterialModule
+import { SharedModule } from '../shared/shared.module';
+
+// Importar componentes
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
+import { PendingApprovalComponent } from './components/pending-approval/pending-approval.component';
+
+// Importar serviços
+import { AuthService } from './services/auth.service';
 
 @NgModule({
   declarations: [
-    AuthComponent // AuthComponent é o wrapper, não é standalone
+    LoginComponent,
+    RegisterComponent,
+    PendingApprovalComponent
   ],
   imports: [
     CommonModule,
-    AuthRoutingModule,
-    ReactiveFormsModule, // Essencial para os formulários
-    MaterialModule, // Adicionar para disponibilizar componentes Material para AuthComponent (se ele usar diretamente)
-    // LoginComponent, RegisterComponent, PendingApprovalComponent são standalone,
-    // então não precisam ser importados aqui se já estiverem nos 'imports' dos componentes que os utilizam
-    // ou se forem carregados via rotas. Seus próprios arquivos .ts os importarão.
+    ReactiveFormsModule,
+    SharedModule,
+    AuthRoutingModule
+  ],
+  providers: [
+    AuthService
   ]
 })
 export class AuthModule { }
