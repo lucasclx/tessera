@@ -1,155 +1,209 @@
+<!-- src/home/home.component.html -->
 <div class="home-container">
-  <div class="hero-section">
+  <!-- Hero Section -->
+  <section class="hero-section">
     <div class="hero-content">
-      <h1 class="main-title">Sistema Acadêmico</h1>
-      <p class="main-subtitle">Sua plataforma completa para gerenciar atividades acadêmicas de forma moderna e eficiente.</p>
+      <h1 class="hero-title">Tessera Acadêmica</h1>
+      <p class="hero-subtitle">Plataforma colaborativa para elaboração e gerenciamento de trabalhos acadêmicos</p>
       <div class="hero-actions">
-        <a mat-raised-button color="primary" routerLink="/auth/login" class="main-action-button">
-          <mat-icon>login</mat-icon> Entrar no Sistema
+        <a mat-raised-button color="primary" routerLink="/auth/login" class="cta-button">
+          <mat-icon>login</mat-icon> Acessar Plataforma
         </a>
-        <a mat-stroked-button routerLink="/auth/register" class="secondary-action-button">
-          <mat-icon>person_add</mat-icon> Cadastrar-se
+        <a mat-stroked-button routerLink="/auth/register" class="secondary-button">
+          <mat-icon>person_add</mat-icon> Criar Conta
         </a>
       </div>
     </div>
-  </div>
+    <div class="hero-pattern"></div>
+  </section>
 
-  <div class="features-section">
-    <div class="section-title">
-      <h2>Acesse nossa plataforma</h2>
-      <p>Escolha seu perfil para acessar o sistema</p>
-    </div>
-
-    <div class="features-grid">
-      <mat-card class="feature-card">
-        <mat-card-header>
-          <div mat-card-avatar class="feature-icon student-icon">
-            <mat-icon>school</mat-icon>
-          </div>
-          <mat-card-title>Para Alunos</mat-card-title>
-          <mat-card-subtitle>Ambiente de Aprendizagem</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <p>Acesse suas notas, materiais de aula, calendário acadêmico e interaja com seus professores e colegas de forma simples e integrada.</p>
-          <ul class="feature-list">
-            <li><mat-icon>check_circle</mat-icon> Acesso a materiais de aula</li>
-            <li><mat-icon>check_circle</mat-icon> Visualização de notas e frequência</li>
-            <li><mat-icon>check_circle</mat-icon> Calendário acadêmico integrado</li>
-            <li><mat-icon>check_circle</mat-icon> Comunicação com professores</li>
-          </ul>
-        </mat-card-content>
-        <mat-card-actions>
-          <a mat-flat-button color="primary" routerLink="/auth/login" class="full-width-action">
-            Acessar como Aluno
-          </a>
-        </mat-card-actions>
-      </mat-card>
-
-      <mat-card class="feature-card">
-        <mat-card-header>
-          <div mat-card-avatar class="feature-icon teacher-icon">
-            <mat-icon>person</mat-icon>
-          </div>
-          <mat-card-title>Para Professores</mat-card-title>
-          <mat-card-subtitle>Ferramentas para o Ensino</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <p>Gerencie suas turmas, lance notas, disponibilize materiais e acompanhe o progresso dos seus alunos com ferramentas integradas e eficientes.</p>
-          <ul class="feature-list">
-            <li><mat-icon>check_circle</mat-icon> Gerenciamento de turmas</li>
-            <li><mat-icon>check_circle</mat-icon> Lançamento de notas e faltas</li>
-            <li><mat-icon>check_circle</mat-icon> Disponibilização de materiais</li>
-            <li><mat-icon>check_circle</mat-icon> Acompanhamento de alunos</li>
-          </ul>
-        </mat-card-content>
-        <mat-card-actions>
-          <a mat-flat-button color="primary" routerLink="/auth/login" class="full-width-action">
-            Acessar como Professor
-          </a>
-        </mat-card-actions>
-      </mat-card>
-
-      <mat-card class="feature-card">
-        <mat-card-header>
-          <div mat-card-avatar class="feature-icon admin-icon">
-            <mat-icon>admin_panel_settings</mat-icon>
-          </div>
-          <mat-card-title>Para Administradores</mat-card-title>
-          <mat-card-subtitle>Gestão Completa do Sistema</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <p>Administre usuários, cursos, permissões e configurações gerais da plataforma acadêmica com ferramentas avançadas de gestão.</p>
-          <ul class="feature-list">
-            <li><mat-icon>check_circle</mat-icon> Gestão de usuários e perfis</li>
-            <li><mat-icon>check_circle</mat-icon> Controle de acesso e permissões</li>
-            <li><mat-icon>check_circle</mat-icon> Configurações do sistema</li>
-            <li><mat-icon>check_circle</mat-icon> Relatórios gerenciais</li>
-          </ul>
-        </mat-card-content>
-        <mat-card-actions>
-          <a mat-flat-button color="primary" routerLink="/auth/login" class="full-width-action">
-            Acessar como Administrador
-          </a>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-  </div>
-
-  <div class="info-section">
-    <div class="section-title">
-      <h2>Sobre o Sistema Acadêmico</h2>
-      <p>Uma plataforma completa para instituições de ensino</p>
-    </div>
-
-    <div class="info-content">
-      <div class="info-text">
-        <h3>Plataforma Integrada</h3>
-        <p>
-          O Sistema Acadêmico é uma solução completa para gerenciamento de atividades acadêmicas, 
-          projetada para atender às necessidades de alunos, professores e administradores.
-        </p>
-        <p>
-          Nossa plataforma oferece uma experiência intuitiva e eficiente, com ferramentas que 
-          facilitam o dia a dia acadêmico, promovendo melhor comunicação e organização.
-        </p>
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Acesse Nossa Plataforma</h2>
+        <p>Selecione seu perfil para começar</p>
       </div>
-      <div class="info-stats">
-        <div class="stat-item">
-          <span class="stat-value">100%</span>
-          <span class="stat-label">Integrado</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">24/7</span>
-          <span class="stat-label">Disponível</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">Seguro</span>
-          <span class="stat-label">Proteção de Dados</span>
-        </div>
+
+      <div class="features-grid">
+        <mat-card class="feature-card">
+          <mat-card-header>
+            <div mat-card-avatar class="feature-icon student-icon">
+              <mat-icon>school</mat-icon>
+            </div>
+            <mat-card-title>Para Alunos</mat-card-title>
+            <mat-card-subtitle>Ferramentas para Pesquisa e Escrita</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Gerencie suas monografias, receba orientações dos professores e acompanhe seu progresso acadêmico de forma integrada.</p>
+            <ul class="feature-list">
+              <li><mat-icon>check_circle</mat-icon> Editor colaborativo avançado</li>
+              <li><mat-icon>check_circle</mat-icon> Controle de versões integrado</li>
+              <li><mat-icon>check_circle</mat-icon> Comentários e feedback em tempo real</li>
+              <li><mat-icon>check_circle</mat-icon> Exportação em diversos formatos</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <a mat-flat-button color="primary" routerLink="/auth/login" class="card-action-button">
+              <span>Acessar como Aluno</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </a>
+          </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="feature-card">
+          <mat-card-header>
+            <div mat-card-avatar class="feature-icon professor-icon">
+              <mat-icon>assignment_ind</mat-icon>
+            </div>
+            <mat-card-title>Para Professores</mat-card-title>
+            <mat-card-subtitle>Ferramentas para Orientação</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Acompanhe seus orientandos, revise trabalhos acadêmicos e forneça feedback construtivo com ferramentas intuitivas.</p>
+            <ul class="feature-list">
+              <li><mat-icon>check_circle</mat-icon> Painel de orientações centralizado</li>
+              <li><mat-icon>check_circle</mat-icon> Revisão e comentários contextuais</li>
+              <li><mat-icon>check_circle</mat-icon> Aprovação de versões e marcos</li>
+              <li><mat-icon>check_circle</mat-icon> Acompanhamento de progresso</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <a mat-flat-button color="primary" routerLink="/auth/login" class="card-action-button">
+              <span>Acessar como Professor</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </a>
+          </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="feature-card">
+          <mat-card-header>
+            <div mat-card-avatar class="feature-icon admin-icon">
+              <mat-icon>admin_panel_settings</mat-icon>
+            </div>
+            <mat-card-title>Para Administradores</mat-card-title>
+            <mat-card-subtitle>Gestão da Plataforma</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Gerencie usuários, aprove novas contas e tenha controle total sobre as configurações e recursos da plataforma.</p>
+            <ul class="feature-list">
+              <li><mat-icon>check_circle</mat-icon> Aprovação de novos usuários</li>
+              <li><mat-icon>check_circle</mat-icon> Gerenciamento de perfis e permissões</li>
+              <li><mat-icon>check_circle</mat-icon> Monitoramento de atividades</li>
+              <li><mat-icon>check_circle</mat-icon> Configurações do sistema</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <a mat-flat-button color="primary" routerLink="/auth/login" class="card-action-button">
+              <span>Acessar como Administrador</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </a>
+          </mat-card-actions>
+        </mat-card>
       </div>
     </div>
-  </div>
+  </section>
 
-  <footer class="home-footer">
-    <div class="footer-content">
-      <div class="footer-logo">
-        <h3>Sistema Acadêmico</h3>
-        <p>© {{currentYear}} Sistema Acadêmico. Todos os direitos reservados.</p>
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Potencialize seu Trabalho Acadêmico</h2>
+        <p>Uma plataforma completa para todas as etapas do seu projeto</p>
       </div>
-      <div class="footer-links">
-        <div class="link-group">
-          <h4>Acesso Rápido</h4>
-          <ul>
-            <li><a routerLink="/auth/login">Entrar</a></li>
-            <li><a routerLink="/auth/register">Registrar-se</a></li>
-          </ul>
+
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <mat-icon>rate_review</mat-icon>
+          </div>
+          <h3>Edição Colaborativa</h3>
+          <p>Trabalhe em conjunto com orientadores e colegas em tempo real, com controle de versões e histórico completo.</p>
         </div>
-        <div class="link-group">
-          <h4>Suporte</h4>
-          <ul>
-            <li><a href="#">Contato</a></li>
-            <li><a href="#">FAQ</a></li>
-          </ul>
+
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <mat-icon>comment</mat-icon>
+          </div>
+          <h3>Sistema de Comentários</h3>
+          <p>Receba feedback contextualizado diretamente no documento, com notificações e acompanhamento.</p>
+        </div>
+
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <mat-icon>assignment_turned_in</mat-icon>
+          </div>
+          <h3>Workflow Estruturado</h3>
+          <p>Siga um processo claro com etapas definidas, prazos e marcos a serem alcançados.</p>
+        </div>
+
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <mat-icon>description</mat-icon>
+          </div>
+          <h3>Exportação Profissional</h3>
+          <p>Gere documentos finais em PDF, DOCX ou LaTeX com formatação acadêmica adequada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section">
+    <div class="container">
+      <div class="about-content">
+        <div class="about-text">
+          <h2>Sobre a Tessera Acadêmica</h2>
+          <p>A Tessera Acadêmica é uma plataforma colaborativa especializada no processo de elaboração, revisão e acompanhamento de trabalhos acadêmicos, especialmente monografias, dissertações e teses.</p>
+          <p>Desenvolvida com foco na experiência do usuário e nas necessidades específicas do ambiente acadêmico, nossa plataforma integra ferramentas modernas de colaboração com processos estruturados de orientação.</p>
+          <p>A palavra "Tessera" remete às peças que se encaixam perfeitamente, simbolizando a integração harmoniosa entre alunos, professores e administradores em um ambiente colaborativo e produtivo.</p>
+        </div>
+        <div class="about-stats">
+          <div class="stat-item">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Seguro</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">Colaborativo</div>
+            <div class="stat-label">Em tempo real</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">Estruturado</div>
+            <div class="stat-label">Workflow acadêmico</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <div class="logo">
+            <div class="logo-icon">T</div>
+            <div class="logo-text">Tessera Acadêmica</div>
+          </div>
+          <p>© {{currentYear}} Tessera Acadêmica. Todos os direitos reservados.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-group">
+            <h4>Acesso Rápido</h4>
+            <ul>
+              <li><a routerLink="/auth/login">Entrar</a></li>
+              <li><a routerLink="/auth/register">Registrar-se</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h4>Recursos</h4>
+            <ul>
+              <li><a href="#">Suporte</a></li>
+              <li><a href="#">Documentação</a></li>
+              <li><a href="#">Termos de Uso</a></li>
+              <li><a href="#">Política de Privacidade</a></li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

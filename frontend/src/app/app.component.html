@@ -1,46 +1,68 @@
 <mat-toolbar color="primary" class="main-toolbar">
-  <a mat-button routerLink="/home" class="toolbar-brand">
-    <mat-icon>school</mat-icon>
-    <span>Sistema Acadêmico</span>
-  </a>
+  <div class="toolbar-container">
+    <div class="toolbar-brand">
+      <a mat-button routerLink="/home" class="brand-link">
+        <div class="logo-icon">T</div>
+        <span class="brand-text">Tessera Acadêmica</span>
+      </a>
+    </div>
 
-  <span class="toolbar-spacer"></span>
+    <span class="toolbar-spacer"></span>
 
-  <ng-container *ngIf="!isLoggedIn">
-    <a mat-button routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
-      <mat-icon>home</mat-icon> Home
-    </a>
-    <a mat-button routerLink="/auth/login" routerLinkActive="active-link">
-      <mat-icon>login</mat-icon> Entrar
-    </a>
-    <a mat-stroked-button routerLink="/auth/register" routerLinkActive="active-link" class="register-button">
-      <mat-icon>person_add</mat-icon> Registrar-se
-    </a>
-  </ng-container>
+    <div class="toolbar-nav">
+      <ng-container *ngIf="!isLoggedIn">
+        <a mat-button routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <mat-icon>home</mat-icon> Início
+        </a>
+        <a mat-button routerLink="/auth/login" routerLinkActive="active-link">
+          <mat-icon>login</mat-icon> Entrar
+        </a>
+        <a mat-stroked-button routerLink="/auth/register" routerLinkActive="active-link" class="register-button">
+          <mat-icon>person_add</mat-icon> Criar Conta
+        </a>
+      </ng-container>
 
-  <ng-container *ngIf="isLoggedIn">
-    <a mat-button [routerLink]="getDashboardLink()" routerLinkActive="active-link">
-      <mat-icon>dashboard</mat-icon> Dashboard
-    </a>
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" [matTooltip]="username || 'Usuário'">
-      <mat-icon>account_circle</mat-icon>
-    </button>
-    <mat-menu #userMenu="matMenu">
-      <button mat-menu-item disabled>
-        <mat-icon>person</mat-icon>
-        <span>{{ username }}</span>
-      </button>
-      <button mat-menu-item disabled>
-        <mat-icon>verified_user</mat-icon>
-        <span class="role-badge" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
-      </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="logout($event)">
-        <mat-icon>logout</mat-icon>
-        <span>Sair</span>
-      </button>
-    </mat-menu>
-  </ng-container>
+      <ng-container *ngIf="isLoggedIn">
+        <a mat-button [routerLink]="getDashboardLink()" routerLinkActive="active-link">
+          <mat-icon>dashboard</mat-icon> Dashboard
+        </a>
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+          <div class="user-avatar">{{ username?.charAt(0) | uppercase }}</div>
+          <span class="user-name">{{ username }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu" class="user-dropdown">
+          <div class="user-dropdown-header">
+            <div class="user-info">
+              <div class="user-avatar large">{{ username?.charAt(0) | uppercase }}</div>
+              <div class="user-details">
+                <h4 class="user-name">{{ username }}</h4>
+                <span class="user-role" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
+              </div>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+          <a mat-menu-item [routerLink]="getDashboardLink()">
+            <mat-icon>dashboard</mat-icon>
+            <span>Meu Dashboard</span>
+          </a>
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>account_circle</mat-icon>
+            <span>Meu Perfil</span>
+          </a>
+          <a mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Configurações</span>
+          </a>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout($event)" class="logout-item">
+            <mat-icon>logout</mat-icon>
+            <span>Sair</span>
+          </button>
+        </mat-menu>
+      </ng-container>
+    </div>
+  </div>
 </mat-toolbar>
 
 <div class="main-content-area">

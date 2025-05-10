@@ -1,201 +1,403 @@
+<!-- src/app/dashboard/professor-dashboard/professor-dashboard.component.html -->
 <div class="dashboard-container">
-    <nav class="sidebar">
-      <div class="sidebar-header">
-        <h2>Painel Docente</h2>
-        <div class="user-profile">
-          <div class="profile-image">{{ username?.charAt(0) | uppercase }}</div>
-          <div class="profile-info">
-            <h3>{{ username || 'Professor' }}</h3>
-            <span class="status">Professor</span>
-          </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">T</div>
+        <div class="logo-text">Tessera</div>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">{{ username?.charAt(0) | uppercase }}</div>
+        <div class="user-info">
+          <h3 class="user-name">{{ username || 'Professor' }}</h3>
+          <span class="user-role">Professor</span>
         </div>
       </div>
+    </div>
+
+    <nav class="sidebar-nav">
       <ul class="nav-menu">
         <li class="nav-item active">
-          <a href="#"><i class="icon-dashboard"></i> Dashboard</a>
+          <a href="#" class="nav-link">
+            <mat-icon>dashboard</mat-icon>
+            <span>Dashboard</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a href="#"><i class="icon-classes"></i> Turmas</a>
+          <a href="#" class="nav-link">
+            <mat-icon>people</mat-icon>
+            <span>Orientandos</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a href="#"><i class="icon-grades"></i> Avaliações</a>
+          <a href="#" class="nav-link">
+            <mat-icon>description</mat-icon>
+            <span>Documentos</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a href="#"><i class="icon-calendar"></i> Agenda</a>
+          <a href="#" class="nav-link">
+            <mat-icon>assignment_turned_in</mat-icon>
+            <span>Avaliações</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a href="#"><i class="icon-materials"></i> Materiais</a>
+          <a href="#" class="nav-link">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Calendário</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a href="#"><i class="icon-messages"></i> Mensagens</a>
+          <a href="#" class="nav-link">
+            <mat-icon>chat</mat-icon>
+            <span>Mensagens</span>
+            <span class="badge">3</span>
+          </a>
         </li>
       </ul>
-      <div class="sidebar-footer">
-        <button (click)="logout()" class="btn-logout">
-          <i class="icon-logout"></i> Sair
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="content-header">
+      <div class="header-left">
+        <h1 class="page-title">Dashboard do Professor</h1>
+        <p class="page-subtitle">Bem-vindo de volta, {{ username || 'Professor' }}</p>
+      </div>
+      <div class="header-actions">
+        <div class="search-bar">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Pesquisar...">
+        </div>
+        <button class="btn-icon btn-notification">
+          <mat-icon>notifications</mat-icon>
+          <span class="notification-badge">2</span>
+        </button>
+        <button class="btn-icon">
+          <mat-icon>settings</mat-icon>
         </button>
       </div>
-    </nav>
-  
-    <main class="main-content">
-      <header class="main-header">
-        <div class="header-search">
-          <i class="icon-search"></i>
-          <input type="text" placeholder="Pesquisar..." />
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+      <!-- Overview Cards -->
+      <div class="overview-cards">
+        <div class="card stat-card">
+          <div class="stat-icon">
+            <mat-icon>groups</mat-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">8</span>
+            <span class="stat-label">Orientandos Ativos</span>
+          </div>
         </div>
-        <div class="header-actions">
-          <button class="btn-notification">
-            <i class="icon-notification"></i>
-            <span class="notification-badge">3</span>
-          </button>
-          <button class="btn-settings">
-            <i class="icon-settings"></i>
-          </button>
+
+        <div class="card stat-card">
+          <div class="stat-icon">
+            <mat-icon>description</mat-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">12</span>
+            <span class="stat-label">Documentos Pendentes</span>
+          </div>
         </div>
-      </header>
-  
-      <div class="dashboard-content">
-        <section class="welcome-section">
-          <h1>Olá, {{ username || 'Professor' }}!</h1>
-          <p>Bem-vindo ao seu painel docente. Aqui você pode gerenciar suas turmas, avaliações e materiais didáticos.</p>
-        </section>
-  
-        <div class="dashboard-grid">
-          <div class="card card-summary">
-            <div class="card-header">
-              <h3>Resumo</h3>
-              <span class="card-icon">
-                <i class="icon-summary"></i>
-              </span>
-            </div>
-            <div class="card-content">
-              <div class="summary-item">
-                <span class="item-label">Turmas Ativas</span>
-                <span class="item-value">4</span>
+
+        <div class="card stat-card">
+          <div class="stat-icon">
+            <mat-icon>chat</mat-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">5</span>
+            <span class="stat-label">Mensagens Não Lidas</span>
+          </div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-icon">
+            <mat-icon>event_note</mat-icon>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">3</span>
+            <span class="stat-label">Reuniões Hoje</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Pending Documents -->
+        <div class="card documents-card">
+          <div class="card-header">
+            <h2 class="card-title">Documentos Pendentes de Revisão</h2>
+            <button class="btn-text">Ver Todos</button>
+          </div>
+          <div class="card-content">
+            <div class="document-list">
+              <div class="document-item">
+                <div class="document-icon">
+                  <mat-icon>description</mat-icon>
+                </div>
+                <div class="document-info">
+                  <h3 class="document-title">Capítulo 2 - Revisão de Literatura</h3>
+                  <div class="document-meta">
+                    <span class="student-name">João Silva</span>
+                    <span class="time-info">Enviado há 2 dias</span>
+                  </div>
+                </div>
+                <div class="document-actions">
+                  <span class="status-badge pending">Revisão Pendente</span>
+                  <button class="btn-primary btn-sm">Revisar</button>
+                </div>
               </div>
-              <div class="summary-item">
-                <span class="item-label">Total de Alunos</span>
-                <span class="item-value">86</span>
+              <div class="document-item">
+                <div class="document-icon">
+                  <mat-icon>description</mat-icon>
+                </div>
+                <div class="document-info">
+                  <h3 class="document-title">Introdução - Versão 2</h3>
+                  <div class="document-meta">
+                    <span class="student-name">Maria Costa</span>
+                    <span class="time-info">Enviado ontem</span>
+                  </div>
+                </div>
+                <div class="document-actions">
+                  <span class="status-badge pending">Revisão Pendente</span>
+                  <button class="btn-primary btn-sm">Revisar</button>
+                </div>
               </div>
-              <div class="summary-item">
-                <span class="item-label">Avaliações Pendentes</span>
-                <span class="item-value">12</span>
-              </div>
-              <div class="summary-item">
-                <span class="item-label">Mensagens Não Lidas</span>
-                <span class="item-value">5</span>
+              <div class="document-item">
+                <div class="document-icon">
+                  <mat-icon>description</mat-icon>
+                </div>
+                <div class="document-info">
+                  <h3 class="document-title">Proposta de Metodologia</h3>
+                  <div class="document-meta">
+                    <span class="student-name">Carlos Mendes</span>
+                    <span class="time-info">Enviado hoje</span>
+                  </div>
+                </div>
+                <div class="document-actions">
+                  <span class="status-badge urgent">Urgente</span>
+                  <button class="btn-primary btn-sm">Revisar</button>
+                </div>
               </div>
             </div>
           </div>
-  
-          <div class="card card-schedule">
-            <div class="card-header">
-              <h3>Próximas Aulas</h3>
-              <button class="btn-card-action">Ver Tudo</button>
-            </div>
-            <div class="card-content">
-              <div class="schedule-item">
-                <div class="schedule-time">08:00</div>
-                <div class="schedule-info">
-                  <h4>Matemática - 2º Ano</h4>
-                  <p>Sala 105 - Bloco B</p>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div class="card appointments-card">
+          <div class="card-header">
+            <h2 class="card-title">Próximas Reuniões</h2>
+            <button class="btn-text">Ver Agenda</button>
+          </div>
+          <div class="card-content">
+            <div class="appointment-list">
+              <div class="appointment-item">
+                <div class="appointment-time">
+                  <span class="time">09:30</span>
+                  <span class="date">Hoje</span>
+                </div>
+                <div class="appointment-info">
+                  <h3 class="appointment-title">Orientação Individual</h3>
+                  <div class="appointment-meta">
+                    <span class="student-name">João Silva</span>
+                    <span class="location">Sala 305</span>
+                  </div>
+                </div>
+                <div class="appointment-actions">
+                  <button class="btn-icon btn-sm">
+                    <mat-icon>videocam</mat-icon>
+                  </button>
                 </div>
               </div>
-              <div class="schedule-item">
-                <div class="schedule-time">10:30</div>
-                <div class="schedule-info">
-                  <h4>Física - 3º Ano</h4>
-                  <p>Laboratório 3 - Bloco C</p>
+              <div class="appointment-item">
+                <div class="appointment-time">
+                  <span class="time">14:00</span>
+                  <span class="date">Hoje</span>
+                </div>
+                <div class="appointment-info">
+                  <h3 class="appointment-title">Reunião de Departamento</h3>
+                  <div class="appointment-meta">
+                    <span class="student-name">Todos Professores</span>
+                    <span class="location">Sala de Reuniões</span>
+                  </div>
+                </div>
+                <div class="appointment-actions">
+                  <button class="btn-icon btn-sm">
+                    <mat-icon>event_note</mat-icon>
+                  </button>
                 </div>
               </div>
-              <div class="schedule-item">
-                <div class="schedule-time">13:45</div>
-                <div class="schedule-info">
-                  <h4>Reunião Pedagógica</h4>
-                  <p>Sala dos Professores</p>
+              <div class="appointment-item">
+                <div class="appointment-time">
+                  <span class="time">10:15</span>
+                  <span class="date">Amanhã</span>
+                </div>
+                <div class="appointment-info">
+                  <h3 class="appointment-title">Revisão de Progresso</h3>
+                  <div class="appointment-meta">
+                    <span class="student-name">Maria Costa</span>
+                    <span class="location">Online</span>
+                  </div>
+                </div>
+                <div class="appointment-actions">
+                  <button class="btn-icon btn-sm">
+                    <mat-icon>videocam</mat-icon>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-  
-          <div class="card card-tasks">
-            <div class="card-header">
-              <h3>Tarefas Pendentes</h3>
-              <button class="btn-card-action">Ver Tudo</button>
+        </div>
+
+        <!-- Student Progress -->
+        <div class="card progress-card">
+          <div class="card-header">
+            <h2 class="card-title">Progresso dos Orientandos</h2>
+            <div class="card-filters">
+              <button class="filter-btn active">Todos</button>
+              <button class="filter-btn">Em Risco</button>
+              <button class="filter-btn">Concluídos</button>
             </div>
-            <div class="card-content">
-              <div class="task-item">
-                <input type="checkbox" id="task1" />
-                <label for="task1">Corrigir provas do 3º Ano</label>
-                <span class="task-date">Hoje</span>
+          </div>
+          <div class="card-content">
+            <div class="progress-list">
+              <div class="progress-item">
+                <div class="student-info">
+                  <div class="student-avatar">JS</div>
+                  <div class="student-details">
+                    <h3 class="student-name">João Silva</h3>
+                    <span class="project-title">Análise de Sistemas Distribuídos</span>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                  </div>
+                  <span class="progress-text">75%</span>
+                </div>
               </div>
-              <div class="task-item">
-                <input type="checkbox" id="task2" />
-                <label for="task2">Preparar aula de Geometria</label>
-                <span class="task-date">Amanhã</span>
+              <div class="progress-item">
+                <div class="student-info">
+                  <div class="student-avatar">MC</div>
+                  <div class="student-details">
+                    <h3 class="student-name">Maria Costa</h3>
+                    <span class="project-title">Inteligência Artificial Aplicada</span>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%"></div>
+                  </div>
+                  <span class="progress-text">45%</span>
+                </div>
               </div>
-              <div class="task-item">
-                <input type="checkbox" id="task3" />
-                <label for="task3">Enviar notas para secretaria</label>
-                <span class="task-date">Em 2 dias</span>
+              <div class="progress-item">
+                <div class="student-info">
+                  <div class="student-avatar">CM</div>
+                  <div class="student-details">
+                    <h3 class="student-name">Carlos Mendes</h3>
+                    <span class="project-title">Segurança em Redes Neurais</span>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill warning" style="width: 30%"></div>
+                  </div>
+                  <span class="progress-text">30%</span>
+                </div>
               </div>
-              <div class="task-item">
-                <input type="checkbox" id="task4" />
-                <label for="task4">Atualizar plano de ensino</label>
-                <span class="task-date">Em 3 dias</span>
+              <div class="progress-item">
+                <div class="student-info">
+                  <div class="student-avatar">AR</div>
+                  <div class="student-details">
+                    <h3 class="student-name">Ana Rodrigues</h3>
+                    <span class="project-title">Processamento de Linguagem Natural</span>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill success" style="width: 90%"></div>
+                  </div>
+                  <span class="progress-text">90%</span>
+                </div>
               </div>
             </div>
           </div>
-  
-          <div class="card card-messages">
-            <div class="card-header">
-              <h3>Mensagens Recentes</h3>
-              <button class="btn-card-action">Ver Tudo</button>
-            </div>
-            <div class="card-content">
+        </div>
+
+        <!-- Recent Messages -->
+        <div class="card messages-card">
+          <div class="card-header">
+            <h2 class="card-title">Mensagens Recentes</h2>
+            <button class="btn-text">Ver Todas</button>
+          </div>
+          <div class="card-content">
+            <div class="message-list">
               <div class="message-item unread">
-                <div class="message-avatar">JA</div>
+                <div class="message-avatar">JS</div>
                 <div class="message-content">
                   <div class="message-header">
-                    <h4>João Almeida</h4>
-                    <span class="message-date">09:45</span>
+                    <h3 class="sender-name">João Silva</h3>
+                    <span class="message-time">09:45</span>
                   </div>
-                  <p>Professor, gostaria de tirar uma dúvida sobre o trabalho...</p>
+                  <p class="message-preview">Professor, gostaria de tirar uma dúvida sobre a metodologia proposta para...</p>
                 </div>
               </div>
               <div class="message-item unread">
-                <div class="message-avatar">MS</div>
+                <div class="message-avatar">MC</div>
                 <div class="message-content">
                   <div class="message-header">
-                    <h4>Maria Silva</h4>
-                    <span class="message-date">Ontem</span>
+                    <h3 class="sender-name">Maria Costa</h3>
+                    <span class="message-time">Ontem</span>
                   </div>
-                  <p>Sobre a prova da próxima semana, poderia confirmar...</p>
+                  <p class="message-preview">Bom dia professor, enviei a nova versão do capítulo conforme suas orientações...</p>
                 </div>
               </div>
               <div class="message-item">
-                <div class="message-avatar">CP</div>
+                <div class="message-avatar">DP</div>
                 <div class="message-content">
                   <div class="message-header">
-                    <h4>Coordenação Pedagógica</h4>
-                    <span class="message-date">2 dias</span>
+                    <h3 class="sender-name">Direção Pedagógica</h3>
+                    <span class="message-time">2 dias</span>
                   </div>
-                  <p>Convocação para reunião de conselho na próxima...</p>
+                  <p class="message-preview">Convocação para reunião de conselho na próxima semana. Precisamos discutir...</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-  
-        <div *ngIf="dashboardData" class="server-data-section">
-          <h3>Dados do Servidor:</h3>
-          <p>{{ dashboardData }}</p>
-        </div>
-  
-        <div *ngIf="errorMessage" class="error-message">
-          <i class="icon-error"></i>
-          <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Server Data (if available) -->
+      <div *ngIf="dashboardData" class="server-data-section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Dados do Servidor</h2>
+          </div>
+          <div class="card-content">
+            <p>{{ dashboardData }}</p>
+          </div>
         </div>
       </div>
-    </main>
-  </div>
+
+      <!-- Error Message (if error occurs) -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ errorMessage }}</p>
+      </div>
+    </div>
+  </main>
+</div>

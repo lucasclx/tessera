@@ -1,56 +1,84 @@
-<div class="auth-page-container">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>
-        <mat-icon class="title-icon">lock_open</mat-icon>
-        Login do Sistema
-      </mat-card-title>
-      <mat-card-subtitle>Acesse sua conta para continuar</mat-card-subtitle>
-    </mat-card-header>
+<!-- src/app/auth/components/login/login.component.html -->
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo">
+        <div class="logo-icon">T</div>
+        <div class="logo-text">Tessera Acadêmica</div>
+      </div>
+      <h1>Acesso à Plataforma</h1>
+      <p>Insira suas credenciais para continuar</p>
+    </div>
 
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Usuário</mat-label>
-          <input matInput formControlName="username" required autocomplete="username">
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="usernameFc?.hasError('required')">
-            Usuário é obrigatório.
-          </mat-error>
-          <mat-error *ngIf="usernameFc?.hasError('minlength')">
-            Usuário deve ter pelo menos 3 caracteres.
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Senha</mat-label>
-          <input matInput [type]="passwordVisible ? 'text' : 'password'" formControlName="password" required autocomplete="current-password">
-          <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" [attr.aria-label]="'Mostrar/ocultar senha'" [attr.aria-pressed]="passwordVisible">
-            <mat-icon>{{passwordVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
-          </button>
-          <mat-error *ngIf="passwordFc?.hasError('required')">
-            Senha é obrigatória.
-          </mat-error>
-           <mat-error *ngIf="passwordFc?.hasError('minlength')">
-            Senha deve ter no mínimo 6 caracteres.
-          </mat-error>
-        </mat-form-field>
-
-        <div *ngIf="errorMessage" class="error-message-box alert alert-danger">
-          <mat-icon>error_outline</mat-icon>
-          <span>{{ errorMessage }}</span>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-group">
+        <label for="username">Nome de Usuário</label>
+        <div class="input-wrapper">
+          <mat-icon>person</mat-icon>
+          <input 
+            type="text" 
+            id="username" 
+            formControlName="username" 
+            placeholder="Digite seu usuário" 
+            autocomplete="username"
+            [ngClass]="{'is-invalid': submitted && f['username'].errors}"
+          >
         </div>
+        <div *ngIf="submitted && f['username'].errors" class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span *ngIf="f['username'].errors?.['required']">Nome de usuário é obrigatório</span>
+          <span *ngIf="f['username'].errors?.['minlength']">Nome de usuário deve ter pelo menos 3 caracteres</span>
+        </div>
+      </div>
 
-        <button mat-raised-button color="primary" type="submit" class="full-width login-button" [disabled]="loginForm.invalid || loading">
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <div class="input-wrapper">
+          <mat-icon>lock</mat-icon>
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            formControlName="password" 
+            placeholder="Digite sua senha" 
+            autocomplete="current-password"
+            [ngClass]="{'is-invalid': submitted && f['password'].errors}"
+          >
+          <button 
+            type="button" 
+            class="toggle-password" 
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+        <div *ngIf="submitted && f['password'].errors" class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span *ngIf="f['password'].errors?.['required']">Senha é obrigatória</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Senha deve ter pelo menos 6 caracteres</span>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn btn-primary" 
+          [disabled]="loading"
+        >
           <mat-icon *ngIf="!loading">login</mat-icon>
-          <mat-progress-spinner *ngIf="loading" mode="indeterminate" diameter="24" class="button-spinner"></mat-progress-spinner>
-          {{ loading ? 'Entrando...' : 'Entrar' }}
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
         </button>
-      </form>
-    </mat-card-content>
+      </div>
+    </form>
 
-    <mat-card-actions class="login-actions">
-      <a routerLink="/auth/register" mat-button color="accent">Não tem uma conta? Registre-se aqui</a>
-      </mat-card-actions>
-  </mat-card>
+    <div class="login-footer">
+      <p>Não possui uma conta? <a routerLink="/auth/register">Cadastre-se</a></p>
+    </div>
+  </div>
 </div>

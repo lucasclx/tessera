@@ -1,21 +1,65 @@
 /* src/app/app.component.scss */
 @use '@angular/material' as mat;
 
+// Novas variáveis com a nova paleta de cores
+$primary-color: #2A3F75;
+$primary-light: #4C6ECC;
+$primary-dark: #1e2f57;
+$text-light: #ffffff;
+$text-secondary: #546E7A;
+$border-color: #E0E7F1;
+$shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+// Toolbar principal
 .main-toolbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  height: 70px;
+  background-color: $primary-color;
+  color: $text-light;
+  padding: 0;
+  box-shadow: $shadow;
+
+  .toolbar-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 100%;
+  }
 
   .toolbar-brand {
-    font-size: 1.25rem;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-
-    .mat-icon {
-      margin-right: 8px;
+    .brand-link {
+      display: flex;
+      align-items: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: $text-light;
+      height: 50px;
+      
+      .logo-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background-color: $text-light;
+        color: $primary-color;
+        font-weight: 700;
+        margin-right: 12px;
+        font-size: 1.25rem;
+      }
+      
+      .brand-text {
+        letter-spacing: -0.01em;
+      }
     }
   }
 
@@ -23,49 +67,190 @@
     flex: 1 1 auto;
   }
 
-  a.mat-mdc-button, button.mat-mdc-button {
-    text-transform: none;
-    font-weight: 500;
-    margin-left: 8px;
+  .toolbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-    .mat-icon {
-      margin-right: 4px;
-      vertical-align: middle;
+    a.mat-mdc-button, 
+    button.mat-mdc-button {
+      height: 40px;
+      border-radius: 6px;
+      font-weight: 500;
+      
+      .mat-icon {
+        margin-right: 6px;
+        font-size: 20px;
+        height: 20px;
+        width: 20px;
+      }
     }
-  }
 
-  .register-button {
-    // Exemplo: cor de destaque (accent)
-  }
-
-  .active-link {
-    border-bottom: 3px solid #3f51b5;
-  }
-
-  .role-badge {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 8px;
-    color: white;
-
-    &.badge-admin {
-      background-color: #9c27b0;
+    .register-button {
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
     }
-    &.badge-professor {
-      background-color: #3f51b5;
+
+    .active-link {
+      background-color: rgba(255, 255, 255, 0.15);
     }
-    &.badge-aluno {
-      background-color: #4caf50;
+    
+    .user-menu-button {
+      display: flex;
+      align-items: center;
+      padding: 0 8px 0 4px;
+      
+      .user-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: $text-light;
+        font-weight: 600;
+        margin-right: 10px;
+      }
+      
+      .user-name {
+        margin-right: 4px;
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 }
 
+// Estilização para o dropdown do usuário
+::ng-deep {
+  .user-dropdown {
+    min-width: 240px !important;
+    
+    .user-dropdown-header {
+      padding: 16px;
+      
+      .user-info {
+        display: flex;
+        align-items: center;
+        
+        .user-avatar {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background-color: $primary-light;
+          color: $text-light;
+          font-weight: 600;
+          margin-right: 12px;
+          font-size: 1.25rem;
+          
+          &.large {
+            width: 48px;
+            height: 48px;
+          }
+        }
+        
+        .user-details {
+          .user-name {
+            margin: 0 0 4px;
+            font-size: 1rem;
+            font-weight: 600;
+          }
+          
+          .user-role {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            
+            &.badge-admin {
+              background-color: #9c27b0;
+              color: white;
+            }
+            
+            &.badge-professor {
+              background-color: #3f51b5;
+              color: white;
+            }
+            
+            &.badge-aluno {
+              background-color: #4caf50;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+    
+    .logout-item {
+      color: #f44336;
+    }
+  }
+}
+
+// Área de conteúdo principal
 .main-content-area {
-  padding: 16px;
+  min-height: calc(100vh - 70px);
+  margin-top: 70px;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.mat-mdc-menu-item .mat-icon {
-  vertical-align: middle;
-  margin-right: 8px;
+// Media queries para responsividade
+@media (max-width: 768px) {
+  .main-toolbar {
+    .toolbar-brand {
+      .brand-link {
+        .brand-text {
+          display: none;
+        }
+      }
+    }
+    
+    .toolbar-nav {
+      .register-button {
+        .mat-icon {
+          margin-right: 0;
+        }
+        
+        span {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .main-toolbar {
+    .toolbar-nav {
+      a.mat-mdc-button, 
+      button.mat-mdc-button {
+        .mat-icon {
+          margin-right: 0;
+        }
+        
+        span:not(.user-name) {
+          display: none;
+        }
+      }
+      
+      .user-menu-button {
+        .user-name {
+          display: none;
+        }
+      }
+    }
+  }
 }

@@ -18,7 +18,7 @@ import { MaterialModule } from './material.module';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'Sistema Acadêmico';
+  title = 'Tessera Acadêmica';
   isLoggedIn = false;
   username: string | null = null;
   userRole: string | null = null;
