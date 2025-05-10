@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
-import { LayoutModule } from '@angular/cdk/layout'; // Para responsividade da sidenav
+import { LayoutModule } from '@angular/cdk/layout'; 
 
 @NgModule({
   exports: [

@@ -1,10 +1,11 @@
-import { NgModule, Optional, SkipSelf, Injector } from '@angular/core';
+// src/app/core/core.module.ts
+import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { AuthService } from './auth.service';
-// Importe outros serviços e interceptors
+import { NavigationService } from './services/navigation.service';
 
 @NgModule({
   imports: [
@@ -12,10 +13,9 @@ import { AuthService } from './auth.service';
     HttpClientModule
   ],
   providers: [
-    AuthService, // Adicione o AuthService explicitamente
-    // Registre os interceptors
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // Outros serviços
+    AuthService,
+    NavigationService,
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ]
 })
 export class CoreModule {

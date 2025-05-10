@@ -5,17 +5,16 @@ import {
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpErrorResponse,
-  HttpInterceptorFn
+  HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthService } from '../auth.service'; // Caminho corrigido
+import { AuthService } from '../auth.service';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 
 @Injectable({
-  providedIn: 'root' // Garantir que seja injetável
+  providedIn: 'root'
 })
 export class JwtInterceptor implements HttpInterceptor {
 
@@ -56,37 +55,4 @@ export class JwtInterceptor implements HttpInterceptor {
   }
 }
 
-// Para suporte ao novo sistema de interceptors no Angular standalone
-export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const injector = inject(Injector);
-  const authService = injector.get(AuthService);
-  const router = injector.get(Router);
-  const token = authService.getToken();
-  const isLoggedIn = authService.isLoggedIn();
-  const isApiUrl = req.url.startsWith(environment.apiUrl);
-  const isAuthRequest = req.url.includes('/auth/');
-  
-  if (isLoggedIn && isApiUrl && token && !isAuthRequest) {
-    req = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-  }
-
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // Lidar com erros 401 e 403 aqui
-      if (error.status === 401) {
-        authService.logout();
-        router.navigate(['/auth/login'], {
-          queryParams: { returnUrl: router.url, error: 'Sua sessão expirou. Por favor, faça login novamente.' }
-        });
-      }
-      if (error.status === 403) {
-        router.navigate(['/access-denied']);
-      }
-      return throwError(() => error);
-    })
-  );
-};
+// REMOVIDO: Código problemático que usa inject() e Injector

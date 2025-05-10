@@ -3,23 +3,15 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AuthComponent } from './auth/auth.component';
-// Corrigir o caminho para os componentes de autenticação
-import { LoginComponent } from './auth/components/login/login.component';
-import { RegisterComponent } from './auth/components/register/register.component';
 import { HomeComponent } from '../home/home.component';
 import { AuthGuard } from './core/guards/auth.guard';
-import { RoleGuard } from './core/guards/role.guard';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   {
     path: 'auth',
     component: AuthComponent,
-    children: [
-      { path: 'login', component: LoginComponent },
-      { path: 'register', component: RegisterComponent },
-      { path: '', redirectTo: 'login', pathMatch: 'full' }
-    ]
+    loadChildren: () => import('./auth/auth-routing.module').then(m => m.AuthRoutingModule)
   },
   {
     path: 'dashboard',

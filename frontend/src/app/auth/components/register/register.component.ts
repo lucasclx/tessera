@@ -1,8 +1,10 @@
+// src/app/auth/components/register/register.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/auth.service';
+import { AuthService } from '../../../core/auth.service'; // Caminho corrigido
+import { MaterialModule } from '../../../material.module'; // Adicione esta importação
 
 // Validador customizado para senhas
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -21,10 +23,11 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    MaterialModule // Adicione este módulo
   ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;

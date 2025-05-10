@@ -1,29 +1,29 @@
-// src/app/auth/login/login.component.ts
+// src/app/auth/components/login/login.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { AuthService, ApprovalStatus } from '../../core/auth.service'; // Mantido
+import { AuthService, ApprovalStatus } from '../../../core/auth.service'; // Caminho corrigido
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material.module'; // Adicionado
-import { NavigationService } from '../../core/services/navigation.service'; // Importar para navegação pós-login
+import { MaterialModule } from '../../../material.module'; // Caminho corrigido
+import { NavigationService } from '../../../core/services/navigation.service'; // Caminho corrigido
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule, // Mantido
+    ReactiveFormsModule,
     RouterLink,
-    MaterialModule // Adicionado
+    MaterialModule
   ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'] // Corrigido para styleUrls
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string | null = null;
   loading = false;
-  returnUrl: string = ''; // Inicializar returnUrl
+  returnUrl: string = '';
   passwordVisible = false;
 
   constructor(
@@ -31,23 +31,23 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private navigationService: NavigationService // Injetar NavigationService
+    private navigationService: NavigationService
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]], // Adicionado minLength como exemplo
-      password: ['', [Validators.required, Validators.minLength(6)]] // Adicionado minLength
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   ngOnInit(): void {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/'; // Definir um padrão
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     const error = this.route.snapshot.queryParams['error'];
     if (error) {
       this.errorMessage = error;
     }
 
     if (this.authService.isLoggedIn()) {
-      this.navigationService.navigateToDashboard(); // Usar NavigationService
+      this.navigationService.navigateToDashboard();
     }
   }
 
@@ -57,7 +57,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched(); // Marcar todos os campos para exibir erros
+      this.loginForm.markAllAsTouched();
       return;
     }
 
@@ -93,7 +93,6 @@ export class LoginComponent implements OnInit {
     this.authService.login({ username, password }).subscribe({
       next: () => {
         this.loading = false;
-        // Usar o NavigationService para redirecionar após o login
         this.navigationService.navigateAfterLogin(this.returnUrl);
       },
       error: (err) => {

@@ -1,10 +1,11 @@
-// src/app/auth/pending-approval/pending-approval.component.ts (Corrigido)
+// src/app/auth/components/pending-approval/pending-approval.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, ApprovalStatus } from '../../core/auth.service';
-import { environment } from '../../../environments/environment';
+import { AuthService, ApprovalStatus } from '../../../core/auth.service'; // Caminho corrigido
+import { environment } from '../../../../environments/environment'; // Verifique este caminho
+import { MaterialModule } from '../../../material.module'; // Adicione esta importação
 
 interface AccountDetails {
   nome: string;
@@ -18,10 +19,11 @@ interface AccountDetails {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink
+    RouterLink,
+    MaterialModule // Adicione este módulo
   ],
   templateUrl: './pending-approval.component.html',
-  styleUrl: './pending-approval.component.scss'
+  styleUrls: ['./pending-approval.component.scss']
 })
 export class PendingApprovalComponent implements OnInit {
   username: string | null = null;
