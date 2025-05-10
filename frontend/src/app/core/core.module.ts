@@ -1,8 +1,9 @@
-import { NgModule, Optional, SkipSelf } from '@angular/core';
+import { NgModule, Optional, SkipSelf, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { AuthService } from './auth.service';
 // Importe outros serviços e interceptors
 
 @NgModule({
@@ -11,6 +12,7 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     HttpClientModule
   ],
   providers: [
+    AuthService, // Adicione o AuthService explicitamente
     // Registre os interceptors
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     // Outros serviços

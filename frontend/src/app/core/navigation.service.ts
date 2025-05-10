@@ -1,4 +1,4 @@
-// src/app/core/navigation.service.ts
+// src/app/core/services/navigation.service.ts
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';

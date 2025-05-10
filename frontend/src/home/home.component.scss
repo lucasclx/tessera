@@ -1,5 +1,6 @@
 /* src/home/home.component.scss */
-@use '@angular/material' as mat; // Para acessar variáveis do tema Material
+@use '@angular/material' as mat;
+@use 'sass:color';
 
 .home-container {
   display: flex;
@@ -15,13 +16,10 @@
     max-width: 700px;
 
     h1 {
-      // A tipografia virá do Material (headline-5 ou similar)
-      // color: mat.get-color-from-palette(mat.get-theme-color(mat.$light-theme, primary-text)); // Exemplo
       margin-bottom: 16px;
     }
 
-    .mat-h4 { // Classe de tipografia do Material para o parágrafo
-      // color: mat.get-color-from-palette(mat.get-theme-color(mat.$light-theme, secondary-text)); // Exemplo
+    .mat-h4 {
       margin-bottom: 0;
     }
   }
@@ -40,8 +38,7 @@
 
       &:hover {
         transform: translateY(-5px);
-        // box-shadow: mat.get-elevation- उमंग-umbra-box-shadow(8); // Elevação maior no hover
-         box-shadow: 0 8px 16px rgba(0,0,0,0.2); // Sombra customizada mais forte no hover
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2); // Sombra customizada mais forte no hover
       }
 
       .mat-card-header {
@@ -49,10 +46,9 @@
           font-size: 36px; // Tamanho do ícone
           width: 36px;
           height: 36px;
-          color: mat.get-color-from-palette(mat.get-theme-color($sistema-light-theme, primary)); // Cor primária do tema
+          color: #3f51b5; // Cor primária fixa
         }
       }
-
 
       .mat-mdc-card-title { // MDC-based components
         font-size: 1.25rem; // Ajuste se necessário
@@ -89,13 +85,12 @@
   .home-footer {
     margin-top: auto; /* Empurra o footer para baixo */
     padding-top: 30px;
-    border-top: 1px solid mat.get-color-from-palette(mat.get-theme-color($sistema-light-theme, divider)); // Cor do divisor do tema
+    border-top: 1px solid rgba(0, 0, 0, 0.12); // Cor fixa para divider
     width: 100%;
     max-width: 800px; // Consistente com o header
 
     p {
       font-size: 0.9em;
-      // color: mat.get-color-from-palette(mat.get-theme-color(mat.$light-theme, secondary-text));
     }
   }
 }
@@ -103,22 +98,11 @@
 // Ajustes para tema escuro
 .dark-theme-mode {
   .home-container {
-    .home-header {
-      h1 {
-        // color: mat.get-color-from-palette(mat.get-theme-color(mat.$dark-theme, primary-text));
-      }
-      .mat-h4 {
-        // color: mat.get-color-from-palette(mat.get-theme-color(mat.$dark-theme, secondary-text));
-      }
-    }
     .feature-card .mat-card-header .mat-icon.feature-icon {
-       color: mat.get-color-from-palette(mat.get-theme-color($sistema-dark-theme, primary));
+       color: #7986cb; // Cor primária mais clara para tema escuro
     }
     .home-footer {
-      border-top-color: mat.get-color-from-palette(mat.get-theme-color($sistema-dark-theme, divider));
-      p {
-       // color: mat.get-color-from-palette(mat.get-theme-color(mat.$dark-theme, secondary-text));
-      }
+      border-top-color: rgba(255, 255, 255, 0.12);
     }
   }
 }

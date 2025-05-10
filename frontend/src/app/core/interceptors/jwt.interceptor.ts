@@ -1,4 +1,4 @@
-// src/app/core/jwt.interceptor.ts
+// src/app/core/interceptors/jwt.interceptor.ts
 import { Injectable } from '@angular/core';
 import {
   HttpRequest,
@@ -10,11 +10,13 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service'; // Caminho corrigido
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root' // Garantir que seja injetável
+})
 export class JwtInterceptor implements HttpInterceptor {
 
   constructor(private authService: AuthService, private router: Router) {}
@@ -56,7 +58,9 @@ export class JwtInterceptor implements HttpInterceptor {
 
 // Para suporte ao novo sistema de interceptors no Angular standalone
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = new AuthService(null!, null!); // Não ideal, mas funcional para o interceptor
+  const injector = inject(Injector);
+  const authService = injector.get(AuthService);
+  const router = injector.get(Router);
   const token = authService.getToken();
   const isLoggedIn = authService.isLoggedIn();
   const isApiUrl = req.url.startsWith(environment.apiUrl);
@@ -72,7 +76,16 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Lidar com erros 401 aqui não é ideal sem acesso ao serviço e router
+      // Lidar com erros 401 e 403 aqui
+      if (error.status === 401) {
+        authService.logout();
+        router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: router.url, error: 'Sua sessão expirou. Por favor, faça login novamente.' }
+        });
+      }
+      if (error.status === 403) {
+        router.navigate(['/access-denied']);
+      }
       return throwError(() => error);
     })
   );

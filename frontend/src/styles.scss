@@ -1,24 +1,22 @@
 /* src/styles.scss */
 
-// 1. Importe o tema customizado do Angular Material ANTES de qualquer outra coisa.
-@import 'custom-theme';
+// 1. Importe o tema customizado do Angular Material via @use
+@use 'custom-theme' as theme;
+@use '@angular/material' as mat;
+@use 'sass:color';
 
 // 2. Importe as fontes (Poppins já está no seu custom-theme.scss via define-typography-config)
-// Se você importou Material Icons via CSS no custom-theme, não precisa duplicar.
-// Se preferir via index.html, remova o @import do custom-theme.scss
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp');
 
 
 // 3. Variáveis CSS Globais (podem coexistir ou ser usadas para elementos não-Material)
-// Muitas dessas cores agora virão do tema Material, mas podem ser úteis para consistência
-// em elementos customizados fora do escopo do Angular Material.
 :root {
-  // Cores primárias do tema Material (geralmente não precisa redefinir aqui se o tema Material está aplicado)
-  // --primary-color: mat.get-color-from-palette($sistema-primary, 500);
-  // --primary-dark: mat.get-color-from-palette($sistema-primary, 700);
-  // --primary-light: mat.get-color-from-palette($sistema-primary, 300);
-  // --accent-color: mat.get-color-from-palette($sistema-accent, 500);
+  // Cores primárias do tema Material
+  --primary-color: #2196f3;
+  --primary-dark: #1976d2;
+  --primary-light: #64b5f6;
+  --accent-color: #ffc107;
 
   --success-color: #10b981; // Pode manter para classes utilitárias
   --warning-color: #f59e0b; // Pode manter
@@ -190,15 +188,15 @@ a {
   }
 
   &.alert-success {
-    color: mat.get-color-from-palette($sistema-primary, 700); // Exemplo
-    background-color: mat.get-color-from-palette($sistema-primary, 50, 0.3); // Tom claro com opacidade
-    border-color: mat.get-color-from-palette($sistema-primary, 200);
+    color: #2e7d32;
+    background-color: rgba(46, 125, 50, 0.1);
+    border-color: rgba(46, 125, 50, 0.2);
   }
 
   &.alert-danger {
-    color: mat.get-color-from-palette($sistema-warn, 700);
-    background-color: mat.get-color-from-palette($sistema-warn, 50, 0.3);
-    border-color: mat.get-color-from-palette($sistema-warn, 200);
+    color: #d32f2f;
+    background-color: rgba(211, 47, 47, 0.1);
+    border-color: rgba(211, 47, 47, 0.2);
   }
    // Adicione .alert-warning, .alert-info se necessário
 }
@@ -217,8 +215,8 @@ a {
   border-radius: 10rem; // Mais arredondado como os chips/badges do Material
 
   &.badge-primary {
-    color: mat.get-color-from-palette($sistema-primary, default-contrast);
-    background-color: mat.get-color-from-palette($sistema-primary);
+    color: white;
+    background-color: #1976d2;
   }
   // ... outras variantes de badge
 }
@@ -265,9 +263,9 @@ a {
   }
 
   a {
-    color: mat.get-color-from-palette($sistema-accent, 300); // Um accent mais claro para links no escuro
+    color: #90caf9; // Um accent mais claro para links no escuro
     &:hover {
-      color: mat.get-color-from-palette($sistema-accent, 100);
+      color: #bbdefb;
     }
   }
 }

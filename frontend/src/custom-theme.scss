@@ -1,17 +1,13 @@
 // src/custom-theme.scss
 @use '@angular/material' as mat;
+@use 'sass:color';
 
 // Inclui os estilos base do Angular Material (reset, tipografia, etc.)
 @include mat.core();
 
-// Defina suas paletas de cores.
-// Você pode usar a ferramenta online do Material Design: https://material.io/resources/color/
-// Ou usar as paletas pré-definidas do Angular Material: mat.$indigo-palette, mat.$blue-palette, etc.
-
-// Exemplo usando azul como primário, um laranja/âmbar como destaque e vermelho para avisos.
-// Adapte estas paletas com as cores exatas da sua identidade visual.
+// Define suas paletas de cores.
 $sistema-primary-palette: (
-  50: #e3f2fd, // Um tom bem claro de azul
+  50: #e3f2fd,
   100: #bbdefb,
   200: #90caf9,
   300: #64b5f6,
@@ -26,20 +22,20 @@ $sistema-primary-palette: (
   A400: #2979ff,
   A700: #2962ff,
   contrast: (
-    50: mat.get-color-from-palette(mat.$black-palette, text),
-    100: mat.get-color-from-palette(mat.$black-palette, text),
-    200: mat.get-color-from-palette(mat.$black-palette, text),
-    300: mat.get-color-from-palette(mat.$black-palette, text),
-    400: mat.get-color-from-palette(mat.$black-palette, text),
-    500: mat.get-color-from-palette(mat.$white-palette, text),
-    600: mat.get-color-from-palette(mat.$white-palette, text),
-    700: mat.get-color-from-palette(mat.$white-palette, text),
-    800: mat.get-color-from-palette(mat.$white-palette, text),
-    900: mat.get-color-from-palette(mat.$white-palette, text),
-    A100: mat.get-color-from-palette(mat.$black-palette, text),
-    A200: mat.get-color-from-palette(mat.$white-palette, text),
-    A400: mat.get-color-from-palette(mat.$white-palette, text),
-    A700: mat.get-color-from-palette(mat.$white-palette, text),
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
   )
 );
 
@@ -59,31 +55,63 @@ $sistema-accent-palette: (
   A400: #ffc400,
   A700: #ffab00,
   contrast: (
-    50: mat.get-color-from-palette(mat.$black-palette, text),
-    100: mat.get-color-from-palette(mat.$black-palette, text),
-    200: mat.get-color-from-palette(mat.$black-palette, text),
-    300: mat.get-color-from-palette(mat.$black-palette, text),
-    400: mat.get-color-from-palette(mat.$black-palette, text),
-    500: mat.get-color-from-palette(mat.$black-palette, text),
-    600: mat.get-color-from-palette(mat.$black-palette, text),
-    700: mat.get-color-from-palette(mat.$black-palette, text),
-    800: mat.get-color-from-palette(mat.$black-palette, text),
-    900: mat.get-color-from-palette(mat.$black-palette, text),
-    A100: mat.get-color-from-palette(mat.$black-palette, text),
-    A200: mat.get-color-from-palette(mat.$black-palette, text),
-    A400: mat.get-color-from-palette(mat.$black-palette, text),
-    A700: mat.get-color-from-palette(mat.$black-palette, text),
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: rgba(0, 0, 0, 0.87),
+    600: rgba(0, 0, 0, 0.87),
+    700: rgba(0, 0, 0, 0.87),
+    800: rgba(0, 0, 0, 0.87),
+    900: rgba(0, 0, 0, 0.87),
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: rgba(0, 0, 0, 0.87),
+    A700: rgba(0, 0, 0, 0.87),
   )
 );
 
-$sistema-warn-palette: mat.$deep-orange-palette; // Usando uma paleta pré-definida para avisos
+// Definir paleta de cores para avisos diretamente
+$sistema-warn-palette: (
+  50: #ffebee,
+  100: #ffcdd2,
+  200: #ef9a9a,
+  300: #e57373,
+  400: #ef5350,
+  500: #f44336,
+  600: #e53935,
+  700: #d32f2f,
+  800: #c62828,
+  900: #b71c1c,
+  A100: #ff8a80,
+  A200: #ff5252,
+  A400: #ff1744,
+  A700: #d50000,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+);
 
 $sistema-primary: mat.define-palette($sistema-primary-palette, 500, 300, 700);
 $sistema-accent: mat.define-palette($sistema-accent-palette, 500, A200, 700);
 $sistema-warn: mat.define-palette($sistema-warn-palette, A700); // Usando um tom forte para avisos
 
 // Defina a configuração de tipografia.
-// Use a tipografia 'Poppins' que você já definiu.
+// Use a tipografia 'Poppins' que já definiu.
 $custom-typography: mat.define-typography-config(
   $font-family: 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   $headline-5: mat.define-typography-level(24px, 32px, 600, 'Poppins'), // H1
@@ -96,7 +124,6 @@ $custom-typography: mat.define-typography-config(
   $button: mat.define-typography-level(14px, 14px, 600, 'Poppins'),
   $input: mat.define-typography-level(16px, 1.125, 400, 'Poppins') // Para mat-form-field
 );
-// Ajuste os pesos (300, 400, 500, 600, 700) conforme importado da Google Fonts
 
 // Crie o objeto do tema claro (padrão).
 $sistema-light-theme: mat.define-light-theme((
@@ -162,8 +189,3 @@ $sistema-dark-theme: mat.define-dark-theme((
 
   // Adicione outras sobrescritas específicas para o tema escuro aqui
 }
-
-// Importe as fontes de ícones do Material Design se você não as estiver carregando no index.html
-// É geralmente melhor carregar fontes no index.html via <link>
-// @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-// @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');

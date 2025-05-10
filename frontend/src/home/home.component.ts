@@ -16,5 +16,6 @@ import { MaterialModule } from '../app/material.module'; // Importe se for usar 
   styleUrls: ['./home.component.scss'] // Corrigido para styleUrls
 })
 export class HomeComponent {
-  // Implementação básica, pode ser estendida conforme necessário
+  // Adicionar a propriedade currentYear
+  currentYear = new Date().getFullYear();
 }

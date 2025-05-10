@@ -1,4 +1,5 @@
 /* src/app/dashboard/aluno-dashboard/aluno-dashboard.component.scss */
+@use 'sass:color';
 
 // Variáveis
 $primary-color: #4caf50; // Cor principal diferente do professor para diferenciar
@@ -41,7 +42,7 @@ $container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04)
 // Sidebar
 .sidebar {
   width: $sidebar-width;
-  background: linear-gradient(to bottom, $primary-dark, darken($primary-dark, 8%));
+  background: linear-gradient(to bottom, $primary-dark, color.adjust($primary-dark, $lightness: -8%));
   color: white;
   box-shadow: $container-shadow;
   display: flex;
@@ -274,7 +275,7 @@ $container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04)
   @include card-style;
   padding: 25px 30px;
   margin-bottom: 25px;
-  background: linear-gradient(to right, $primary-color, lighten($primary-color, 10%));
+  background: linear-gradient(to right, $primary-color, color.adjust($primary-color, $lightness: 10%));
   color: white;
 
   h1 {
@@ -670,4 +671,4 @@ $container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04)
       justify-content: flex-end;
     }
   }
-}   
+}

@@ -1,5 +1,6 @@
 /* src/app/app.component.scss */
 @use '@angular/material' as mat;
+@use 'sass:color';
 
 .main-toolbar {
   position: sticky;
@@ -50,10 +51,10 @@
     // Para toolbar primária, pode ser uma variação da cor primária
     // background-color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, primary), 700); // Mais escuro
     // Ou usar um indicador visual como:
-    border-bottom: 3px solid mat.get-color-from-palette(mat.get-theme-color($sistema-light-theme, accent));
+    border-bottom: 3px solid #3f51b5; // Cor accent fixa em vez de função
     // Ajuste para o tema escuro se necessário
     .dark-theme-mode & {
-       border-bottom: 3px solid mat.get-color-from-palette(mat.get-theme-color($sistema-dark-theme, accent));
+       border-bottom: 3px solid #7986cb; // Cor accent mais clara para tema escuro
     }
   }
 
@@ -65,13 +66,13 @@
     color: white; // Cor do texto do badge
 
     &.badge-admin {
-      background-color: mat.get-color-from-palette(mat.$purple-palette, 500);
+      background-color: #9c27b0; // Cor fixa para admin
     }
     &.badge-professor {
-      background-color: mat.get-color-from-palette(mat.$blue-palette, 500);
+      background-color: #3f51b5; // Cor fixa para professor
     }
     &.badge-aluno {
-      background-color: mat.get-color-from-palette(mat.$green-palette, 500);
+      background-color: #4caf50; // Cor fixa para aluno
     }
   }
 }

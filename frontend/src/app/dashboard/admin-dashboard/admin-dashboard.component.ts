@@ -6,7 +6,17 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth.service';
-import { AdminService, User, UserApprovalRequest } from '../../core/admin.service';
+// Importar diretamente os tipos, não os serviços
+import { User, UserApprovalRequest } from '../../core/admin.service.types';
+
+// Adicionar o tipo AdminService sem importar diretamente
+interface AdminService {
+  getAllUsers(): any;
+  getPendingUsers(): any;
+  updateUserApproval(userId: number, approvalData: UserApprovalRequest): any;
+  updateUserStatus(userId: number, enabled: boolean): any;
+  deleteUser(userId: number): any;
+}
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -42,10 +52,11 @@ export class AdminDashboardComponent implements OnInit {
 
   viewMode: 'all' | 'pending' = 'pending';
 
+  // Injetar service manualmente via constructor
   constructor(
     private authService: AuthService,
-    private adminService: AdminService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private http: HttpClient
   ) {
     this.approvalForm = this.fb.group({
       approved: [false, Validators.required],
@@ -56,7 +67,31 @@ export class AdminDashboardComponent implements OnInit {
     this.statusForm = this.fb.group({
       enabled: [true, Validators.required]
     });
+    
+    // Criar serviço Admin manualmente
+    this.adminService = {
+      getAllUsers: () => {
+        return this.http.get<User[]>(`${environment.apiUrl}/admin/users`);
+      },
+      getPendingUsers: () => {
+        return this.http.get<User[]>(`${environment.apiUrl}/admin/users/pending`);
+      },
+      updateUserApproval: (userId: number, approvalData: UserApprovalRequest) => {
+        return this.http.put<User>(`${environment.apiUrl}/admin/users/${userId}/approval`, approvalData);
+      },
+      updateUserStatus: (userId: number, enabled: boolean) => {
+        return this.http.put<User>(`${environment.apiUrl}/admin/users/${userId}/status`, {}, { 
+          params: { enabled: enabled.toString() } 
+        });
+      },
+      deleteUser: (userId: number) => {
+        return this.http.delete(`${environment.apiUrl}/admin/users/${userId}`);
+      }
+    };
   }
+
+  // Adicionar a propriedade adminService
+  private adminService: AdminService;
 
   ngOnInit(): void {
     this.adminName = this.authService.currentUserValue?.username || 'Administrador';

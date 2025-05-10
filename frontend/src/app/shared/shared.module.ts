@@ -3,28 +3,28 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MaterialModule } from '../material.module';
 
-// Importar componentes
-import { HeaderComponent } from './components/header/header.component';
-// Outros componentes compartilhados
+// Crie um componente HeaderComponent para substituir a importação ausente
+// ou remova a referência se não for usado
 
 @NgModule({
   declarations: [
-    HeaderComponent,
-    // Outros componentes
+    // Remova a referência ao HeaderComponent se não existir
   ],
   imports: [
     CommonModule,
     RouterModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MaterialModule
   ],
   exports: [
     // Exportar componentes e módulos para uso em outros módulos
-    HeaderComponent,
-    // Outros componentes
+    // Remova a referência ao HeaderComponent se não existir
     CommonModule,
     RouterModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MaterialModule
   ]
 })
 export class SharedModule { }
