@@ -1,12 +1,11 @@
 /* src/app/app.component.scss */
 @use '@angular/material' as mat;
-@use 'sass:color';
 
 .main-toolbar {
   position: sticky;
   top: 0;
-  z-index: 1000; // Para ficar acima de outros conteúdos
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); // Sombra sutil
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
   .toolbar-brand {
     font-size: 1.25rem;
@@ -24,8 +23,8 @@
     flex: 1 1 auto;
   }
 
-  a.mat-mdc-button, button.mat-mdc-button { // MDC-based components
-    text-transform: none; // Para não deixar os botões em maiúsculas por padrão
+  a.mat-mdc-button, button.mat-mdc-button {
+    text-transform: none;
     font-weight: 500;
     margin-left: 8px;
 
@@ -35,27 +34,12 @@
     }
   }
 
-  .register-button { // Para o botão de registrar-se se quiser um destaque diferente
+  .register-button {
     // Exemplo: cor de destaque (accent)
-    // Para usar a cor de acento do tema Material:
-    // color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, accent));
-    // border-color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, accent));
   }
 
   .active-link {
-    // O Angular Material pode não adicionar uma classe 'active' diretamente nos botões de toolbar.
-    // routerLinkActive pode precisar de um elemento wrapper ou estilo customizado.
-    // Uma abordagem é usar um sublinhado ou cor de fundo sutil.
-    // Exemplo com cor de fundo ao invés de borda:
-    // background-color: rgba(255,255,255,0.1); // Se a toolbar for escura
-    // Para toolbar primária, pode ser uma variação da cor primária
-    // background-color: mat.get-color-from-palette(mat.get-theme-color($sistema-theme, primary), 700); // Mais escuro
-    // Ou usar um indicador visual como:
-    border-bottom: 3px solid #3f51b5; // Cor accent fixa em vez de função
-    // Ajuste para o tema escuro se necessário
-    .dark-theme-mode & {
-       border-bottom: 3px solid #7986cb; // Cor accent mais clara para tema escuro
-    }
+    border-bottom: 3px solid #3f51b5;
   }
 
   .role-badge {
@@ -63,26 +47,25 @@
     padding: 2px 8px;
     border-radius: 10px;
     margin-left: 8px;
-    color: white; // Cor do texto do badge
+    color: white;
 
     &.badge-admin {
-      background-color: #9c27b0; // Cor fixa para admin
+      background-color: #9c27b0;
     }
     &.badge-professor {
-      background-color: #3f51b5; // Cor fixa para professor
+      background-color: #3f51b5;
     }
     &.badge-aluno {
-      background-color: #4caf50; // Cor fixa para aluno
+      background-color: #4caf50;
     }
   }
 }
 
 .main-content-area {
-  padding: 16px; // Adiciona um padding geral ao redor do router-outlet
+  padding: 16px;
 }
 
-// Estilos para o menu do usuário
-.mat-mdc-menu-item .mat-icon { // MDC-based components
+.mat-mdc-menu-item .mat-icon {
   vertical-align: middle;
   margin-right: 8px;
 }

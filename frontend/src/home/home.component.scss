@@ -1,108 +1,449 @@
-/* src/home/home.component.scss */
+// src/home/home.component.scss
 @use '@angular/material' as mat;
-@use 'sass:color';
 
+// Variáveis de cores
+$primary-color: #5e35b1; // Roxo mais forte para manter a identidade do sistema
+$primary-light: #9162e4;
+$primary-dark: #3949ab;
+$accent-color: #ff4081;
+$text-color: #333333;
+$text-light: #666666;
+$background-light: #f9f9f9;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+// Mixins
+@mixin section-padding {
+  padding: 64px 32px;
+
+  @media (max-width: 768px) {
+    padding: 48px 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 32px 16px;
+  }
+}
+
+@mixin container-width {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// Estilos gerais
 .home-container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: $white;
+  color: $text-color;
+  font-family: 'Roboto', sans-serif;
+}
+
+// Seção Hero
+.hero-section {
+  background: linear-gradient(135deg, $primary-color, $primary-dark);
+  color: $white;
+  @include section-padding;
+  min-height: 75vh;
+  display: flex;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 32px 20px;
-  min-height: calc(100vh - 64px - 32px); // Considerando toolbar e padding do .main-content-area
-  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 
-  .home-header {
-    margin-bottom: 40px;
-    max-width: 700px;
-
-    h1 {
-      margin-bottom: 16px;
-    }
-
-    .mat-h4 {
-      margin-bottom: 0;
-    }
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('/assets/images/pattern.svg');
+    opacity: 0.1;
+    pointer-events: none;
   }
 
-  .features-section {
-    margin-bottom: 50px;
-    width: 100%;
-    max-width: 1200px; // Limitar a largura dos cards
-    justify-content: center;
+  .hero-content {
+    @include container-width;
+    z-index: 1;
+    position: relative;
+    padding: 0 20px;
+    
+    .main-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-    .feature-card {
-      width: 100%;
-      max-width: 350px; // Largura máxima para cada card
-      margin: 12px; // Espaçamento entre cards (fxLayoutGap já faz isso)
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); // Sombra customizada mais forte no hover
+      @media (max-width: 768px) {
+        font-size: 2.5rem;
       }
+    }
+    
+    .main-subtitle {
+      font-size: 1.3rem;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      max-width: 768px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.9;
 
-      .mat-card-header {
-        .mat-icon.feature-icon { // Estilo para os ícones no avatar do card
-          font-size: 36px; // Tamanho do ícone
-          width: 36px;
-          height: 36px;
-          color: #3f51b5; // Cor primária fixa
+      @media (max-width: 768px) {
+        font-size: 1.1rem;
+      }
+    }
+    
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      
+      .main-action-button, .secondary-action-button {
+        padding: 8px 24px;
+        font-size: 1rem;
+        height: auto;
+        line-height: 36px;
+        border-radius: 4px;
+        font-weight: 500;
+        text-transform: none;
+        
+        .mat-icon {
+          margin-right: 8px;
         }
       }
-
-      .mat-mdc-card-title { // MDC-based components
-        font-size: 1.25rem; // Ajuste se necessário
+      
+      .main-action-button {
+        background-color: $white;
+        color: $primary-color;
+      }
+      
+      .secondary-action-button {
+        border-color: $white;
+        color: $white;
       }
 
-      .mat-mdc-card-subtitle { // MDC-based components
-        margin-bottom: 16px;
+      @media (max-width: 576px) {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
       }
-
-      .mat-mdc-card-content p { // MDC-based components
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-       mat-card-actions {
-        padding-bottom: 16px !important; // Garante padding abaixo dos botões
-      }
-    }
-  }
-
-  .actions-section {
-    margin-bottom: 50px;
-
-    .home-main-action {
-      padding: 12px 24px; // Botões maiores
-      font-size: 1rem;
-      min-width: 220px;
-
-      .mat-icon {
-        margin-right: 8px;
-      }
-    }
-  }
-
-  .home-footer {
-    margin-top: auto; /* Empurra o footer para baixo */
-    padding-top: 30px;
-    border-top: 1px solid rgba(0, 0, 0, 0.12); // Cor fixa para divider
-    width: 100%;
-    max-width: 800px; // Consistente com o header
-
-    p {
-      font-size: 0.9em;
     }
   }
 }
 
-// Ajustes para tema escuro
-.dark-theme-mode {
-  .home-container {
-    .feature-card .mat-card-header .mat-icon.feature-icon {
-       color: #7986cb; // Cor primária mais clara para tema escuro
+// Seção de Recursos
+.features-section {
+  @include section-padding;
+  background-color: $background-light;
+  
+  .section-title {
+    text-align: center;
+    margin-bottom: 48px;
+    
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: $primary-color;
+
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
     }
-    .home-footer {
-      border-top-color: rgba(255, 255, 255, 0.12);
+    
+    p {
+      font-size: 1.1rem;
+      color: $text-light;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+  }
+  
+  .features-grid {
+    @include container-width;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    
+    .feature-card {
+      border-radius: 8px;
+      box-shadow: $card-shadow;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      }
+      
+      .mat-mdc-card-header {
+        padding: 24px 24px 0;
+        
+        .feature-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          margin-right: 16px;
+          
+          .mat-icon {
+            font-size: 28px;
+            height: 28px;
+            width: 28px;
+            color: $white;
+          }
+        }
+        
+        .student-icon {
+          background-color: #4caf50;
+        }
+        
+        .teacher-icon {
+          background-color: #2196f3;
+        }
+        
+        .admin-icon {
+          background-color: #9c27b0;
+        }
+        
+        .mat-mdc-card-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        
+        .mat-mdc-card-subtitle {
+          font-size: 1rem;
+          color: $text-light;
+        }
+      }
+      
+      .mat-mdc-card-content {
+        padding: 16px 24px;
+        flex-grow: 1;
+        
+        p {
+          font-size: 1rem;
+          line-height: 1.6;
+          margin-bottom: 24px;
+          color: $text-light;
+        }
+        
+        .feature-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          
+          li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            
+            .mat-icon {
+              color: #4caf50;
+              margin-right: 8px;
+              font-size: 20px;
+              height: 20px;
+              width: 20px;
+            }
+          }
+        }
+      }
+      
+      .mat-mdc-card-actions {
+        padding: 16px 24px 24px;
+        
+        .full-width-action {
+          width: 100%;
+          text-transform: none;
+          font-weight: 500;
+          padding: 8px 0;
+        }
+      }
+    }
+  }
+}
+
+// Seção de Informações
+.info-section {
+  @include section-padding;
+  background-color: $white;
+  
+  .section-title {
+    text-align: center;
+    margin-bottom: 48px;
+    
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: $primary-color;
+
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+    }
+    
+    p {
+      font-size: 1.1rem;
+      color: $text-light;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+  }
+  
+  .info-content {
+    @include container-width;
+    display: flex;
+    gap: 48px;
+    
+    @media (max-width: 992px) {
+      flex-direction: column;
+    }
+    
+    .info-text {
+      flex: 1;
+      
+      h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        color: $primary-color;
+      }
+      
+      p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 24px;
+        color: $text-light;
+      }
+    }
+    
+    .info-stats {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: center;
+      justify-content: center;
+      
+      .stat-item {
+        background-color: $background-light;
+        border-radius: 8px;
+        padding: 32px;
+        text-align: center;
+        flex: 1;
+        min-width: 160px;
+        box-shadow: $card-shadow;
+        
+        .stat-value {
+          display: block;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 8px;
+          color: $primary-color;
+        }
+        
+        .stat-label {
+          font-size: 1rem;
+          color: $text-light;
+        }
+      }
+    }
+  }
+}
+
+// Footer
+.home-footer {
+  background-color: #1a237e;
+  color: $white;
+  padding: 64px 32px 32px;
+  
+  .footer-content {
+    @include container-width;
+    display: flex;
+    justify-content: space-between;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 32px;
+    }
+    
+    .footer-logo {
+      h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      
+      p {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 48px;
+      
+      @media (max-width: 576px) {
+        flex-direction: column;
+        gap: 24px;
+      }
+      
+      .link-group {
+        h4 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 16px;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            height: 2px;
+            width: 32px;
+            background-color: $accent-color;
+          }
+        }
+        
+        ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          
+          li {
+            margin-bottom: 8px;
+            
+            a {
+              color: $white;
+              opacity: 0.8;
+              text-decoration: none;
+              transition: opacity 0.2s ease;
+              
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
