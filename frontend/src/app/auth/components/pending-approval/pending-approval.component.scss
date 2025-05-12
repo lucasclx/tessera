@@ -1,74 +1,77 @@
-/* src/app/auth/pending-approval/pending-approval.component.scss */
+/* src/app/auth/components/pending-approval/pending-approval.component.scss */
 @use "sass:color";
 
-$primary-color: #1976d2;
-$primary-light: #e3f2fd;
-$success-color: #43a047;
-$warning-color: #ffb300;
-$error-color: #e53935;
-$text-primary: #263238;
-$text-secondary: #607d8b;
-$bg-color: #f5f7fa;
-$border-color: #eceff1;
-$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+// Variáveis
+$primary-color: #2A3F75;
+$primary-light: #4C6ECC;
+$primary-lighter: #f5f8fc;
+$success-color: #36B37E;
+$warning-color: #FFAB00;
+$error-color: #E34935;
+$text-primary: #333333;
+$text-secondary: #546E7A;
+$white: #ffffff;
+$card-shadow: 0 10px 30px rgba(42, 63, 117, 0.1);
 
 .pending-approval-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: $bg-color;
-  padding: 20px;
+  background-color: $primary-lighter;
+  padding: 2rem;
 }
 
 .approval-card {
   max-width: 600px;
   width: 100%;
-  background-color: white;
+  background-color: $white;
   border-radius: 10px;
   box-shadow: $card-shadow;
-  padding: 40px;
-  text-align: center;
+  padding: 2rem;
   
   h1 {
     font-size: 1.8rem;
-    color: $text-primary;
-    margin-top: 20px;
-    margin-bottom: 15px;
+    color: $primary-color;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
   }
   
   .approval-message {
     font-size: 1.2rem;
     color: $text-primary;
-    margin-bottom: 25px;
+    margin-bottom: 1.5rem;
+    text-align: center;
   }
 }
 
 .approval-icon {
-  margin: 0 auto 20px;
-  width: 80px;
-  height: 80px;
+  margin: 0 auto 1.5rem;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background-color: $primary-light;
+  background-color: rgba($primary-color, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   
-  i {
-    font-size: 40px;
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
     color: $primary-color;
   }
 }
 
 .approval-details {
-  background-color: $bg-color;
-  padding: 20px;
+  background-color: $primary-lighter;
+  padding: 1.5rem;
   border-radius: 8px;
-  text-align: left;
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
   
   p {
-    margin: 0 0 15px 0;
+    margin: 0 0 1rem 0;
     color: $text-secondary;
     line-height: 1.6;
     
@@ -81,55 +84,23 @@ $card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 .approval-actions {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
   
-  .btn {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    
-    i {
-      margin-right: 8px;
-    }
-    
-    &.btn-primary {
-      background-color: $primary-color;
-      color: white;
-      border: none;
-      
-      &:hover {
-        background-color: color.adjust($primary-color, $lightness: -10%);
-      }
-    }
-    
-    &.btn-secondary {
-      background-color: white;
-      color: $primary-color;
-      border: 1px solid $primary-color;
-      
-      &:hover {
-        background-color: $primary-light;
-      }
-    }
+  button {
+    min-width: 150px;
   }
 }
 
 .status-message {
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 25px;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   
-  i {
-    margin-right: 10px;
-    font-size: 20px;
+  mat-icon {
+    margin-right: 0.75rem;
   }
   
   &.status-success {
@@ -151,9 +122,24 @@ $card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
 }
 
+.contact-form {
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    font-size: 1.25rem;
+    color: $primary-color;
+    margin-bottom: 1rem;
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+}
+
 .contact-info {
   font-size: 0.9rem;
   color: $text-secondary;
+  text-align: center;
   
   a {
     color: $primary-color;
@@ -165,34 +151,16 @@ $card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Ícones (placeholders)
-.icon-clock:before { content: '⏳'; }
-.icon-loading:before { content: '🔄'; }
-.icon-error:before { content: '⚠️'; }
-.icon-success:before { content: '✅'; }
-.icon-warning:before { content: '⚠️'; }
-
-// Animação de carregamento
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.icon-loading {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-
 // Responsividade
 @media (max-width: 768px) {
   .approval-card {
-    padding: 30px 20px;
+    padding: 1.5rem;
   }
   
   .approval-actions {
     flex-direction: column;
     
-    .btn {
+    button {
       width: 100%;
     }
   }

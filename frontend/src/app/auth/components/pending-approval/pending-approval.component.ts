@@ -3,9 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, ApprovalStatus } from '../../../core/auth.service'; // Caminho corrigido
-import { environment } from '../../../../environments/environment'; // Verifique este caminho
-import { MaterialModule } from '../../../material.module'; // Adicione esta importação
+import { AuthService, ApprovalStatus } from '../../../core/auth.service';
+import { environment } from '../../../../environments/environment';
+import { MaterialModule } from '../../../material.module';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 interface AccountDetails {
   nome: string;
@@ -20,7 +21,8 @@ interface AccountDetails {
   imports: [
     CommonModule,
     RouterLink,
-    MaterialModule // Adicione este módulo
+    MaterialModule,
+    ReactiveFormsModule
   ],
   templateUrl: './pending-approval.component.html',
   styleUrls: ['./pending-approval.component.scss']
@@ -31,13 +33,19 @@ export class PendingApprovalComponent implements OnInit {
   statusMessage: string | null = null;
   statusClass: 'status-success' | 'status-warning' | 'status-error' | '' = '';
   loading: boolean = false;
+  contactForm: FormGroup;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private fb: FormBuilder
+  ) {
+    this.contactForm = this.fb.group({
+      message: ['']
+    });
+  }
 
   ngOnInit(): void {
     // Obter o nome de usuário da URL
@@ -53,15 +61,14 @@ export class PendingApprovalComponent implements OnInit {
   }
 
   /**
-   * Carrega os detalhes da conta (isso exigiria um endpoint do backend)
-   * Aqui vamos simular com dados fixos
+   * Carrega os detalhes da conta
    */
   loadAccountDetails(): void {
     // Aqui você precisaria criar um endpoint no backend
     // Por enquanto, usando dados simulados
     this.accountDetails = {
       nome: this.username || 'Usuário',
-      role: 'Não atribuído',
+      role: 'ALUNO',
       requestedRole: 'PROFESSOR',
       createdAt: new Date().toISOString()
     };
@@ -111,6 +118,17 @@ export class PendingApprovalComponent implements OnInit {
   }
 
   /**
+   * Envia mensagem para o administrador
+   */
+  sendMessage(): void {
+    // Implementação básica - na versão real, enviaria para o backend
+    if (this.contactForm.value.message) {
+      alert('Mensagem enviada com sucesso!');
+      this.contactForm.reset();
+    }
+  }
+
+  /**
    * Formata uma data para exibição
    */
   formatDate(dateString: string): string {
@@ -124,5 +142,12 @@ export class PendingApprovalComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  /**
+   * Redireciona para a página de login
+   */
+  goToLogin(): void {
+    this.router.navigate(['/auth/login']);
   }
 }

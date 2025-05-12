@@ -1,0 +1,240 @@
+/* src/app/monografia/pages/editor-monografia/editor-monografia.component.scss */
+@use "sass:color";
+
+// Variáveis
+$primary-color: #2A3F75;
+$primary-light: #4C6ECC;
+$primary-lighter: #f5f8fc;
+$text-primary: #333333;
+$text-secondary: #546E7A;
+$border-color: #E0E7F1;
+$white: #ffffff;
+$error-color: #E34935;
+$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$sidebar-width: 320px;
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: $primary-lighter;
+}
+
+// Header do editor
+.editor-header {
+  background-color: $white;
+  box-shadow: $card-shadow;
+  padding: 16px;
+  z-index: 10;
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+  
+  .title-display {
+    display: flex;
+    align-items: center;
+    
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: $primary-color;
+      font-weight: 600;
+    }
+    
+    button {
+      margin-left: 8px;
+    }
+  }
+  
+  .title-edit-form {
+    display: flex;
+    align-items: center;
+    
+    mat-form-field {
+      width: 400px;
+      margin-right: 8px;
+      
+      @media (max-width: 768px) {
+        width: 100%;
+      }
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+  
+  .editor-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+  }
+}
+
+// Área principal do editor
+.editor-main {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+// Editor de conteúdo
+.editor-content {
+  flex: 1;
+  padding: 20px;
+  height: 100%;
+  overflow: auto;
+  transition: all 0.3s ease;
+  
+  &.with-sidebar {
+    flex: 0.75;
+    
+    @media (max-width: 768px) {
+      flex: 0.65;
+    }
+    
+    @media (max-width: 576px) {
+      display: none;
+    }
+  }
+}
+
+// Barra lateral
+.sidebar {
+  width: $sidebar-width;
+  background-color: $white;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $card-shadow;
+  
+  @media (max-width: 992px) {
+    width: 280px;
+  }
+  
+  @media (max-width: 576px) {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 20;
+  }
+  
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid $border-color;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: $primary-color;
+      font-weight: 600;
+    }
+  }
+  
+  .sidebar-content {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+  }
+}
+
+// Overlay de carregamento
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba($white, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 15;
+  
+  p {
+    margin-top: 16px;
+    color: $primary-color;
+    font-weight: 500;
+  }
+}
+
+// Mensagem de erro
+.error-message {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 24px;
+  background-color: $white;
+  border-radius: 8px;
+  box-shadow: $card-shadow;
+  border-left: 4px solid $error-color;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  
+  mat-icon {
+    color: $error-color;
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin: 0 0 24px 0;
+    color: $text-primary;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+// Overlay para comparação de versões
+.diff-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+// Utilitários
+.full-width {
+  width: 100%;
+}

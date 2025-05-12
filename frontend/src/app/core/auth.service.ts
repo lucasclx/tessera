@@ -1,6 +1,6 @@
 // src/app/core/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -156,9 +156,7 @@ export class AuthService {
     
     console.log('Enviando requisição de registro:', requestData);
     
-    return this.http.post(`${this.apiUrl}/register`, requestData, {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-    }).pipe(
+    return this.http.post(`${this.apiUrl}/register`, requestData).pipe(
       tap(response => {
         console.log('Resposta do registro:', response);
       }),

@@ -3,8 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/auth.service'; // Caminho corrigido
-import { MaterialModule } from '../../../material.module'; // Adicione esta importação
+import { AuthService } from '../../../core/auth.service';
+import { MaterialModule } from '../../../material.module';
 
 // Validador customizado para senhas
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -24,7 +24,7 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    MaterialModule // Adicione este módulo
+    MaterialModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -46,16 +46,30 @@ export class RegisterComponent implements OnInit {
     this.createForm();
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void { 
+    // Se já estiver logado, redirecionar para a página apropriada
+    if (this.authService.isLoggedIn()) {
+      const role = this.authService.getUserRole();
+      if (role === 'ADMIN') {
+        this.router.navigate(['/dashboard/admin']);
+      } else if (role === 'PROFESSOR') {
+        this.router.navigate(['/dashboard/professor']);
+      } else if (role === 'ALUNO') {
+        this.router.navigate(['/dashboard/aluno']);
+      } else {
+        this.router.navigate(['/home']);
+      }
+    }
+  }
 
   createForm(): void {
     this.registerForm = this.fb.group({
-      nome: ['', Validators.required],
-      username: ['', Validators.required],
+      nome: ['', [Validators.required, Validators.minLength(3)]],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
-      institution: ['', Validators.required],
+      institution: ['', [Validators.required, Validators.minLength(3)]],
       role: ['ALUNO', Validators.required]
     }, { validators: passwordMatchValidator });
   }

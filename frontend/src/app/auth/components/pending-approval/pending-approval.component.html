@@ -1,56 +1,71 @@
 <div class="pending-approval-container">
-    <div class="approval-card">
-      <div class="approval-icon">
-        <i class="icon-clock"></i>
-      </div>
-      
-      <h1>Conta Aguardando Aprovação</h1>
-      
-      <p class="approval-message">
-        Obrigado por se registrar no Sistema Acadêmico, <strong>{{ username }}</strong>!
+  <div class="approval-card">
+    <div class="approval-icon">
+      <mat-icon>hourglass_empty</mat-icon>
+    </div>
+    
+    <h1>Aguardando Aprovação</h1>
+    
+    <p class="approval-message">
+      Obrigado por se registrar no Sistema Tessera, <strong>{{ username }}</strong>!
+    </p>
+    
+    <div class="approval-details">
+      <p>
+        Sua conta foi registrada com sucesso, mas precisa ser aprovada por um administrador 
+        antes que você possa acessar o sistema.
       </p>
       
-      <div class="approval-details">
-        <p>
-          Sua conta foi registrada com sucesso, mas precisa ser aprovada por um administrador 
-          antes que você possa acessar o sistema.
-        </p>
-        
-        <p>
-          Esse processo geralmente leva até 24 horas durante dias úteis.
-          Você receberá uma notificação quando sua conta for aprovada.
-        </p>
-        
-        <p *ngIf="accountDetails">
-          <strong>Detalhes da conta:</strong><br>
-          Nome: {{ accountDetails.nome }}<br>
-          Papel Solicitado: {{ accountDetails.requestedRole || accountDetails.role }}<br>
-          Data de Solicitação: {{ formatDate(accountDetails.createdAt) }}
-        </p>
-      </div>
+      <p>
+        Esse processo geralmente leva até 24 horas durante dias úteis.
+        Você receberá uma notificação quando sua conta for aprovada.
+      </p>
       
-      <div class="approval-actions">
-        <button class="btn btn-primary" (click)="checkStatus()">
-          <i *ngIf="loading" class="icon-loading"></i>
-          <span *ngIf="!loading">Verificar Status</span>
-          <span *ngIf="loading">Verificando...</span>
+      <p *ngIf="accountDetails">
+        <strong>Detalhes da conta:</strong><br>
+        Nome: {{ accountDetails.nome }}<br>
+        Perfil Solicitado: {{ accountDetails.requestedRole || accountDetails.role }}<br>
+        Data de Solicitação: {{ formatDate(accountDetails.createdAt) }}
+      </p>
+    </div>
+    
+    <div class="approval-actions">
+      <button mat-raised-button color="primary" (click)="checkStatus()">
+        <mat-icon *ngIf="loading">sync</mat-icon>
+        <span *ngIf="!loading">Verificar Status</span>
+        <span *ngIf="loading">Verificando...</span>
+      </button>
+      
+      <button mat-stroked-button color="primary" (click)="goToLogin()">
+        Voltar para Login
+      </button>
+    </div>
+    
+    <div *ngIf="statusMessage" class="status-message" [ngClass]="statusClass">
+      <mat-icon *ngIf="statusClass === 'status-error'">error_outline</mat-icon>
+      <mat-icon *ngIf="statusClass === 'status-success'">check_circle</mat-icon>
+      <mat-icon *ngIf="statusClass === 'status-warning'">warning</mat-icon>
+      {{ statusMessage }}
+    </div>
+    
+    <div class="contact-form">
+      <h3>Precisa de ajuda?</h3>
+      <form [formGroup]="contactForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mensagem para o administrador</mat-label>
+          <textarea matInput formControlName="message" rows="4" placeholder="Descreva seu problema ou dúvida..."></textarea>
+        </mat-form-field>
+        <button mat-raised-button color="accent" (click)="sendMessage()" [disabled]="!contactForm.value.message">
+          Enviar Mensagem
         </button>
-        
-        <a routerLink="/auth/login" class="btn btn-secondary">Voltar para Login</a>
-      </div>
-      
-      <div *ngIf="statusMessage" class="status-message" [ngClass]="statusClass">
-        <i *ngIf="statusClass === 'status-error'" class="icon-error"></i>
-        <i *ngIf="statusClass === 'status-success'" class="icon-success"></i>
-        <i *ngIf="statusClass === 'status-warning'" class="icon-warning"></i>
-        {{ statusMessage }}
-      </div>
-      
-      <div class="contact-info">
-        <p>
-          Se você acredita que houve um erro ou deseja obter mais informações,
-          entre em contato com o administrador em <a href="mailto:admin@sistema.edu">admin&#64;sistema.edu</a>
-        </p>
-      </div>
+      </form>
+    </div>
+    
+    <div class="contact-info">
+      <p>
+        Se você acredita que houve um erro ou deseja obter mais informações,
+        entre em contato com o administrador em <a href="mailto:admin@tessera.edu">admin@tessera.edu</a>
+      </p>
     </div>
   </div>
+</div>
