@@ -48,6 +48,7 @@ export class LoginComponent implements OnInit {
     }
 
     if (this.authService.isLoggedIn()) {
+      console.log('Usuário já está logado, redirecionando para dashboard');
       this.navigationService.navigateToDashboard();
     }
   }
@@ -101,10 +102,19 @@ export class LoginComponent implements OnInit {
     this.authService.login({ username, password }).subscribe({
       next: () => {
         this.loading = false;
+        console.log('Login bem-sucedido, redirecionando para:', this.returnUrl);
+        
+        // Após o login bem-sucedido, verificar as roles
+        console.log('Role do usuário após login:', this.authService.getUserRole());
+        console.log('Usuário tem role ALUNO?', this.authService.hasRole('ALUNO'));
+        console.log('Usuário tem role PROFESSOR?', this.authService.hasRole('PROFESSOR'));
+        console.log('Usuário tem role ADMIN?', this.authService.hasRole('ADMIN'));
+        
         this.navigationService.navigateAfterLogin(this.returnUrl);
       },
       error: (err) => {
         this.loading = false;
+        console.error('Erro no login:', err);
         if (err.status === 403 && err.error?.message?.includes('aguardando aprovação')) {
           this.router.navigate(['/auth/pending-approval'], { queryParams: { username } });
           return;

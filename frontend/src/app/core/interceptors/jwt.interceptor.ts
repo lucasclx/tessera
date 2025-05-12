@@ -25,6 +25,7 @@ export class JwtInterceptor implements HttpInterceptor {
     const isAuthRequest = request.url.includes('/auth/'); // Não adiciona token em requisições de autenticação
     
     if (isLoggedIn && isApiUrl && token && !isAuthRequest) {
+      console.log(`JwtInterceptor: Adicionando token à requisição ${request.url}`);
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -36,6 +37,7 @@ export class JwtInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         // Interceptar erros 401 (Unauthorized) e redirecionar para login
         if (error.status === 401) {
+          console.warn('JwtInterceptor: Erro 401 (Unauthorized), redirecionando para login');
           this.authService.logout();
           this.router.navigate(['/auth/login'], { 
             queryParams: { 
@@ -47,6 +49,7 @@ export class JwtInterceptor implements HttpInterceptor {
         
         // Interceptar erros 403 (Forbidden)
         if (error.status === 403) {
+          console.warn('JwtInterceptor: Erro 403 (Forbidden)', error.error);
           // Verificar se o erro é devido a uma aprovação pendente
           if (error.error?.message === 'PENDING_APPROVAL') {
             const username = this.authService.currentUserValue?.username;

@@ -54,21 +54,41 @@ export class AlunoDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('AlunoDashboardComponent inicializado');
     this.username = this.authService.currentUserValue?.username || 'Aluno';
+    console.log('Username definido:', this.username);
+    
+    // Verificar se o usuário tem a role "ALUNO"
+    console.log('Usuário atual:', this.authService.currentUserValue);
+    console.log('Roles disponíveis:', this.authService.currentUserValue?.roles);
+    console.log('Role principal:', this.authService.getUserRole());
+    console.log('Tem role ALUNO?', this.authService.hasRole('ALUNO'));
+    
     this.carregarMinhasMonografias();
   }
 
   carregarMinhasMonografias(): void {
     this.loadingMonografias = true;
     this.erroMonografias = null;
+    
+    console.log('Token atual:', this.authService.getToken());
+    
     this.monografiaService.getMonografias().subscribe({
       next: (data) => {
         this.minhasMonografias = data;
         this.loadingMonografias = false;
+        console.log('Monografias carregadas com sucesso:', data.length);
       },
       error: (err) => {
-        console.error('Erro ao buscar monografias do aluno:', err);
-        this.erroMonografias = `Erro ao carregar monografias: ${err.error?.message || err.message || 'Serviço indisponível'}`;
+        console.error('Erro detalhado ao buscar monografias:', err);
+        
+        if (err.status === 401) {
+          this.erroMonografias = "Sessão expirada. Por favor, faça login novamente.";
+          this.authService.logout(); // Força logout para renovar o token
+        } else {
+          this.erroMonografias = `Erro ao carregar monografias: ${err.error?.message || err.status} - ${err.message || 'Serviço indisponível'}`;
+        }
+        
         this.loadingMonografias = false;
         this.snackBar.open(this.erroMonografias, 'Fechar', { duration: 5000 });
       }

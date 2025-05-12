@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../auth.service'; // Caminho corrigido
+import { AuthService } from '../auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +14,10 @@ export class AuthGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    
+    console.log('AuthGuard verificando se o usuário está autenticado');
+    console.log('Usuário atual:', this.authService.currentUserValue?.username);
+    console.log('Token válido:', !!this.authService.getToken());
     
     if (this.authService.isLoggedIn()) {
       console.log('AuthGuard: usuário autenticado, permitindo acesso');

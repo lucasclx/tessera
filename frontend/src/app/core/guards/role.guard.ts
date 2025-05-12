@@ -1,7 +1,7 @@
 // src/app/core/guards/role.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import { AuthService } from '../auth.service'; // Caminho corrigido
+import { AuthService } from '../auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +14,10 @@ export class RoleGuard implements CanActivate {
     // Obter o papel esperado da configuração da rota
     const expectedRole = route.data['expectedRole'] as string;
 
+    console.log('RoleGuard verificando acesso para role:', expectedRole);
+    console.log('Usuário atual:', this.authService.currentUserValue?.username);
+    console.log('Roles do usuário:', this.authService.currentUserValue?.roles);
+
     // Verificar se o usuário está autenticado
     if (!this.authService.isLoggedIn()) {
       console.log('RoleGuard: usuário não autenticado, redirecionando para login');
@@ -21,7 +25,7 @@ export class RoleGuard implements CanActivate {
       return false;
     }
 
-    // Verificar estritamente se o usuário tem EXATAMENTE a role esperada
+    // Verificar se o usuário tem a role esperada
     if (this.authService.hasRole(expectedRole)) {
       console.log(`RoleGuard: usuário tem a role ${expectedRole}, permitindo acesso`);
       return true;

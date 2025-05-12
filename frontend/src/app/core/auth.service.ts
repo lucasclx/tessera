@@ -127,6 +127,7 @@ export class AuthService {
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 this.currentUserSubject.next(user);
                 console.log('Token armazenado no localStorage e currentUserSubject atualizado');
+                console.log('Token e roles armazenadas:', user.token, user.roles);
               }
             }),
             catchError(err => {
@@ -187,11 +188,18 @@ export class AuthService {
       return false;
     }
 
-    // Verificação mais rigorosa - comparar com a role principal
-    const userRole = this.getUserRole();
-    const hasRole = userRole === role.toUpperCase();
+    // Normalizar as roles para comparação
+    const userRoles = this.currentUserValue.roles.map(r => 
+      r.toUpperCase().replace('ROLE_', '')
+    );
+    const roleToCheck = role.toUpperCase().replace('ROLE_', '');
+    
+    const hasRole = userRoles.includes(roleToCheck);
 
-    console.log(`hasRole check para ${role}:`, hasRole, 'Role principal:', userRole);
+    console.log(`hasRole check para ${role}:`, hasRole, 'Role principal:', this.getUserRole());
+    console.log('Roles disponíveis (normalizadas):', userRoles);
+    console.log('Role verificada (normalizada):', roleToCheck);
+    
     return hasRole;
   }
 
@@ -204,17 +212,26 @@ export class AuthService {
       return null;
     }
 
+    console.log('Roles originais disponíveis:', this.currentUserValue.roles);
+    
+    // Normalizar as roles removendo o prefixo "ROLE_" se existir
+    const normalizedRoles = this.currentUserValue.roles.map(r => 
+      r.toUpperCase().replace('ROLE_', '')
+    );
+    
+    console.log('Roles normalizadas:', normalizedRoles);
+    
     // Ordem de prioridade: ADMIN > PROFESSOR > ALUNO
-    if (this.currentUserValue.roles.includes('ADMIN')) {
+    if (normalizedRoles.includes('ADMIN')) {
       return 'ADMIN';
-    } else if (this.currentUserValue.roles.includes('PROFESSOR')) {
+    } else if (normalizedRoles.includes('PROFESSOR')) {
       return 'PROFESSOR';
-    } else if (this.currentUserValue.roles.includes('ALUNO')) {
+    } else if (normalizedRoles.includes('ALUNO')) {
       return 'ALUNO';
     }
 
     // Retorna a primeira role disponível se nenhuma das principais
-    return this.currentUserValue.roles[0];
+    return normalizedRoles[0];
   }
 
   getToken(): string | null {

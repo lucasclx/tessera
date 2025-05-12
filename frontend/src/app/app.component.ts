@@ -34,12 +34,22 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isLoggedIn = !!user;
       this.username = user?.username || null;
       this.userRole = this.authService.getUserRole();
+      console.log('AppComponent - Estado de autenticação atualizado:', {
+        isLoggedIn: this.isLoggedIn,
+        username: this.username,
+        userRole: this.userRole
+      });
     });
 
     this.isLoggedIn = this.authService.isLoggedIn();
     if (this.isLoggedIn) {
       this.username = this.authService.currentUserValue?.username || null;
       this.userRole = this.authService.getUserRole();
+      console.log('AppComponent - Estado inicial de autenticação:', {
+        isLoggedIn: this.isLoggedIn,
+        username: this.username,
+        userRole: this.userRole
+      });
     }
   }
 
@@ -62,10 +72,10 @@ export class AppComponent implements OnInit, OnDestroy {
       case 'ALUNO': return '/dashboard/aluno';
       default: return '/home';
     }
+    }
+  
+    getRoleBadgeClass(): string {
+      const role = this.authService.getUserRole()?.toLowerCase();
+      return role ? `badge-${role}` : '';
+    }
   }
-
-  getRoleBadgeClass(): string {
-    const role = this.authService.getUserRole()?.toLowerCase();
-    return role ? `badge-${role}` : '';
-  }
-}

@@ -12,17 +12,17 @@ import { MaterialModule } from './material.module';
 
 @NgModule({
   declarations: [
-    // Remover AppComponent da lista de declarações, pois é um componente standalone
+    // AppComponent é standalone
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    MaterialModule, // Importante para os componentes Material
+    MaterialModule,
     CoreModule, // Importante: Core deve ser importado antes dos outros módulos
     AuthModule,
-    AppRoutingModule, // Importante: AppRoutingModule deve ser o último
-    AppComponent // Importar AppComponent como componente standalone
+    AppRoutingModule, // AppRoutingModule deve ser o último
+    AppComponent // AppComponent como standalone
   ],
   bootstrap: [AppComponent]
 })

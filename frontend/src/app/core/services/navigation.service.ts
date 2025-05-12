@@ -24,6 +24,7 @@ export class NavigationService {
         !returnUrl.includes('/register') && 
         !returnUrl.includes('/auth') && 
         returnUrl !== '/') {
+      console.log('Navegando para returnUrl:', returnUrl);
       this.router.navigateByUrl(returnUrl);
       return;
     }
@@ -44,16 +45,20 @@ export class NavigationService {
     // Redirecionar com base na role
     switch (role) {
       case 'ADMIN':
+        console.log('Navegando para dashboard de admin');
         this.router.navigate(['/dashboard/admin']);
         break;
       case 'PROFESSOR':
+        console.log('Navegando para dashboard de professor');
         this.router.navigate(['/dashboard/professor']);
         break;
       case 'ALUNO':
+        console.log('Navegando para dashboard de aluno');
         this.router.navigate(['/dashboard/aluno']);
         break;
       default:
-        // Se não tiver uma role específica ou valid, redireciona para home
+        // Se não tiver uma role específica ou válida, redireciona para home
+        console.log('Role não reconhecida, navegando para home');
         this.router.navigate(['/home']);
         console.warn('Usuário sem role válida detectado:', 
                     this.authService.currentUserValue?.roles || 'sem roles');

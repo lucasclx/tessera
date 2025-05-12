@@ -5,9 +5,9 @@
 // Variáveis
 $primary-color: #2A3F75;
 $primary-dark: color.adjust($primary-color, $lightness: -8%);
-// Uso correto das funções de paleta do Material com o namespace 'mat.'
-$primary-light: mat.get-color-from-palette(mat.$indigo-palette, 100); // Linha 9 do erro original
-$accent-color: mat.get-color-from-palette(mat.$amber-palette, A400); // Exemplo de cor de destaque
+// Substituir a linha problemática abaixo
+$primary-light: #C5CAE9; // Usar valor direto da cor em vez da função
+$accent-color: #FFC400; // Valor aproximado para amber-A400
 
 $text-primary: #263238;
 $text-secondary: #546E7A;
@@ -372,8 +372,8 @@ $border-radius: 8px;
       background-color: rgba($primary-color, 0.1);
       color: $primary-color;
       &.urgent {
-        background-color: rgba(mat.get-color-from-palette(mat.$red-palette, 500), 0.1);
-        color: mat.get-color-from-palette(mat.$red-palette, 700);
+        background-color: rgba(#f44336, 0.1); // Usando valor direto em vez de função
+        color: #d32f2f; // Valor fixo para o vermelho escuro
       }
     }
   }
@@ -395,10 +395,10 @@ $border-radius: 8px;
             font-weight: 600;
             padding: 4px 8px;
             border-radius: 4px;
-            &.excellent { background-color: rgba(mat.get-color-from-palette(mat.$green-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$green-palette, 700); }
-            &.good { background-color: rgba(mat.get-color-from-palette(mat.$light-blue-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$light-blue-palette, 700); }
-            &.average { background-color: rgba(mat.get-color-from-palette(mat.$amber-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$amber-palette, 700); }
-            &.poor { background-color: rgba(mat.get-color-from-palette(mat.$red-palette, 400), 0.15); color: mat.get-color-from-palette(mat.$red-palette, 600); }
+            &.excellent { background-color: rgba(#4CAF50, 0.15); color: #2E7D32; } // Verde
+            &.good { background-color: rgba(#2196F3, 0.15); color: #0D47A1; } // Azul
+            &.average { background-color: rgba(#FFC107, 0.15); color: #FF8F00; } // Âmbar
+            &.poor { background-color: rgba(#F44336, 0.15); color: #C62828; } // Vermelho
         }
     }
 }

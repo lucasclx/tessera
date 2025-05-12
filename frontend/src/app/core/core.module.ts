@@ -24,5 +24,6 @@ export class CoreModule {
     if (parentModule) {
       throw new Error('CoreModule já foi importado. Importe apenas no AppModule.');
     }
+    console.log('CoreModule inicializado');
   }
 }
