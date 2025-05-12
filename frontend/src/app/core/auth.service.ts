@@ -10,16 +10,14 @@ export interface AuthResponse {
   token: string;
   username: string;
   roles: string[];
-  id: number; // <--- ADICIONADO ID DO USUÁRIO
+  id: number;
 }
 
-// Interface para os dados de login
 export interface LoginData {
   username: string;
   password: string;
 }
 
-// Interface para os dados de registro
 export interface RegistrationData {
   nome: string;
   username: string;
@@ -51,192 +49,127 @@ export class AuthService {
       storedUser ? JSON.parse(storedUser) : null
     );
     this.currentUser = this.currentUserSubject.asObservable();
-
-    console.log('AuthService inicializado. Usuário atual:', this.currentUserValue);
+    console.log('AuthService: Inicializado. Usuário atual (localStorage):', this.currentUserValue?.username);
   }
 
   public get currentUserValue(): AuthResponse | null {
     return this.currentUserSubject.value;
   }
 
-  /**
-   * Verifica o status de aprovação de um usuário
-   * @param username Nome de usuário a verificar
-   * @returns Status de aprovação como enum ApprovalStatus
-   */
   checkApprovalStatus(username: string): Observable<ApprovalStatus> {
-    console.log(`Verificando status de aprovação para: ${username}`);
-
+    console.log(`AuthService: Verificando status de aprovação para: ${username}`);
     return this.http.get<any>(`${this.apiUrl}/check-approval/${username}`).pipe(
       map(response => {
-        console.log('Resposta do check-approval:', response);
-        if (response && response.message === 'APPROVED') {
-          return ApprovalStatus.APPROVED;
-        } else if (response && response.message === 'ROLE_MISSING') {
-          return ApprovalStatus.ROLE_MISSING;
-        }
+        console.log('AuthService: Resposta do check-approval:', response);
+        if (response && response.message === 'APPROVED') return ApprovalStatus.APPROVED;
+        if (response && response.message === 'ROLE_MISSING') return ApprovalStatus.ROLE_MISSING;
         return ApprovalStatus.UNKNOWN;
       }),
       catchError(error => {
-        console.log('Erro ao verificar status de aprovação:', error);
-
+        console.warn('AuthService: Erro ao verificar status de aprovação:', error);
         if (error.status === 403) {
-          if (error.error && error.error.message === 'PENDING_APPROVAL') {
-            return of(ApprovalStatus.PENDING_APPROVAL);
-          } else if (error.error && error.error.message === 'ACCOUNT_DISABLED') {
-            return of(ApprovalStatus.ACCOUNT_DISABLED);
-          } else if (error.error && error.error.message === 'ROLE_MISSING') {
-            return of(ApprovalStatus.ROLE_MISSING);
-          }
-        } else if (error.status === 404) {
-          console.log('Usuário não encontrado');
+          if (error.error?.message === 'PENDING_APPROVAL') return of(ApprovalStatus.PENDING_APPROVAL);
+          if (error.error?.message === 'ACCOUNT_DISABLED') return of(ApprovalStatus.ACCOUNT_DISABLED);
+          if (error.error?.message === 'ROLE_MISSING') return of(ApprovalStatus.ROLE_MISSING);
         }
-
         return of(ApprovalStatus.UNKNOWN);
       })
     );
   }
 
   login(credentials: LoginData): Observable<AuthResponse> {
-    console.log('Enviando requisição de login para:', `${this.apiUrl}/login`);
-    console.log('Credenciais:', {username: credentials.username, password: '******'});
-
-    // Primeiro verificamos o status de aprovação
+    console.log('AuthService: Iniciando processo de login para usuário:', credentials.username);
     return this.checkApprovalStatus(credentials.username).pipe(
       switchMap(status => {
-        console.log('Status de aprovação retornado:', status);
-
+        console.log(`AuthService: Status de aprovação para ${credentials.username}: ${status}`);
         if (status === ApprovalStatus.PENDING_APPROVAL) {
-          // Redirecionar para página de "aguardando aprovação"
-          this.router.navigate(['/auth/pending-approval'], {
-            queryParams: { username: credentials.username }
-          });
-          return throwError(() => new Error('Sua conta está aguardando aprovação do administrador.'));
+          this.router.navigate(['/auth/pending-approval'], { queryParams: { username: credentials.username } });
+          return throwError(() => ({ message: 'Sua conta está aguardando aprovação do administrador.', status: 'PENDING_APPROVAL' }));
         } else if (status === ApprovalStatus.ACCOUNT_DISABLED) {
-          return throwError(() => new Error('Sua conta está desativada. Entre em contato com o administrador.'));
+          return throwError(() => ({ message: 'Sua conta está desativada. Entre em contato com o administrador.', status: 'ACCOUNT_DISABLED' }));
         } else if (status === ApprovalStatus.ROLE_MISSING) {
-          return throwError(() => new Error('Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador.'));
+            return throwError(() => ({ message: 'Sua conta foi aprovada mas não possui um papel (role) atribuído. Entre em contato com o administrador.', status: 'ROLE_MISSING' }));
         }
-
-        // Se estiver aprovado ou status desconhecido, prosseguimos com o login normal
-        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
-          .pipe(
-            tap(user => {
-              console.log('Resposta do login:', user);
-              if (user && user.token) {
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                this.currentUserSubject.next(user);
-                console.log('Token armazenado no localStorage e currentUserSubject atualizado');
-                console.log('Token e roles armazenadas:', user.token, user.roles);
-              }
-            }),
-            catchError(err => {
-              console.error('Erro durante login:', err);
-
-              // Verificar se o erro é devido a aprovação pendente
-              if (err.status === 403 && err.error?.message?.includes('aguardando aprovação')) {
-                this.router.navigate(['/auth/pending-approval'], {
-                  queryParams: { username: credentials.username }
-                });
-                return throwError(() => new Error('Sua conta está aguardando aprovação do administrador.'));
-              }
-
-              // Propagar outros erros
-              return throwError(() => err);
-            })
-          );
+        
+        console.log(`AuthService: Status OK para ${credentials.username}, prosseguindo com POST /login.`);
+        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+          tap(user => {
+            console.log('AuthService: Resposta da API de login bem-sucedida:', user);
+            if (user && user.token) {
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              this.currentUserSubject.next(user);
+              console.log('AuthService: Usuário autenticado e token armazenado. Username:', user.username, 'Roles:', user.roles);
+            } else {
+              console.warn('AuthService: Resposta de login não continha token ou dados do usuário esperados.', user);
+              // Lançar um erro aqui pode ser uma boa ideia se um token é sempre esperado
+              // return throwError(() => new Error('Resposta de login inválida do servidor.'));
+            }
+          }),
+          catchError(err => {
+            console.error('AuthService: Erro na chamada HTTP POST /login:', err);
+            return throwError(() => err); // Propagar o erro para o componente tratar
+          })
+        );
+      }),
+      catchError(err => { 
+        console.error('AuthService: Erro capturado durante checkApprovalStatus ou switchMap:', err.message || err);
+        return throwError(() => err); 
       })
     );
   }
 
   register(data: RegistrationData): Observable<any> {
-    // Convertemos o Set para um formato que JSON possa serializar (Array)
     const requestData = {
       ...data,
       role: Array.from(data.role)
     };
-
-    console.log('Enviando requisição de registro:', requestData);
-
+    console.log('AuthService: Enviando requisição de registro:', requestData);
     return this.http.post(`${this.apiUrl}/register`, requestData).pipe(
       tap(response => {
-        console.log('Resposta do registro:', response);
+        console.log('AuthService: Resposta do registro:', response);
       }),
       catchError(err => {
-        console.error('Erro no registro:', err);
+        console.error('AuthService: Erro no registro:', err);
         return throwError(() => err);
       })
     );
   }
 
   logout(): void {
-    console.log('Realizando logout');
+    console.log('AuthService: Realizando logout para usuário:', this.currentUserValue?.username);
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
 
   isLoggedIn(): boolean {
-    const isLogged = !!this.currentUserValue && !!this.currentUserValue.token;
-    console.log('isLoggedIn check:', isLogged);
-    return isLogged;
-  }
-
-  hasRole(role: string): boolean {
-    if (!this.isLoggedIn() || !this.currentUserValue?.roles) {
-      console.log('hasRole - Usuário não logado ou sem roles');
-      return false;
-    }
-
-    // Normalizar as roles para comparação
-    const userRoles = this.currentUserValue.roles.map(r => 
-      r.toUpperCase().replace('ROLE_', '')
-    );
-    const roleToCheck = role.toUpperCase().replace('ROLE_', '');
-    
-    const hasRole = userRoles.includes(roleToCheck);
-
-    console.log(`hasRole check para ${role}:`, hasRole, 'Role principal:', this.getUserRole());
-    console.log('Roles disponíveis (normalizadas):', userRoles);
-    console.log('Role verificada (normalizada):', roleToCheck);
-    
-    return hasRole;
-  }
-
-  /**
-   * Retorna a role principal do usuário atual
-   * @returns string com a role principal ou null se não estiver logado
-   */
-  getUserRole(): string | null {
-    if (!this.isLoggedIn() || !this.currentUserValue?.roles || this.currentUserValue.roles.length === 0) {
-      return null;
-    }
-
-    console.log('Roles originais disponíveis:', this.currentUserValue.roles);
-    
-    // Normalizar as roles removendo o prefixo "ROLE_" se existir
-    const normalizedRoles = this.currentUserValue.roles.map(r => 
-      r.toUpperCase().replace('ROLE_', '')
-    );
-    
-    console.log('Roles normalizadas:', normalizedRoles);
-    
-    // Ordem de prioridade: ADMIN > PROFESSOR > ALUNO
-    if (normalizedRoles.includes('ADMIN')) {
-      return 'ADMIN';
-    } else if (normalizedRoles.includes('PROFESSOR')) {
-      return 'PROFESSOR';
-    } else if (normalizedRoles.includes('ALUNO')) {
-      return 'ALUNO';
-    }
-
-    // Retorna a primeira role disponível se nenhuma das principais
-    return normalizedRoles[0];
+    const user = this.currentUserValue;
+    return !!user && !!user.token;
   }
 
   getToken(): string | null {
-    const token = this.currentUserValue?.token || null;
-    // console.log('getToken:', token ? token.substring(0, 15) + '...' : 'null'); // Removido log frequente
-    return token;
+    return this.currentUserValue?.token || null;
+  }
+
+  getUserRole(): string | null {
+    const user = this.currentUserValue;
+    if (!user || !user.roles || user.roles.length === 0) {
+      return null;
+    }
+    const normalizedRoles = user.roles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
+    if (normalizedRoles.includes('ADMIN')) return 'ADMIN';
+    if (normalizedRoles.includes('PROFESSOR')) return 'PROFESSOR';
+    if (normalizedRoles.includes('ALUNO')) return 'ALUNO';
+    return normalizedRoles[0] || null;
+  }
+
+  hasRole(role: string): boolean {
+    const user = this.currentUserValue;
+    if (!user || !user.roles) {
+      return false;
+    }
+    const roleToCheckNormalized = role.toUpperCase().replace(/^ROLE_/, '');
+    const userRolesNormalized = user.roles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
+    return userRolesNormalized.includes(roleToCheckNormalized);
   }
 }

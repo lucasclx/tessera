@@ -14,6 +14,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -35,19 +38,35 @@ public class SecurityConfig {
     private CustomAuthenticationProvider customAuthenticationProvider;
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**").permitAll() // Login, Register, Check-Approval (agora parte do módulo Auth)
-                .requestMatchers("/api/admin/**").hasRole("ADMIN") // AdminController (agora parte do módulo Auth)
-                .requestMatchers("/api/dashboard/professor/**").hasRole("PROFESSOR") // DashboardController (agora parte do módulo Auth)
-                .requestMatchers("/api/dashboard/aluno/**").hasRole("ALUNO") // DashboardController (agora parte do módulo Auth)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/dashboard/professor/**").hasRole("PROFESSOR")
+                .requestMatchers("/api/dashboard/aluno/**").hasRole("ALUNO")
+                
+                // --- REGRA DE AUTORIZAÇÃO PARA MONOGRAFIAS (AJUSTADA/ADICIONADA) ---
+                .requestMatchers(HttpMethod.GET, "/api/monografias").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/monografias").hasAnyRole("ALUNO", "PROFESSOR") // Exemplo: quem pode criar
+                .requestMatchers(HttpMethod.GET, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN") // Ex: para buscar uma específica
+                .requestMatchers(HttpMethod.PUT, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR") // Ex: quem pode atualizar
+                .requestMatchers(HttpMethod.DELETE, "/api/monografias/{id}/**").hasAnyRole("ADMIN", "PROFESSOR") // Ex: quem pode deletar
+                // --- FIM DA REGRA DE MONOGRAFIAS ---
+
+                // Regras para outros módulos (versao, comentario, etc.) devem ser adicionadas aqui
+                .requestMatchers("/api/versoes/**").authenticated() // Exemplo genérico, ajuste as roles
+                .requestMatchers("/api/comentarios/**").authenticated() // Exemplo genérico, ajuste as roles
+
                 .requestMatchers("/actuator/**").permitAll()
-                // Adicionar aqui as regras para os novos módulos (monografia, versao, etc.) quando os controllers forem criados
-                // Ex: .requestMatchers("/api/monografia/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -55,16 +74,16 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    if (request.getRequestURI().startsWith("/api/auth/login")) {
-                         response.getWriter().write("{\"message\": \"" + authException.getMessage() + "\"}");
-                    } else {
-                         response.getWriter().write("{\"message\": \"Autenticação necessária para acessar este recurso.\"}");
-                    }
+                    String jsonErrorResponse = String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"Unauthorized\", \"message\": \"%s\", \"path\": \"%s\"}",
+                            java.time.LocalDateTime.now(), HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage(), request.getRequestURI());
+                    response.getWriter().write(jsonErrorResponse);
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"message\": \"Acesso Proibido: Você não tem permissão para acessar este recurso.\"}");
+                    String jsonErrorResponse = String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"Forbidden\", \"message\": \"%s\", \"path\": \"%s\"}",
+                            java.time.LocalDateTime.now(), HttpServletResponse.SC_FORBIDDEN, accessDeniedException.getMessage(), request.getRequestURI());
+                    response.getWriter().write(jsonErrorResponse);
                 })
             );
 
@@ -86,7 +105,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:4200")); // Use List.of
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
