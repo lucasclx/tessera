@@ -10,6 +10,7 @@ export interface AuthResponse {
   token: string;
   username: string;
   roles: string[];
+  id: number; // <--- ADICIONADO ID DO USUÁRIO
 }
 
 // Interface para os dados de login
@@ -50,7 +51,7 @@ export class AuthService {
       storedUser ? JSON.parse(storedUser) : null
     );
     this.currentUser = this.currentUserSubject.asObservable();
-    
+
     console.log('AuthService inicializado. Usuário atual:', this.currentUserValue);
   }
 
@@ -65,7 +66,7 @@ export class AuthService {
    */
   checkApprovalStatus(username: string): Observable<ApprovalStatus> {
     console.log(`Verificando status de aprovação para: ${username}`);
-    
+
     return this.http.get<any>(`${this.apiUrl}/check-approval/${username}`).pipe(
       map(response => {
         console.log('Resposta do check-approval:', response);
@@ -78,7 +79,7 @@ export class AuthService {
       }),
       catchError(error => {
         console.log('Erro ao verificar status de aprovação:', error);
-        
+
         if (error.status === 403) {
           if (error.error && error.error.message === 'PENDING_APPROVAL') {
             return of(ApprovalStatus.PENDING_APPROVAL);
@@ -90,7 +91,7 @@ export class AuthService {
         } else if (error.status === 404) {
           console.log('Usuário não encontrado');
         }
-        
+
         return of(ApprovalStatus.UNKNOWN);
       })
     );
@@ -99,15 +100,15 @@ export class AuthService {
   login(credentials: LoginData): Observable<AuthResponse> {
     console.log('Enviando requisição de login para:', `${this.apiUrl}/login`);
     console.log('Credenciais:', {username: credentials.username, password: '******'});
-    
+
     // Primeiro verificamos o status de aprovação
     return this.checkApprovalStatus(credentials.username).pipe(
       switchMap(status => {
         console.log('Status de aprovação retornado:', status);
-        
+
         if (status === ApprovalStatus.PENDING_APPROVAL) {
           // Redirecionar para página de "aguardando aprovação"
-          this.router.navigate(['/auth/pending-approval'], { 
+          this.router.navigate(['/auth/pending-approval'], {
             queryParams: { username: credentials.username }
           });
           return throwError(() => new Error('Sua conta está aguardando aprovação do administrador.'));
@@ -116,7 +117,7 @@ export class AuthService {
         } else if (status === ApprovalStatus.ROLE_MISSING) {
           return throwError(() => new Error('Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador.'));
         }
-        
+
         // Se estiver aprovado ou status desconhecido, prosseguimos com o login normal
         return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
           .pipe(
@@ -130,15 +131,15 @@ export class AuthService {
             }),
             catchError(err => {
               console.error('Erro durante login:', err);
-              
+
               // Verificar se o erro é devido a aprovação pendente
               if (err.status === 403 && err.error?.message?.includes('aguardando aprovação')) {
-                this.router.navigate(['/auth/pending-approval'], { 
+                this.router.navigate(['/auth/pending-approval'], {
                   queryParams: { username: credentials.username }
                 });
                 return throwError(() => new Error('Sua conta está aguardando aprovação do administrador.'));
               }
-              
+
               // Propagar outros erros
               return throwError(() => err);
             })
@@ -153,9 +154,9 @@ export class AuthService {
       ...data,
       role: Array.from(data.role)
     };
-    
+
     console.log('Enviando requisição de registro:', requestData);
-    
+
     return this.http.post(`${this.apiUrl}/register`, requestData).pipe(
       tap(response => {
         console.log('Resposta do registro:', response);
@@ -185,11 +186,11 @@ export class AuthService {
       console.log('hasRole - Usuário não logado ou sem roles');
       return false;
     }
-    
+
     // Verificação mais rigorosa - comparar com a role principal
     const userRole = this.getUserRole();
     const hasRole = userRole === role.toUpperCase();
-    
+
     console.log(`hasRole check para ${role}:`, hasRole, 'Role principal:', userRole);
     return hasRole;
   }
@@ -202,7 +203,7 @@ export class AuthService {
     if (!this.isLoggedIn() || !this.currentUserValue?.roles || this.currentUserValue.roles.length === 0) {
       return null;
     }
-    
+
     // Ordem de prioridade: ADMIN > PROFESSOR > ALUNO
     if (this.currentUserValue.roles.includes('ADMIN')) {
       return 'ADMIN';
@@ -211,14 +212,14 @@ export class AuthService {
     } else if (this.currentUserValue.roles.includes('ALUNO')) {
       return 'ALUNO';
     }
-    
+
     // Retorna a primeira role disponível se nenhuma das principais
     return this.currentUserValue.roles[0];
   }
 
   getToken(): string | null {
     const token = this.currentUserValue?.token || null;
-    console.log('getToken:', token ? token.substring(0, 15) + '...' : 'null');
+    // console.log('getToken:', token ? token.substring(0, 15) + '...' : 'null'); // Removido log frequente
     return token;
   }
 }

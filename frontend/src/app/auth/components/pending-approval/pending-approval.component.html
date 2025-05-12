@@ -3,24 +3,24 @@
     <div class="approval-icon">
       <mat-icon>hourglass_empty</mat-icon>
     </div>
-    
+
     <h1>Aguardando Aprovação</h1>
-    
+
     <p class="approval-message">
       Obrigado por se registrar no Sistema Tessera, <strong>{{ username }}</strong>!
     </p>
-    
+
     <div class="approval-details">
       <p>
-        Sua conta foi registrada com sucesso, mas precisa ser aprovada por um administrador 
+        Sua conta foi registrada com sucesso, mas precisa ser aprovada por um administrador
         antes que você possa acessar o sistema.
       </p>
-      
+
       <p>
         Esse processo geralmente leva até 24 horas durante dias úteis.
         Você receberá uma notificação quando sua conta for aprovada.
       </p>
-      
+
       <p *ngIf="accountDetails">
         <strong>Detalhes da conta:</strong><br>
         Nome: {{ accountDetails.nome }}<br>
@@ -28,26 +28,26 @@
         Data de Solicitação: {{ formatDate(accountDetails.createdAt) }}
       </p>
     </div>
-    
+
     <div class="approval-actions">
       <button mat-raised-button color="primary" (click)="checkStatus()">
         <mat-icon *ngIf="loading">sync</mat-icon>
         <span *ngIf="!loading">Verificar Status</span>
         <span *ngIf="loading">Verificando...</span>
       </button>
-      
+
       <button mat-stroked-button color="primary" (click)="goToLogin()">
         Voltar para Login
       </button>
     </div>
-    
+
     <div *ngIf="statusMessage" class="status-message" [ngClass]="statusClass">
       <mat-icon *ngIf="statusClass === 'status-error'">error_outline</mat-icon>
       <mat-icon *ngIf="statusClass === 'status-success'">check_circle</mat-icon>
       <mat-icon *ngIf="statusClass === 'status-warning'">warning</mat-icon>
       {{ statusMessage }}
     </div>
-    
+
     <div class="contact-form">
       <h3>Precisa de ajuda?</h3>
       <form [formGroup]="contactForm">
@@ -60,11 +60,11 @@
         </button>
       </form>
     </div>
-    
+
     <div class="contact-info">
       <p>
         Se você acredita que houve um erro ou deseja obter mais informações,
-        entre em contato com o administrador em <a href="mailto:admin@tessera.edu">admin@tessera.edu</a>
+        entre em contato com o administrador em <a href="mailto:admin&#64;tessera.edu">admin&#64;tessera.edu</a>
       </p>
     </div>
   </div>

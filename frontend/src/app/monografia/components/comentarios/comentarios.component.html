@@ -1,0 +1,148 @@
+<div class="comentarios-container">
+    <div *ngIf="loading && !comentarios.length" class="loading-container">
+      <mat-spinner diameter="30"></mat-spinner>
+      <p>Carregando comentários...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-stroked-button color="warn" (click)="carregarComentarios()">
+        Tentar novamente
+      </button>
+    </div>
+
+    <div class="novo-comentario-section" [class.highlight-form]="newCommentForAnchorId">
+      <h3 *ngIf="!newCommentForAnchorId">Adicionar Comentário Geral</h3>
+      <h3 *ngIf="newCommentForAnchorId">
+        Adicionar Comentário ao Trecho:
+        <mat-chip class="selection-chip">"{{ newCommentForSelectionText | slice:0:50 }}{{ (newCommentForSelectionText && newCommentForSelectionText.length > 50) ? '...' : '' }}"</mat-chip>
+      </h3>
+      <form [formGroup]="novoComentarioForm" (ngSubmit)="adicionarNovoComentario()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Seu comentário</mat-label>
+          <textarea matInput formControlName="texto" placeholder="Digite seu comentário aqui..." rows="3"></textarea>
+          <mat-error *ngIf="novoComentarioForm.get('texto')?.hasError('required')">
+            Comentário não pode ser vazio.
+          </mat-error>
+        </mat-form-field>
+        <div class="form-actions">
+          <button *ngIf="newCommentForAnchorId" mat-stroked-button type="button" (click)="cancelNewCommentForAnchor()" class="cancel-anchor-btn">
+            Cancelar Trecho
+          </button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="novoComentarioForm.invalid || loading">
+            <mat-icon>send</mat-icon>
+            Enviar Comentário
+          </button>
+        </div>
+      </form>
+    </div>
+    <mat-divider class="section-divider"></mat-divider>
+
+    <div class="comentarios-filtros" *ngIf="comentarios.length > 0 || newCommentForAnchorId">
+      <mat-button-toggle-group [(ngModel)]="filtragem" (ngModelChange)="alterarFiltragem($event)">
+        <mat-button-toggle value="nao-resolvidos">Abertos</mat-button-toggle>
+        <mat-button-toggle value="resolvidos">Resolvidos</mat-button-toggle>
+        <mat-button-toggle value="todos">Todos</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <mat-button-toggle-group [(ngModel)]="ordenacao" (ngModelChange)="alterarOrdenacao($event)" class="ordenacao-group">
+        <mat-button-toggle value="recentes" matTooltip="Mais recentes primeiro">
+          <mat-icon>arrow_upward</mat-icon> Recentes
+        </mat-button-toggle>
+        <mat-button-toggle value="antigos" matTooltip="Mais antigos primeiro">
+          <mat-icon>arrow_downward</mat-icon> Antigos
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <div *ngIf="!loading && comentariosFiltrados.length > 0" class="comentarios-list">
+      <ng-container *ngFor="let comentario of comentariosFiltrados">
+        <div class="comentario-item"
+             [id]="comentario.posicaoTexto ? 'comment-anchor-' + comentario.posicaoTexto : null"
+             [class.resolvido]="comentario.resolvido"
+             [class.highlighted-thread]="highlightedAnchorId === comentario.posicaoTexto">
+
+          <div class="comentario-header">
+            <div class="autor-info">
+              <div class="avatar">{{ getAvatarLetra(comentario.autor) }}</div>
+              <div class="autor-detalhes">
+                <span class="autor-nome">{{ comentario.autor?.nome || comentario.autor?.username || 'Desconhecido' }}</span>
+                <span class="comentario-data">{{ formatarData(comentario.dataCriacao) }}</span>
+              </div>
+            </div>
+            <div class="comentario-acoes">
+              <button *ngIf="podeResolver(comentario)"
+                      mat-icon-button
+                      [color]="comentario.resolvido ? 'accent' : 'primary'"
+                      [matTooltip]="comentario.resolvido ? 'Reabrir comentário' : 'Marcar como resolvido'"
+                      (click)="toggleResolvido(comentario)">
+                <mat-icon>{{ comentario.resolvido ? 'undo' : 'check_circle_outline' }}</mat-icon>
+              </button>
+              <button *ngIf="podeExcluir(comentario)"
+                      mat-icon-button color="warn" matTooltip="Excluir comentário"
+                      (click)="excluirComentario(comentario.id)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="comentario-conteudo">
+            <p [innerHTML]="comentario.comentario | slice:0:1000"></p> <div *ngIf="comentario.posicaoTexto" class="comentario-referencia">
+              <mat-icon>link</mat-icon>
+              <span>Referente ao trecho ID: {{ comentario.posicaoTexto }}</span>
+              </div>
+          </div>
+
+          <div class="respostas-container" *ngIf="comentario.respostas && comentario.respostas.length > 0">
+            <div *ngFor="let resposta of comentario.respostas" class="resposta-item">
+              <div class="comentario-header">
+                 <div class="autor-info">
+                    <div class="avatar small">{{ getAvatarLetra(resposta.autor) }}</div>
+                    <div class="autor-detalhes">
+                        <span class="autor-nome">{{ resposta.autor?.nome || resposta.autor?.username || 'Desconhecido' }}</span>
+                        <span class="comentario-data">{{ formatarData(resposta.dataCriacao) }}</span>
+                    </div>
+                </div>
+                </div>
+              <div class="comentario-conteudo">
+                <p [innerHTML]="resposta.comentario | slice:0:1000"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="responder-section">
+            <button *ngIf="respondendoAoId !== comentario.id && !comentario.resolvido"
+                    mat-button color="primary" class="btn-responder"
+                    (click)="prepararResposta(comentario.id)">
+              <mat-icon>reply</mat-icon> Responder
+            </button>
+            <div *ngIf="respondendoAoId === comentario.id" class="resposta-form">
+              <form [formGroup]="respostaForm" (ngSubmit)="enviarResposta()">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Sua resposta</mat-label>
+                  <textarea matInput formControlName="texto" placeholder="Digite sua resposta..." rows="2"></textarea>
+                   <mat-error *ngIf="respostaForm.get('texto')?.hasError('required')">
+                      Resposta não pode ser vazia.
+                  </mat-error>
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="cancelarResposta()">Cancelar</button>
+                  <button mat-raised-button color="primary" type="submit" [disabled]="respostaForm.invalid || loading">
+                    Enviar Resposta
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <mat-divider *ngIf="comentariosFiltrados.length > 1"></mat-divider>
+      </ng-container>
+    </div>
+
+    <div *ngIf="!loading && comentariosFiltrados.length === 0 && !error && !newCommentForAnchorId" class="empty-state">
+      <mat-icon>forum</mat-icon>
+      <p>Nenhum comentário para exibir.</p>
+      <p class="sub-texto" *ngIf="filtragem !== 'todos'">Tente alterar os filtros ou adicione um novo comentário.</p>
+    </div>
+</div>

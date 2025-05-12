@@ -1,0 +1,189 @@
+/* src/app/shared/components/rich-text-editor/rich-text-editor.component.scss */
+@use 'sass:color';
+
+// Variáveis (ajuste conforme sua paleta principal se necessário)
+$primary-color: #2A3F75;
+$primary-light: #4C6ECC;
+$primary-lighter: #F5F8FC;
+$border-color: #E0E7F1;
+$text-primary: #333333;
+$white: #ffffff;
+$comment-highlight-bg: #fff9c4; // Amarelo claro para destaque
+$comment-highlight-border: #fbc02d; // Amarelo mais escuro para borda/hover
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: $white;
+  height: 100%; // Para ocupar o espaço disponível no pai
+  position: relative;
+
+  &.read-only {
+    .editor-toolbar {
+      // display: none; // Ou apenas desabilitar botões
+      background-color: rgba($primary-lighter, 0.7);
+       button {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+    .editor-content {
+      background-color: #f9f9f9; // Um pouco diferente para indicar leitura
+      cursor: default;
+    }
+  }
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid $border-color;
+  background-color: $primary-lighter;
+  flex-wrap: wrap;
+  gap: 2px;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    padding: 4px;
+  }
+}
+
+.toolbar-divider {
+  height: 24px;
+  width: 1px;
+  background-color: $border-color;
+  margin: 0 8px;
+}
+
+.flex-spacer {
+  flex: 1;
+}
+
+.editor-content-container {
+  flex: 1;
+  overflow-y: auto; // Permitir scroll no conteúdo
+  position: relative;
+}
+
+.editor-content {
+  min-height: 400px; // Altura mínima para o editor
+  padding: 20px;
+  outline: none;
+  line-height: 1.7;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  color: $text-primary;
+
+  &:focus {
+    outline: none;
+  }
+
+  // Estilos para elementos dentro do editor
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    color: $primary-color;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.75em; }
+  h3 { font-size: 1.5em; }
+  h4 { font-size: 1.25em; }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  ul, ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+    li {
+      margin-bottom: 0.5em;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+    th, td {
+      border: 1px solid $border-color;
+      padding: 0.5em;
+      min-width: 50px; // Para que as células não fiquem muito pequenas
+    }
+    th {
+      background-color: $primary-lighter;
+      color: $primary-color;
+      font-weight: 600;
+    }
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: 1em 0;
+    display: block;
+    border-radius: 4px;
+  }
+
+  blockquote {
+    margin: 1em 0 1em 0;
+    padding-left: 1em;
+    border-left: 4px solid $primary-light;
+    color: color.adjust($text-primary, $lightness: 10%);
+    font-style: italic;
+  }
+
+  // Estilo para spans de comentários ancorados
+  // Usando ::ng-deep porque o conteúdo é inserido dinamicamente via innerHTML
+  // e o Angular não processa os estilos encapsulados para ele.
+  // Alternativamente, essa estilização poderia ser global ou o ViewEncapsulation.None
+  // seria necessário no componente, o que é menos ideal.
+
+  // Abordagem mais segura é definir estilos globais para essas classes
+  // em styles.scss ou usar ::ng-deep com cuidado.
+  // Por ora, vamos tentar sem ::ng-deep e ver se o Angular aplica corretamente
+  // ao span criado via renderer. Se não, precisaremos de ::ng-deep ou estilos globais.
+
+  span.comment-highlight[data-comment-anchor-id] {
+    background-color: $comment-highlight-bg;
+    border-bottom: 2px dotted $comment-highlight-border;
+    padding: 0 2px; // Pequeno padding para não cortar o texto
+    margin: 0 -2px; // Compensar o padding
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($comment-highlight-bg, $lightness: -10%);
+    }
+
+    &.has-comment { // Para diferenciar de um highlight temporário
+        // Pode ter um estilo ligeiramente diferente se necessário
+    }
+  }
+}
+
+// Se os estilos acima para .comment-highlight não funcionarem
+// devido ao [innerHTML], descomente e use ::ng-deep ou mova para styles.scss:
+/*
+:host ::ng-deep .editor-content {
+  span.comment-highlight[data-comment-anchor-id] {
+    background-color: $comment-highlight-bg;
+    border-bottom: 2px dotted $comment-highlight-border;
+    padding: 0 2px;
+    margin: 0 -2px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color.adjust($comment-highlight-bg, $lightness: -10%);
+    }
+  }
+}
+*/

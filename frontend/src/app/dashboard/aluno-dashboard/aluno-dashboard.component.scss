@@ -1,50 +1,41 @@
 /* src/app/dashboard/aluno-dashboard/aluno-dashboard.component.scss */
 @use 'sass:color';
+@use '@angular/material' as mat; // IMPORTAÇÃO ESSENCIAL PARA FUNÇÕES E PALETAS DO MATERIAL
 
 // Variáveis
-$primary-color: #4caf50; // Cor principal diferente do professor para diferenciar
-$primary-dark: #2e7d32;
-$primary-light: #e8f5e9;
-$secondary-color: #546e7a;
-$success-color: #43a047;
-$warning-color: #ffb300;
-$danger-color: #e53935;
-$text-primary: #263238;
-$text-secondary: #607d8b;
-$border-color: #eceff1;
-$bg-color: #f5f7fa;
-$sidebar-width: 280px;
-$header-height: 70px;
-$container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04);
+$primary-color: #2A3F75;
+$primary-dark: color.adjust($primary-color, $lightness: -8%);
+// Uso correto das funções de paleta do Material com o namespace 'mat.'
+$primary-light: mat.get-color-from-palette(mat.$indigo-palette, 100); // Linha 9 do erro original
+$accent-color: mat.get-color-from-palette(mat.$amber-palette, A400); // Exemplo de cor de destaque
 
-// Mixins
-@mixin flex-center {
+$text-primary: #263238;
+$text-secondary: #546E7A;
+$border-color: #E0E7F1;
+$bg-color: #F5F8FC;
+$sidebar-width: 260px;
+$card-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+$border-radius: 8px;
+
+@mixin flex-v-center {
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
-@mixin card-style {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: $container-shadow;
-}
-
-// Estilos globais do dashboard
 .dashboard-container {
   min-height: 100vh;
   display: flex;
   background-color: $bg-color;
   color: $text-primary;
-  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Roboto', sans-serif;
 }
 
 // Sidebar
 .sidebar {
   width: $sidebar-width;
-  background: linear-gradient(to bottom, $primary-dark, color.adjust($primary-dark, $lightness: -8%));
+  background: $primary-color;
   color: white;
-  box-shadow: $container-shadow;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -52,94 +43,78 @@ $container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04)
   left: 0;
   height: 100vh;
   z-index: 100;
-  transition: all 0.3s ease;
 
   .sidebar-header {
-    padding: 25px 20px;
+    padding: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
 
     h2 {
-      margin: 0;
-      font-size: 1.4rem;
+      margin: 0 0 15px 0;
+      font-size: 1.3rem;
       font-weight: 600;
-      margin-bottom: 20px;
-      letter-spacing: 0.5px;
     }
 
     .user-profile {
-      display: flex;
-      align-items: center;
-    }
-
-    .profile-image {
-      width: 45px;
-      height: 45px;
-      @include flex-center;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.2);
-      font-size: 18px;
-      font-weight: 500;
-      margin-right: 12px;
-    }
-
-    .profile-info {
-      h3 {
-        margin: 0;
-        font-size: 0.95rem;
+      @include flex-v-center;
+      flex-direction: column;
+      .profile-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
         font-weight: 500;
+        margin-bottom: 10px;
       }
-
-      .status {
-        font-size: 0.8rem;
-        opacity: 0.8;
+      .profile-info {
+        h3 {
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+        .status {
+          font-size: 0.8rem;
+          opacity: 0.8;
+        }
       }
     }
   }
 
   .nav-menu {
     list-style: none;
-    padding: 0;
+    padding: 10px 0;
     margin: 0;
-    margin-top: 10px;
     flex: 1;
 
     .nav-item {
       a {
-        display: flex;
-        align-items: center;
-        padding: 15px 25px;
+        @include flex-v-center;
+        padding: 12px 20px;
         color: rgba(255, 255, 255, 0.8);
         text-decoration: none;
         font-size: 0.95rem;
         transition: all 0.2s ease;
+        border-left: 3px solid transparent;
 
-        i {
-          margin-right: 12px;
-          font-size: 1.2rem;
-          opacity: 0.7;
+        mat-icon {
+          margin-right: 15px;
+          font-size: 20px;
         }
 
         &:hover {
-          background-color: rgba(255, 255, 255, 0.05);
+          background-color: rgba(255, 255, 255, 0.08);
           color: white;
-
-          i {
-            opacity: 1;
-          }
         }
       }
-
-      &.active {
-        a {
-          background-color: rgba(255, 255, 255, 0.1);
-          color: white;
-          border-left: 4px solid white;
-          padding-left: 21px; // 25px - 4px (borda)
-
-          i {
-            opacity: 1;
-          }
-        }
+      &.active a {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-weight: 500;
+        border-left-color: $accent-color;
       }
     }
   }
@@ -147,528 +122,319 @@ $container-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04)
   .sidebar-footer {
     padding: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-
     .btn-logout {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       width: 100%;
-      padding: 12px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      i {
+      justify-content: center;
+      mat-icon {
         margin-right: 8px;
-      }
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.2);
       }
     }
   }
 }
 
-// Conteúdo principal
+// Conteúdo principal (restante do arquivo igual à versão anterior)
 .main-content {
   flex: 1;
   margin-left: $sidebar-width;
-  padding: 20px;
+  padding: 25px;
   min-height: 100vh;
   box-sizing: border-box;
 }
 
-// Header
 .main-header {
-  display: flex;
-  align-items: center;
+  @include flex-v-center;
   justify-content: space-between;
   margin-bottom: 25px;
-  padding-bottom: 15px;
+  padding-bottom: 20px;
   border-bottom: 1px solid $border-color;
 
-  .header-search {
-    position: relative;
-    flex: 0 0 300px;
-
-    input {
-      width: 100%;
-      padding: 10px 15px 10px 40px;
-      border: 1px solid $border-color;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      background-color: white;
-      transition: all 0.2s ease;
-
-      &:focus {
-        outline: none;
-        border-color: $primary-color;
-        box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-      }
-
-      &::placeholder {
-        color: $text-secondary;
-      }
+  .header-title-container {
+    h1 {
+        margin: 0 0 5px 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: $primary-dark;
     }
-
-    i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: $text-secondary;
+    p {
+        margin: 0;
+        color: $text-secondary;
+        font-size: 1rem;
     }
   }
 
   .header-actions {
-    display: flex;
-    align-items: center;
-
-    button {
-      background: none;
-      border: none;
-      padding: 8px;
-      margin-left: 10px;
+    @include flex-v-center;
+    .search-bar {
       position: relative;
-      cursor: pointer;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      @include flex-center;
-      transition: all 0.2s ease;
-
-      i {
-        font-size: 1.2rem;
-        color: $text-secondary;
-      }
-
-      .notification-badge {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background-color: $danger-color;
-        color: white;
-        font-size: 0.7rem;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        @include flex-center;
-      }
-
-      &:hover {
-        background-color: rgba($primary-color, 0.05);
-
-        i {
-          color: $primary-color;
+      margin-right: 15px;
+      input {
+        width: 280px;
+        padding: 10px 15px 10px 40px;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        font-size: 0.9rem;
+        background-color: white;
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
         }
       }
+      mat-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-secondary;
+      }
+    }
+    button.mat-icon-button {
+        color: $text-secondary;
+        &:hover {
+            color: $primary-color;
+            background-color: rgba($primary-color, 0.05);
+        }
     }
   }
 }
 
-// Seção de boas-vindas
-.welcome-section {
-  @include card-style;
-  padding: 25px 30px;
-  margin-bottom: 25px;
-  background: linear-gradient(to right, $primary-color, color.adjust($primary-color, $lightness: 10%));
-  color: white;
-
-  h1 {
-    margin: 0 0 10px 0;
-    font-size: 1.8rem;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 0;
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 600px;
-  }
-}
-
-// Grid de cards
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
   gap: 25px;
-  margin-bottom: 30px;
 }
 
-// Cards
 .card {
-  @include card-style;
+  background-color: #ffffff;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
   overflow: hidden;
 
   .card-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid $border-color;
-    display: flex;
-    align-items: center;
+    @include flex-v-center;
     justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid $border-color;
+    background-color: lighten($bg-color, 2%);
 
-    h3 {
+    .card-title {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 600;
-      color: $text-primary;
+      color: $primary-dark;
     }
 
-    .card-icon {
-      width: 36px;
-      height: 36px;
-      @include flex-center;
-      border-radius: 8px;
-      background-color: $primary-light;
-      
-      i {
+    .card-icon mat-icon {
         color: $primary-color;
-        font-size: 1.2rem;
-      }
     }
-
-    .btn-card-action {
-      background: none;
-      border: none;
-      color: $primary-color;
-      font-size: 0.85rem;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 4px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: $primary-light;
-      }
+    button.mat-button {
+        font-weight: 500;
+    }
+     button.mat-raised-button mat-icon {
+        margin-right: 8px;
     }
   }
 
   .card-content {
-    padding: 20px 25px;
+    padding: 22px;
   }
 }
 
-// Card de resumo
+.monografias-section {
+  .loading-state, .error-state, .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    color: $text-secondary;
+    min-height: 150px;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 15px;
+      opacity: 0.7;
+    }
+    p {
+      margin-bottom: 5px;
+    }
+    .empty-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+    }
+  }
+
+  .monografia-item {
+    border-bottom: 1px solid $border-color;
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+        background-color: $bg-color;
+    }
+
+    .monografia-title {
+      font-weight: 500;
+      color: $primary-color;
+    }
+    .monografia-details {
+      font-size: 0.85rem;
+      color: $text-secondary;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .monografia-status {
+        font-style: italic;
+    }
+    .monografia-actions button mat-icon {
+      margin-right: 6px;
+    }
+  }
+  mat-list-item {
+    height: auto !important;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+  .mat-mdc-list-item-meta {
+    display: flex !important;
+    align-items: center !important;
+  }
+  mat-divider {
+      margin: 0 16px;
+  }
+  h3[matSubheader] {
+      font-size: 0.9rem;
+      color: $text-secondary;
+      font-weight: 500;
+      margin-bottom: 8px;
+  }
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
 .card-summary {
   .summary-item {
-    display: flex;
-    align-items: center;
+    @include flex-v-center;
     justify-content: space-between;
-    padding: 15px 0;
+    padding: 12px 0;
     border-bottom: 1px solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .item-label {
-      color: $text-secondary;
-      font-size: 0.95rem;
-    }
-
-    .item-value {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: $text-primary;
-    }
+    &:last-child { border-bottom: none; }
+    .item-label { color: $text-secondary; font-size: 0.9rem; }
+    .item-value { font-size: 1.1rem; font-weight: 600; color: $primary-dark; }
   }
 }
 
-// Card de agenda
 .card-schedule {
   .schedule-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 15px 0;
+    @include flex-v-center;
+    padding: 12px 0;
     border-bottom: 1px solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
+    &:last-child { border-bottom: none; }
     .schedule-time {
       flex: 0 0 60px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: $primary-color;
+      text-align: center;
     }
-
     .schedule-info {
-      h4 {
-        margin: 0 0 5px 0;
-        font-size: 0.95rem;
-        font-weight: 500;
-      }
-
-      p {
-        margin: 0;
-        font-size: 0.85rem;
-        color: $text-secondary;
-      }
+      h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 500; }
+      p { margin: 0; font-size: 0.8rem; color: $text-secondary; }
     }
   }
 }
 
-// Card de atividades
 .card-assignments {
   .assignment-item {
-    display: flex;
-    align-items: center;
+    @include flex-v-center;
     justify-content: space-between;
-    padding: 15px 0;
+    padding: 12px 0;
     border-bottom: 1px solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
+    &:last-child { border-bottom: none; }
     .assignment-info {
-      h4 {
-        margin: 0 0 5px 0;
-        font-size: 0.95rem;
-        font-weight: 500;
-      }
-
-      p {
-        margin: 0;
-        font-size: 0.85rem;
-        color: $text-secondary;
-      }
+      h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 500; }
+      p { margin: 0; font-size: 0.8rem; color: $text-secondary; }
     }
-
     .assignment-status {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       padding: 3px 8px;
       border-radius: 4px;
+      font-weight: 500;
       background-color: rgba($primary-color, 0.1);
       color: $primary-color;
-
       &.urgent {
-        background-color: rgba($danger-color, 0.1);
-        color: $danger-color;
+        background-color: rgba(mat.get-color-from-palette(mat.$red-palette, 500), 0.1);
+        color: mat.get-color-from-palette(mat.$red-palette, 700);
       }
     }
   }
 }
 
-// Card de notas
 .card-grades {
-  .grade-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 0;
-    border-bottom: 1px solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
+    .grade-item {
+        @include flex-v-center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid $border-color;
+        &:last-child { border-bottom: none; }
+        .grade-info {
+            h4 { margin: 0 0 4px 0; font-size: 0.9rem; font-weight: 500; }
+            p { margin: 0; font-size: 0.8rem; color: $text-secondary; }
+        }
+        .grade-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            &.excellent { background-color: rgba(mat.get-color-from-palette(mat.$green-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$green-palette, 700); }
+            &.good { background-color: rgba(mat.get-color-from-palette(mat.$light-blue-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$light-blue-palette, 700); }
+            &.average { background-color: rgba(mat.get-color-from-palette(mat.$amber-palette, 500), 0.15); color: mat.get-color-from-palette(mat.$amber-palette, 700); }
+            &.poor { background-color: rgba(mat.get-color-from-palette(mat.$red-palette, 400), 0.15); color: mat.get-color-from-palette(mat.$red-palette, 600); }
+        }
     }
-
-    .grade-info {
-      h4 {
-        margin: 0 0 5px 0;
-        font-size: 0.95rem;
-        font-weight: 500;
-      }
-
-      p {
-        margin: 0;
-        font-size: 0.85rem;
-        color: $text-secondary;
-      }
-    }
-
-    .grade-value {
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 4px;
-
-      &.excellent {
-        background-color: rgba($success-color, 0.1);
-        color: $success-color;
-      }
-
-      &.good {
-        background-color: rgba($primary-color, 0.1);
-        color: $primary-color;
-      }
-
-      &.average {
-        background-color: rgba($warning-color, 0.1);
-        color: $warning-color;
-      }
-
-      &.poor {
-        background-color: rgba($danger-color, 0.1);
-        color: $danger-color;
-      }
-    }
-  }
-}
-
-// Seção de dados do servidor
-.server-data-section {
-  @include card-style;
-  padding: 20px 25px;
-  margin-top: 30px;
-
-  h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: $text-primary;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: $text-secondary;
-    line-height: 1.6;
-  }
-}
-
-// Mensagem de erro
-.error-message {
-  @include card-style;
-  padding: 20px 25px;
-  margin-top: 30px;
-  display: flex;
-  align-items: center;
-  border-left: 4px solid $danger-color;
-
-  i {
-    color: $danger-color;
-    font-size: 1.5rem;
-    margin-right: 15px;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: $text-primary;
-  }
-}
-
-// Ícones (placeholders)
-.icon-dashboard:before { content: '📊'; }
-.icon-courses:before { content: '📚'; }
-.icon-grades:before { content: '📝'; }
-.icon-calendar:before { content: '📅'; }
-.icon-book:before { content: '📖'; }
-.icon-message:before { content: '✉️'; }
-.icon-logout:before { content: '🚪'; }
-.icon-search:before { content: '🔍'; }
-.icon-notification:before { content: '🔔'; }
-.icon-settings:before { content: '⚙️'; }
-.icon-summary:before { content: '📋'; }
-.icon-error:before { content: '⚠️'; }
-
-// Responsividade
-@media (max-width: 1200px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 992px) {
   .sidebar {
     width: 80px;
-    
     .sidebar-header {
-      h2 {
-        display: none;
-      }
-      
-      .user-profile {
-        justify-content: center;
-        
-        .profile-image {
-          margin-right: 0;
-        }
-        
-        .profile-info {
-          display: none;
-        }
-      }
+      h2 { display: none; }
+      .user-profile .profile-info { display: none; }
+      .user-profile .profile-image { margin-bottom: 0; }
     }
-    
-    .nav-menu {
-      .nav-item {
-        a {
-          padding: 15px;
-          justify-content: center;
-          
-          i {
-            margin-right: 0;
-            font-size: 1.5rem;
-          }
-          
-          span {
-            display: none;
-          }
-        }
-        
-        &.active a {
-          padding-left: 11px;
-        }
-      }
+    .nav-menu .nav-item a {
+      justify-content: center;
+      mat-icon { margin-right: 0; }
+      span { display: none; }
     }
-    
-    .sidebar-footer {
-      .btn-logout {
-        padding: 12px 0;
-        
-        i {
-          margin-right: 0;
-        }
-        
-        span {
-          display: none;
-        }
-      }
-    }
+    .sidebar-footer .btn-logout span { display: none; }
   }
-  
   .main-content {
     margin-left: 80px;
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .main-header {
-    .header-search {
-      flex: 1;
-      max-width: 250px;
-    }
-  }
-}
-
-@media (max-width: 576px) {
-  .main-content {
-    padding: 15px;
-  }
-  
   .main-header {
     flex-direction: column;
-    align-items: stretch;
-    
-    .header-search {
-      max-width: none;
-      margin-bottom: 15px;
-    }
-    
+    align-items: flex-start;
     .header-actions {
-      justify-content: flex-end;
+      width: 100%;
+      margin-top: 15px;
+      justify-content: space-between;
+      .search-bar { flex-grow: 1; margin-right: 0;}
     }
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
   }
 }

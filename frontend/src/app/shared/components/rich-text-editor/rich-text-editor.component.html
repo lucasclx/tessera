@@ -1,0 +1,70 @@
+<div class="editor-container" [class.read-only]="readOnly">
+    <div class="editor-toolbar" *ngIf="!readOnly">
+      <button mat-icon-button (click)="execCommand('bold')" matTooltip="Negrito">
+        <mat-icon>format_bold</mat-icon>
+      </button>
+      <button mat-icon-button (click)="execCommand('italic')" matTooltip="Itálico">
+        <mat-icon>format_italic</mat-icon>
+      </button>
+      <button mat-icon-button (click)="execCommand('underline')" matTooltip="Sublinhado">
+        <mat-icon>format_underline</mat-icon>
+      </button>
+      <span class="toolbar-divider"></span>
+
+      <button mat-icon-button [matMenuTriggerFor]="headingMenu" matTooltip="Título">
+        <mat-icon>title</mat-icon>
+      </button>
+      <mat-menu #headingMenu="matMenu">
+        <button mat-menu-item (click)="formatBlock('h1')">Título 1</button>
+        <button mat-menu-item (click)="formatBlock('h2')">Título 2</button>
+        <button mat-menu-item (click)="formatBlock('h3')">Título 3</button>
+        <button mat-menu-item (click)="formatBlock('h4')">Título 4</button>
+        <button mat-menu-item (click)="formatBlock('p')">Parágrafo</button>
+      </mat-menu>
+
+      <button mat-icon-button (click)="execCommand('justifyLeft')" matTooltip="Alinhar à esquerda">
+        <mat-icon>format_align_left</mat-icon>
+      </button>
+      <button mat-icon-button (click)="execCommand('justifyCenter')" matTooltip="Centralizar">
+        <mat-icon>format_align_center</mat-icon>
+      </button>
+      <button mat-icon-button (click)="execCommand('justifyRight')" matTooltip="Alinhar à direita">
+        <mat-icon>format_align_right</mat-icon>
+      </button>
+      <span class="toolbar-divider"></span>
+
+      <button mat-icon-button (click)="execCommand('insertUnorderedList')" matTooltip="Lista com marcadores">
+        <mat-icon>format_list_bulleted</mat-icon>
+      </button>
+      <button mat-icon-button (click)="execCommand('insertOrderedList')" matTooltip="Lista numerada">
+        <mat-icon>format_list_numbered</mat-icon>
+      </button>
+      <span class="toolbar-divider"></span>
+
+      <button mat-icon-button (click)="requestNewComment()" matTooltip="Adicionar comentário ao trecho selecionado">
+        <mat-icon>add_comment</mat-icon>
+      </button>
+      <button mat-icon-button (click)="insertImage()" matTooltip="Inserir imagem">
+        <mat-icon>image</mat-icon>
+      </button>
+      <button mat-icon-button (click)="insertTable()" matTooltip="Inserir tabela">
+        <mat-icon>table_chart</mat-icon>
+      </button>
+
+      <span class="flex-spacer"></span>
+
+      <button mat-stroked-button color="primary" (click)="saveDocument()" [disabled]="saving">
+        <mat-icon>sync</mat-icon> <span>{{ saving ? 'Sincronizando...' : 'Sincronizar Editor' }}</span>
+      </button>
+    </div>
+
+    <div class="editor-content-container">
+      <div
+        #editorContent
+        class="editor-content"
+        (input)="onContentChanged()"
+        [attr.contenteditable]="!readOnly"
+        
+      ></div> </div>
+
+    </div>

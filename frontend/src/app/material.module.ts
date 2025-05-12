@@ -21,7 +21,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
-import { LayoutModule } from '@angular/cdk/layout'; 
+import { LayoutModule } from '@angular/cdk/layout';
+import { MatChipsModule } from '@angular/material/chips'; // <--- ADICIONADO
+import { MatButtonToggleModule } from '@angular/material/button-toggle'; // <--- ADICIONADO
+import { MatDividerModule } from '@angular/material/divider'; // <--- ADICIONADO (provavelmente será útil)
 
 @NgModule({
   exports: [
@@ -46,6 +49,9 @@ import { LayoutModule } from '@angular/cdk/layout';
     MatMenuModule,
     MatBadgeModule,
     LayoutModule,
+    MatChipsModule, // <--- ADICIONADO
+    MatButtonToggleModule, // <--- ADICIONADO
+    MatDividerModule // <--- ADICIONADO
   ]
 })
 export class MaterialModule { }

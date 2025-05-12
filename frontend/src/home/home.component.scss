@@ -26,7 +26,7 @@ $border-radius: 10px;
   max-width: $container-width;
   margin: 0 auto;
   padding: 0 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 0 1.5rem;
   }
@@ -34,11 +34,11 @@ $border-radius: 10px;
 
 @mixin section-padding {
   padding: 4rem 0;
-  
+
   @media (max-width: 768px) {
     padding: 3rem 0;
   }
-  
+
   @media (max-width: 480px) {
     padding: 2rem 0;
   }
@@ -58,24 +58,24 @@ $border-radius: 10px;
 .section-header {
   text-align: center;
   margin-bottom: 3rem;
-  
+
   h2 {
     font-size: 2.25rem;
     font-weight: 700;
     color: $primary-color;
     margin-bottom: 1rem;
-    
+
     @media (max-width: 768px) {
       font-size: 1.75rem;
     }
   }
-  
+
   p {
     font-size: 1.125rem;
     color: $text-secondary;
     max-width: 600px;
     margin: 0 auto;
-    
+
     @media (max-width: 768px) {
       font-size: 1rem;
     }
@@ -98,101 +98,104 @@ $border-radius: 10px;
   position: relative;
   overflow: hidden;
   padding: 4rem 2rem;
-  
+
   @media (max-width: 768px) {
     min-height: auto;
     padding: 8rem 1.5rem 4rem;
   }
-  
+
   .hero-content {
     @include container;
-    position: relative;
-    z-index: 2;
-    text-align: center;
-  }
-  
-  .hero-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.03em;
-    line-height: 1.2;
-    
-    @media (max-width: 768px) {
-      font-size: 2.5rem;
-    }
-    
-    @media (max-width: 480px) {
-      font-size: 2rem;
-    }
-  }
-  
-  .hero-subtitle {
-    font-size: 1.25rem;
-    line-height: 1.6;
-    margin-bottom: 3rem;
-    opacity: 0.9;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    
-    @media (max-width: 768px) {
-      font-size: 1.125rem;
-      margin-bottom: 2rem;
-    }
-  }
-  
-  .hero-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    
-    @media (max-width: 480px) {
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .cta-button, .secondary-button {
-      min-width: 180px;
-      height: 52px;
-      font-size: 1rem;
-      font-weight: 500;
-      border-radius: $border-radius;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      mat-icon {
-        margin-right: 0.5rem;
+    // Declarações movidas para o topo do bloco .hero-content
+    position: relative; // Linha 110 do erro original
+    z-index: 2;         // Linha 111 do erro original
+    text-align: center; // Linha 112 do erro original
+
+    // Regras aninhadas vêm DEPOIS das declarações diretas do pai
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+
+      @media (max-width: 768px) {
+        font-size: 2.5rem;
       }
-      
+
       @media (max-width: 480px) {
-        width: 100%;
-        max-width: 280px;
+        font-size: 2rem;
       }
     }
-    
-    .cta-button {
-      background-color: $white;
-      color: $primary-color;
-      
-      &:hover {
-        background-color: rgba($white, 0.9);
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin-bottom: 3rem;
+      opacity: 0.9;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+
+      @media (max-width: 768px) {
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
       }
     }
-    
-    .secondary-button {
-      border: 2px solid rgba($white, 0.6);
-      background-color: transparent;
-      color: $white;
-      
-      &:hover {
-        border-color: $white;
-        background-color: rgba($white, 0.1);
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+
+      @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .cta-button, .secondary-button {
+        min-width: 180px;
+        height: 52px;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: $border-radius;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        mat-icon {
+          margin-right: 0.5rem;
+        }
+
+        @media (max-width: 480px) {
+          width: 100%;
+          max-width: 280px;
+        }
+      }
+
+      .cta-button {
+        background-color: $white;
+        color: $primary-color;
+
+        &:hover {
+          background-color: rgba($white, 0.9);
+        }
+      }
+
+      .secondary-button {
+        border: 2px solid rgba($white, 0.6);
+        background-color: transparent;
+        color: $white;
+
+        &:hover {
+          border-color: $white;
+          background-color: rgba($white, 0.1);
+        }
       }
     }
   }
-  
+
+
   .hero-pattern {
     position: absolute;
     top: 0;
@@ -203,7 +206,7 @@ $border-radius: 10px;
     background-size: cover;
     opacity: 0.05;
     z-index: 1;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -221,17 +224,17 @@ $border-radius: 10px;
 .features-section {
   @include section-padding;
   background-color: $white;
-  
+
   .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
   }
-  
+
   .feature-card {
     border-radius: $border-radius;
     box-shadow: $card-shadow;
@@ -241,22 +244,22 @@ $border-radius: 10px;
     display: flex;
     flex-direction: column;
     border: none;
-    
+
     &:hover {
       transform: translateY(-8px);
       box-shadow: 0 15px 35px rgba(42, 63, 117, 0.15);
     }
-    
+
     .mat-mdc-card-header {
       padding: 2rem 2rem 0;
-      
+
       .feature-icon {
         @include flex-center;
         width: 64px;
         height: 64px;
         border-radius: 16px;
         margin-right: 1rem;
-        
+
         mat-icon {
           font-size: 32px;
           height: 32px;
@@ -264,53 +267,53 @@ $border-radius: 10px;
           color: $white;
         }
       }
-      
+
       .student-icon {
         background-color: $success-color;
       }
-      
+
       .professor-icon {
         background-color: $primary-light;
       }
-      
+
       .admin-icon {
         background-color: $warning-color;
       }
-      
+
       .mat-mdc-card-title {
         font-size: 1.5rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
       }
-      
+
       .mat-mdc-card-subtitle {
         font-size: 1rem;
         color: $text-secondary;
       }
     }
-    
+
     .mat-mdc-card-content {
       padding: 1.5rem 2rem 0;
       flex-grow: 1;
-      
+
       p {
         font-size: 1rem;
         line-height: 1.6;
         color: $text-secondary;
         margin-bottom: 1.5rem;
       }
-      
+
       .feature-list {
         list-style: none;
         padding: 0;
         margin: 0;
-        
+
         li {
           display: flex;
           align-items: center;
           margin-bottom: 0.875rem;
           font-size: 0.95rem;
-          
+
           mat-icon {
             color: $success-color;
             margin-right: 0.625rem;
@@ -321,10 +324,10 @@ $border-radius: 10px;
         }
       }
     }
-    
+
     .mat-mdc-card-actions {
       padding: 1.5rem 2rem 2rem;
-      
+
       .card-action-button {
         width: 100%;
         display: flex;
@@ -334,19 +337,19 @@ $border-radius: 10px;
         font-size: 1rem;
         font-weight: 500;
         border-radius: 8px;
-        
+
         span {
           flex: 1;
           text-align: center;
         }
-        
+
         mat-icon {
           font-size: 20px;
           height: 20px;
           width: 20px;
           transition: transform 0.2s ease;
         }
-        
+
         &:hover {
           mat-icon {
             transform: translateX(4px);
@@ -361,20 +364,20 @@ $border-radius: 10px;
 .benefits-section {
   @include section-padding;
   background-color: $primary-lighter;
-  
+
   .benefits-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2.5rem;
-    
+
     @media (max-width: 768px) {
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
   }
-  
+
   .benefit-item {
     text-align: center;
-    
+
     .benefit-icon {
       @include flex-center;
       width: 80px;
@@ -383,7 +386,7 @@ $border-radius: 10px;
       background-color: $white;
       margin: 0 auto 1.5rem;
       box-shadow: 0 5px 15px rgba(42, 63, 117, 0.1);
-      
+
       mat-icon {
         font-size: 36px;
         height: 36px;
@@ -391,14 +394,14 @@ $border-radius: 10px;
         color: $primary-color;
       }
     }
-    
+
     h3 {
       font-size: 1.25rem;
       font-weight: 600;
       color: $primary-color;
       margin-bottom: 1rem;
     }
-    
+
     p {
       font-size: 0.95rem;
       line-height: 1.6;
@@ -411,75 +414,77 @@ $border-radius: 10px;
 .about-section {
   @include section-padding;
   background-color: $white;
-  
+
   .about-content {
     display: flex;
     align-items: center;
     gap: 4rem;
-    
+
     @media (max-width: 992px) {
       flex-direction: column;
       gap: 3rem;
     }
-    
+
     .about-text {
       flex: 2;
-      
+
       h2 {
         font-size: 2.25rem;
         font-weight: 700;
         color: $primary-color;
         margin-bottom: 1.5rem;
-        
+
         @media (max-width: 768px) {
           font-size: 1.75rem;
           text-align: center;
         }
       }
-      
+
       p {
         font-size: 1.05rem;
         line-height: 1.8;
         color: $text-secondary;
         margin-bottom: 1.5rem;
-        
+
         &:last-child {
           margin-bottom: 0;
         }
       }
     }
-    
+
     .about-stats {
       flex: 1;
       display: flex;
       flex-wrap: wrap;
       gap: 2rem;
-      
+
       @media (max-width: 992px) {
         width: 100%;
         justify-content: center;
       }
-      
+
       .stat-item {
-        background-color: $primary-lighter;
+        // Declarações movidas para o topo do bloco .stat-item
+        background-color: $primary-lighter; // Linha 226 do erro original
         border-radius: $border-radius;
         padding: 2rem;
         text-align: center;
         min-width: 180px;
         box-shadow: $card-shadow;
-        
+
+        // Regras aninhadas após as declarações diretas do pai
         @media (max-width: 768px) {
           min-width: 140px;
           padding: 1.5rem;
         }
-        
+
         .stat-value {
           font-size: 1.75rem;
           font-weight: 700;
           color: $primary-color;
           margin-bottom: 0.625rem;
         }
-        
+
         .stat-label {
           font-size: 0.95rem;
           color: $text-secondary;
@@ -494,26 +499,26 @@ $border-radius: 10px;
   background-color: color.adjust($primary-color, $lightness: -15%);
   color: $white;
   padding: 4rem 0 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 3rem 0 2rem;
   }
-  
+
   .footer-content {
     display: flex;
     justify-content: space-between;
-    
+
     @media (max-width: 768px) {
       flex-direction: column;
       gap: 2.5rem;
     }
-    
+
     .footer-logo {
       .logo {
         display: flex;
         align-items: center;
         margin-bottom: 1.5rem;
-        
+
         .logo-icon {
           width: 36px;
           height: 36px;
@@ -525,36 +530,36 @@ $border-radius: 10px;
           font-weight: 600;
           margin-right: 0.75rem;
         }
-        
+
         .logo-text {
           font-size: 1.5rem;
           font-weight: 700;
           color: $white;
         }
       }
-      
+
       p {
         font-size: 0.875rem;
         opacity: 0.7;
       }
     }
-    
+
     .footer-links {
       display: flex;
       gap: 4rem;
-      
+
       @media (max-width: 480px) {
         flex-direction: column;
         gap: 2rem;
       }
-      
+
       .footer-group {
         h4 {
           font-size: 1.125rem;
           font-weight: 600;
           margin-bottom: 1.25rem;
           position: relative;
-          
+
           &::after {
             content: '';
             position: absolute;
@@ -565,21 +570,21 @@ $border-radius: 10px;
             background-color: $primary-light;
           }
         }
-        
+
         ul {
           list-style: none;
           padding: 0;
           margin: 0;
-          
+
           li {
             margin-bottom: 0.75rem;
-            
+
             a {
               color: rgba($white, 0.8);
               text-decoration: none;
               font-size: 0.95rem;
               transition: color 0.2s ease;
-              
+
               &:hover {
                 color: $white;
               }

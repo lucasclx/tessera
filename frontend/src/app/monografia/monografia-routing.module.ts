@@ -10,7 +10,9 @@ const routes: Routes = [
     component: EditorMonografiaComponent,
     canActivate: [AuthGuard]
   }
-  // Outras rotas relacionadas a monografias...
+  // Outras rotas relacionadas a monografias poderiam ser adicionadas aqui.
+  // Ex: { path: 'visualizar/:id', component: VisualizadorMonografiaComponent, canActivate: [AuthGuard] },
+  //     { path: '', component: ListaMonografiasComponent, canActivate: [AuthGuard] } // Uma página para listar monografias
 ];
 
 @NgModule({

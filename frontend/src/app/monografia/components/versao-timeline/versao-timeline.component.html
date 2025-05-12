@@ -1,0 +1,132 @@
+<!-- src/app/monografia/components/versao-timeline/versao-timeline.component.html -->
+<div class="timeline-container">
+    <!-- Cabeçalho -->
+    <div class="timeline-header">
+      <h3>Histórico de Versões</h3>
+    </div>
+    
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="30"></mat-spinner>
+      <p>Carregando versões...</p>
+    </div>
+    
+    <!-- Erro -->
+    <div *ngIf="error && !loading" class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-stroked-button color="primary" (click)="carregarVersoes()">
+        Tentar novamente
+      </button>
+    </div>
+    
+    <!-- Lista vazia -->
+    <div *ngIf="!loading && versoes.length === 0 && !error" class="empty-container">
+      <mat-icon>history</mat-icon>
+      <p>Nenhuma versão encontrada</p>
+      <p class="sub-texto">Crie a primeira versão da monografia!</p>
+    </div>
+    
+    <!-- Timeline de versões -->
+    <div *ngIf="!loading && versoes.length > 0" class="timeline">
+      <div *ngFor="let versao of versoes; let i = index" 
+           class="timeline-item"
+           [class.active]="selectedVersaoId === versao.id"
+           [class.atual]="i === 0">
+        
+        <!-- Marcador da timeline -->
+        <div class="timeline-marker">
+          <div class="timeline-badge" [class.current]="i === 0">
+            <ng-container *ngIf="i === 0">
+              <mat-icon>verified</mat-icon>
+            </ng-container>
+            <ng-container *ngIf="i !== 0">
+              {{ versoes.length - i }}
+            </ng-container>
+          </div>
+          <div class="timeline-line" *ngIf="i < versoes.length - 1"></div>
+        </div>
+        
+        <!-- Conteúdo da versão -->
+        <div class="timeline-content" (click)="selectVersao(versao)">
+          <!-- Cabeçalho da versão -->
+          <div class="version-header">
+            <div class="version-main-info">
+              <span class="version-number">{{ formatarNumeroVersao(versao.numeroVersao) }}</span>
+              <span *ngIf="versao.tag" class="version-tag">{{ versao.tag }}</span>
+              <span *ngIf="i === 0" class="version-current">Atual</span>
+            </div>
+            <span class="version-time">{{ calcularDiferencaTempo(versao.dataCriacao) }}</span>
+          </div>
+          
+          <!-- Mensagem de commit -->
+          <div class="version-commit-message">
+            {{ versao.mensagemCommit }}
+          </div>
+          
+          <!-- Informações da versão -->
+          <div class="version-details">
+            <div class="version-author">
+              <mat-icon>person</mat-icon>
+              <span>{{ versao.criadoPor.nome || versao.criadoPor.username }}</span>
+            </div>
+            
+            <div class="version-hash">
+              <mat-icon>tag</mat-icon>
+              <span>{{ getTruncatedHash(versao.hashArquivo) }}</span>
+            </div>
+            
+            <div class="version-date">
+              <mat-icon>event</mat-icon>
+              <span>{{ formatarData(versao.dataCriacao) }}</span>
+            </div>
+          </div>
+          
+          <!-- Ações da versão -->
+          <div class="version-actions">
+            <button mat-button color="primary" (click)="viewVersao(versao); $event.stopPropagation()">
+              <mat-icon>visibility</mat-icon>
+              Visualizar
+            </button>
+            
+            <button mat-button color="accent" *ngIf="!isVersaoAtual(versao)"
+                    (click)="compararComAtual(versao); $event.stopPropagation()">
+              <mat-icon>compare</mat-icon>
+              Comparar com atual
+            </button>
+            
+            <button mat-icon-button [matMenuTriggerFor]="moreMenu" (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            
+            <mat-menu #moreMenu="matMenu">
+              <button mat-menu-item *ngIf="!isVersaoAtual(versao)" 
+                      (click)="compararVersoes(versoes[0], versao)">
+                <mat-icon>compare_arrows</mat-icon>
+                <span>Comparar com atual</span>
+              </button>
+              
+              <ng-container *ngIf="i < versoes.length - 1">
+                <button mat-menu-item (click)="compararVersoes(versao, versoes[i+1])">
+                  <mat-icon>compare_arrows</mat-icon>
+                  <span>Comparar com anterior</span>
+                </button>
+              </ng-container>
+              
+              <ng-container *ngIf="i > 0">
+                <button mat-menu-item (click)="compararVersoes(versao, versoes[i-1])">
+                  <mat-icon>compare_arrows</mat-icon>
+                  <span>Comparar com posterior</span>
+                </button>
+              </ng-container>
+              
+              <button mat-menu-item>
+                <mat-icon>info</mat-icon>
+                <span>Detalhes</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

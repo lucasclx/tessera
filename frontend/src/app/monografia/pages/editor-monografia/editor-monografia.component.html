@@ -1,0 +1,190 @@
+<div class="editor-container">
+  <div class="editor-header">
+    <div class="header-content">
+      <div *ngIf="!editingTitle && monografia" class="title-display">
+        <h1 matTooltip="{{ monografia?.titulo }}">{{ monografia?.titulo | slice:0:80 }}{{ (monografia?.titulo && monografia.titulo.length > 80) ? '...' : '' }}</h1>
+        <button mat-icon-button color="primary" (click)="startEditTitle()" *ngIf="isAutor || isOrientador" matTooltip="Editar título">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+       <div *ngIf="!editingTitle && !monografia && loading" class="title-display">
+        <h1>Carregando título...</h1>
+      </div>
+      <div *ngIf="!editingTitle && !monografia && !loading && error" class="title-display">
+        <h1 class="error-text">Falha ao carregar título</h1>
+      </div>
+
+
+      <form [formGroup]="titleForm" *ngIf="editingTitle" class="title-edit-form">
+        <mat-form-field appearance="outline" class="title-input-field">
+          <mat-label>Título da Monografia</mat-label>
+          <input matInput formControlName="titulo" placeholder="Título da Monografia">
+          <mat-error *ngIf="titleForm.get('titulo')?.hasError('required')">
+            Título é obrigatório
+          </mat-error>
+        </mat-form-field>
+        <div class="title-form-actions">
+          <button mat-icon-button color="primary" type="button" (click)="saveTitle()" [disabled]="titleForm.invalid" matTooltip="Salvar título">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" type="button" (click)="cancelEditTitle()" matTooltip="Cancelar edição">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </form>
+
+      <div class="editor-actions">
+        <button mat-stroked-button (click)="toggleTimeline()" [class.active-panel-btn]="showTimeline">
+          <mat-icon>history</mat-icon>
+          {{ showTimeline ? 'Ocultar Histórico' : 'Ver Histórico' }}
+        </button>
+
+        <button mat-stroked-button (click)="toggleComments()" [class.active-panel-btn]="showComments">
+          <mat-icon>comment</mat-icon>
+          {{ showComments ? 'Ocultar Comentários' : 'Ver Comentários' }}
+          <span *ngIf="unresolvedCommentsCount > 0 && !showComments" class="comment-count-badge">
+            {{ unresolvedCommentsCount }}
+          </span>
+        </button>
+
+        <button mat-raised-button color="primary" (click)="openSaveDialog()" *ngIf="isAutor || isOrientador">
+          <mat-icon>save</mat-icon>
+          Salvar Nova Versão
+        </button>
+
+        <button mat-icon-button [matMenuTriggerFor]="exportMenu" matTooltip="Exportar">
+          <mat-icon>file_download</mat-icon>
+        </button>
+        <mat-menu #exportMenu="matMenu">
+          <button mat-menu-item (click)="exportarPDF()">
+            <mat-icon>picture_as_pdf</mat-icon> Exportar como PDF
+          </button>
+          <button mat-menu-item (click)="exportarDOCX()">
+            <mat-icon>description</mat-icon> Exportar como DOCX
+          </button>
+        </mat-menu>
+
+        <button mat-icon-button (click)="compartilhar()" matTooltip="Compartilhar">
+          <mat-icon>share</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-main-area" [class.timeline-visible]="showTimeline" [class.comments-visible]="showComments">
+    <div *ngIf="loading" class="loading-overlay global-loading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Carregando monografia e versão...</p>
+    </div>
+
+    <div *ngIf="!loading && error" class="error-overlay global-error">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="warn" (click)="carregarMonografiaEConteudo()">Tentar Novamente</button>
+    </div>
+
+    <div *ngIf="!loading && !error && monografia" class="editor-layout">
+      <div class="editor-content-wrapper">
+        <app-rich-text-editor
+          [content]="documentContent"
+          [monografiaId]="monografiaId"
+          [versaoId]="currentVersaoId"
+          [readOnly]="!isAutor && !isOrientador"
+          [existingComments]="allCommentsForCurrentVersion"
+          (contentChange)="onContentChangedByEditor($event)"
+          (saved)="handleEditorQuickSave($event)"
+          (newCommentAnchorRequested)="handleNewCommentAnchorRequested($event)"
+          (viewCommentThread)="handleViewCommentThread($event)">
+        </app-rich-text-editor>
+      </div>
+
+      <aside class="sidebar timeline-sidebar" *ngIf="showTimeline">
+        <div class="sidebar-header">
+          <h3>Histórico de Versões</h3>
+          <button mat-icon-button (click)="toggleTimeline()" matTooltip="Fechar histórico">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="sidebar-content">
+          <app-versao-timeline *ngIf="monografiaId"
+            [monografiaId]="monografiaId"
+            (versaoSelected)="previewVersaoFromTimeline($event)"
+            (versoesComparadas)="compararVersoes($event)">
+          </app-versao-timeline>
+        </div>
+      </aside>
+
+      <aside class="sidebar comments-sidebar" *ngIf="showComments">
+        <div class="sidebar-header">
+          <h3>Comentários da Versão</h3>
+           <span class="version-info-comments" *ngIf="currentVersaoDetails">
+              v{{ currentVersaoDetails.numeroVersao }}
+            </span>
+          <button mat-icon-button (click)="toggleComments()" matTooltip="Fechar comentários">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="sidebar-content">
+          <app-comentarios
+            *ngIf="currentVersaoId && monografiaId"
+            [monografiaId]="monografiaId"
+            [versaoId]="currentVersaoId"
+            [highlightedAnchorId]="highlightedCommentAnchorId"
+            (commentSubmitted)="handleCommentSubmittedOrUpdated($event)"
+            (commentUpdated)="handleCommentSubmittedOrUpdated($event)"
+            (commentDeleted)="handleCommentDeleted()">
+          </app-comentarios>
+          <div *ngIf="!currentVersaoId" class="no-version-comments">
+              <mat-icon>info</mat-icon>
+              <p>Selecione ou crie uma versão para ver/adicionar comentários.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div *ngIf="showDiff && diffBaseVersao && diffNovaVersao" class="diff-overlay-container">
+    <app-versao-diff-viewer
+      [versaoBase]="diffBaseVersao"
+      [versaoNova]="diffNovaVersao"
+      (onClose)="fecharComparacao()">
+    </app-versao-diff-viewer>
+  </div>
+</div>
+
+<ng-template #saveVersionDialog>
+<h2 mat-dialog-title>Salvar Nova Versão</h2>
+<mat-dialog-content>
+  <form [formGroup]="saveForm">
+    <p>Você está salvando as alterações como uma nova versão da monografia.</p>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Mensagem da Versão (Commit)</mat-label>
+      <textarea matInput formControlName="mensagemCommit"
+                placeholder="Ex: Correções ortográficas e adição da seção 2.1"
+                cdkTextareaAutosize
+                #autosize="cdkTextareaAutosize"
+                cdkAutosizeMinRows="3"
+                cdkAutosizeMaxRows="5"
+                required></textarea>
+      <mat-hint align="end">{{saveForm.get('mensagemCommit')?.value?.length || 0}} / 255</mat-hint>
+      <mat-error *ngIf="saveForm.get('mensagemCommit')?.hasError('required')">
+        A mensagem da versão é obrigatória.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Tag da Versão (Opcional)</mat-label>
+      <input matInput formControlName="tag" placeholder="Ex: Rascunho, RevisaoOrientador, FinalV1">
+      <mat-hint>Use tags para identificar marcos importantes.</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="savingVersion">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="salvarNovaVersao()" [disabled]="saveForm.invalid || savingVersion">
+    <mat-spinner diameter="20" *ngIf="savingVersion" class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!savingVersion">save</mat-icon>
+    {{ savingVersion ? 'Salvando...' : 'Salvar Versão' }}
+  </button>
+</mat-dialog-actions>
+</ng-template>

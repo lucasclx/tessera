@@ -1,6 +1,6 @@
 // src/app/auth/components/pending-approval/pending-approval.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router'; // RouterLink removido daqui
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, ApprovalStatus } from '../../../core/auth.service';
@@ -20,7 +20,7 @@ interface AccountDetails {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
+    // RouterLink removido daqui
     MaterialModule,
     ReactiveFormsModule
   ],
@@ -86,7 +86,7 @@ export class PendingApprovalComponent implements OnInit {
     this.authService.checkApprovalStatus(this.username || '').subscribe({
       next: (status) => {
         this.loading = false;
-        
+
         switch (status) {
           case ApprovalStatus.APPROVED:
             this.statusClass = 'status-success';
@@ -133,7 +133,7 @@ export class PendingApprovalComponent implements OnInit {
    */
   formatDate(dateString: string): string {
     if (!dateString) return 'Data desconhecida';
-    
+
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',

@@ -1,318 +1,296 @@
 // src/app/shared/components/rich-text-editor/rich-text-editor.component.ts
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MaterialModule } from '../../../material.module';
-
-@Component({
-  selector: 'app-rich-text-editor',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MaterialModule
-  ],
-  template: `
-    <div class="editor-container">
-      <div class="editor-toolbar">
-        <button mat-icon-button (click)="execCommand('bold')" matTooltip="Negrito">
-          <mat-icon>format_bold</mat-icon>
-        </button>
-        <button mat-icon-button (click)="execCommand('italic')" matTooltip="Itálico">
-          <mat-icon>format_italic</mat-icon>
-        </button>
-        <button mat-icon-button (click)="execCommand('underline')" matTooltip="Sublinhado">
-          <mat-icon>format_underline</mat-icon>
-        </button>
-        <span class="toolbar-divider"></span>
-        
-        <button mat-icon-button [matMenuTriggerFor]="headingMenu" matTooltip="Título">
-          <mat-icon>title</mat-icon>
-        </button>
-        <mat-menu #headingMenu="matMenu">
-          <button mat-menu-item (click)="formatBlock('h1')">Título 1</button>
-          <button mat-menu-item (click)="formatBlock('h2')">Título 2</button>
-          <button mat-menu-item (click)="formatBlock('h3')">Título 3</button>
-          <button mat-menu-item (click)="formatBlock('h4')">Título 4</button>
-        </mat-menu>
-        
-        <button mat-icon-button (click)="execCommand('justifyLeft')" matTooltip="Alinhar à esquerda">
-          <mat-icon>format_align_left</mat-icon>
-        </button>
-        <button mat-icon-button (click)="execCommand('justifyCenter')" matTooltip="Centralizar">
-          <mat-icon>format_align_center</mat-icon>
-        </button>
-        <button mat-icon-button (click)="execCommand('justifyRight')" matTooltip="Alinhar à direita">
-          <mat-icon>format_align_right</mat-icon>
-        </button>
-        <span class="toolbar-divider"></span>
-        
-        <button mat-icon-button (click)="execCommand('insertUnorderedList')" matTooltip="Lista com marcadores">
-          <mat-icon>format_list_bulleted</mat-icon>
-        </button>
-        <button mat-icon-button (click)="execCommand('insertOrderedList')" matTooltip="Lista numerada">
-          <mat-icon>format_list_numbered</mat-icon>
-        </button>
-        <span class="toolbar-divider"></span>
-        
-        <button mat-icon-button (click)="addComment()" matTooltip="Adicionar comentário">
-          <mat-icon>comment</mat-icon>
-        </button>
-        <button mat-icon-button (click)="insertImage()" matTooltip="Inserir imagem">
-          <mat-icon>image</mat-icon>
-        </button>
-        <button mat-icon-button (click)="insertTable()" matTooltip="Inserir tabela">
-          <mat-icon>table_chart</mat-icon>
-        </button>
-        
-        <span class="flex-spacer"></span>
-        
-        <button mat-stroked-button color="primary" (click)="saveDocument()" [disabled]="saving">
-          <mat-icon>save</mat-icon>
-          <span>{{ saving ? 'Salvando...' : 'Salvar' }}</span>
-        </button>
-      </div>
-      
-      <div class="editor-content-container">
-        <div
-          #editorContent
-          class="editor-content"
-          contenteditable="true"
-          [innerHTML]="content"
-          (input)="onContentChange($event)"
-          (blur)="onBlur()"
-        ></div>
-      </div>
-      
-      <div *ngIf="showCommentPanel" class="comment-panel">
-        <h3>Comentários</h3>
-        <div class="comments-list">
-          <div *ngFor="let comment of comments" class="comment-item">
-            <div class="comment-header">
-              <span class="comment-author">{{ comment.author }}</span>
-              <span class="comment-date">{{ comment.date | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <div class="comment-text">{{ comment.text }}</div>
-          </div>
-        </div>
-        <div class="add-comment">
-          <mat-form-field appearance="outline" class="full-width">
-            <textarea matInput [(ngModel)]="newComment" placeholder="Adicione um comentário..."></textarea>
-          </mat-form-field>
-          <button mat-raised-button color="primary" (click)="submitComment()">Comentar</button>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .editor-container {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #e0e7f1;
-      border-radius: 8px;
-      overflow: hidden;
-      background-color: white;
-      height: 100%;
-    }
-    
-    .editor-toolbar {
-      display: flex;
-      align-items: center;
-      padding: 8px 16px;
-      border-bottom: 1px solid #e0e7f1;
-      background-color: #f5f8fc;
-      flex-wrap: wrap;
-    }
-    
-    .toolbar-divider {
-      height: 24px;
-      width: 1px;
-      background-color: #e0e7f1;
-      margin: 0 8px;
-    }
-    
-    .flex-spacer {
-      flex: 1;
-    }
-    
-    .editor-content-container {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-    }
-    
-    .editor-content {
-      min-height: 300px;
-      padding: 16px;
-      outline: none;
-      line-height: 1.6;
-    }
-    
-    .comment-panel {
-      width: 300px;
-      border-left: 1px solid #e0e7f1;
-      padding: 16px;
-      background-color: #f5f8fc;
-      overflow-y: auto;
-    }
-    
-    .comment-item {
-      padding: 12px;
-      background-color: white;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .comment-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    
-    .comment-author {
-      font-weight: 600;
-      color: #2a3f75;
-    }
-    
-    .comment-date {
-      font-size: 0.8rem;
-      color: #546e7a;
-    }
-    
-    .comment-text {
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    
-    .add-comment {
-      margin-top: 16px;
-    }
-    
-    .full-width {
-      width: 100%;
-    }
-  `]
-})
-export class RichTextEditorComponent implements OnInit {
-  @Input() content: string = '';
-  @Input() monografiaId!: number;
-  @Input() versaoId?: number;
-  @Output() contentChange = new EventEmitter<string>();
-  @Output() saved = new EventEmitter<any>();
+import {
+    Component, OnInit, Input, Output, EventEmitter,
+    ViewChild, ElementRef, AfterViewInit, Renderer2, OnChanges, SimpleChanges
+  } from '@angular/core';
+  import { CommonModule } from '@angular/common';
+  import { FormsModule } from '@angular/forms';
+  import { MaterialModule } from '../../../material.module';
+  import { MatSnackBar } from '@angular/material/snack-bar';
+  import { Comentario, ComentarioService, NovoComentarioRequest } from '../../../core/services/comentario.service'; // Ajuste o caminho se necessário
   
-  comments: any[] = [];
-  newComment: string = '';
-  showCommentPanel: boolean = false;
-  saving: boolean = false;
-  
-  constructor() {}
-  
-  ngOnInit(): void {
-    // Carregar comentários se versaoId estiver presente
-    if (this.versaoId) {
-      this.loadComments();
-    }
+  interface EditorComment extends Comentario {
+    anchorId?: string; // Para vincular ao span no editor
   }
   
-  execCommand(command: string, value: string = ''): void {
-    document.execCommand(command, false, value);
-  }
+  @Component({
+    selector: 'app-rich-text-editor',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MaterialModule
+    ],
+    templateUrl: './rich-text-editor.component.html',
+    styleUrls: ['./rich-text-editor.component.scss']
+  })
+  export class RichTextEditorComponent implements OnInit, AfterViewInit, OnChanges {
+    @Input() content: string = '';
+    @Input() monografiaId!: number;
+    @Input() versaoId?: number;
+    @Input() readOnly: boolean = false;
+    @Input() existingComments: Comentario[] = []; // Receber comentários do pai
   
-  formatBlock(block: string): void {
-    document.execCommand('formatBlock', false, `<${block}>`);
-  }
+    @Output() contentChange = new EventEmitter<string>();
+    @Output() saved = new EventEmitter<any>();
+    @Output() newCommentAnchorRequested = new EventEmitter<{ anchorId: string, selectionText: string }>();
+    @Output() viewCommentThread = new EventEmitter<string>(); // Emite o anchorId do comentário a ser visualizado
   
-  onContentChange(event: any): void {
-    this.content = event.target.innerHTML;
-    this.contentChange.emit(this.content);
-  }
+    @ViewChild('editorContent') editorElement!: ElementRef<HTMLDivElement>;
   
-  onBlur(): void {
-    // Opcional: salvar automaticamente quando o editor perder o foco
-  }
+    // Não mais gerenciamos 'comments' internamente para adição,
+    // o painel de comentários do editor-monografia fará isso.
+    // Esta lista será usada para destacar trechos comentados.
+    commentsToHighlight: EditorComment[] = [];
   
-  addComment(): void {
-    this.showCommentPanel = !this.showCommentPanel;
-  }
+    newCommentTextForSelectedAnchor: string = ''; // Texto para um novo comentário (se o painel for interno)
+    showInternalCommentPanel: boolean = false; // Controla um painel de comentário (se for interno)
+    currentAnchorIdForNewComment: string | null = null;
+    currentSelectionTextForNewComment: string | null = null;
   
-  insertImage(): void {
-    const url = prompt('Insira a URL da imagem:');
-    if (url) {
-      this.execCommand('insertImage', url);
+    saving: boolean = false;
+    private lastSelection: Range | null = null;
+  
+    constructor(
+      private snackBar: MatSnackBar,
+      private renderer: Renderer2,
+      private comentarioService: ComentarioService // Para salvar diretamente se for o caso
+    ) {}
+  
+    ngOnInit(): void {
+      this.processExistingComments();
     }
-  }
   
-  insertTable(): void {
-    const rows = prompt('Número de linhas:', '3');
-    const cols = prompt('Número de colunas:', '3');
-    
-    if (rows && cols) {
-      const table = document.createElement('table');
-      table.border = '1';
-      table.style.width = '100%';
-      table.style.borderCollapse = 'collapse';
-      
-      for (let i = 0; i < parseInt(rows); i++) {
-        const tr = table.insertRow();
-        for (let j = 0; j < parseInt(cols); j++) {
-          const td = tr.insertCell();
-          td.innerHTML = 'Célula';
-          td.style.padding = '8px';
-          td.style.border = '1px solid #ddd';
+    ngAfterViewInit(): void {
+      if (this.editorElement) {
+        this.editorElement.nativeElement.contentEditable = this.readOnly ? 'false' : 'true';
+        this.updateEditorContent(this.content); // Garante que o conteúdo inicial seja renderizado e processado
+      }
+      document.addEventListener('selectionchange', this.handleSelectionChange);
+    }
+  
+    ngOnChanges(changes: SimpleChanges): void {
+      if (changes['content']) {
+        this.updateEditorContent(changes['content'].currentValue);
+      }
+      if (changes['existingComments']) {
+        this.processExistingComments();
+        this.highlightCommentedAnchors();
+      }
+       if (changes['readOnly'] && this.editorElement) {
+          this.editorElement.nativeElement.contentEditable = this.readOnly ? 'false' : 'true';
+      }
+    }
+  
+    private processExistingComments(): void {
+      this.commentsToHighlight = this.existingComments.map(comment => ({
+        ...comment,
+        // Assumindo que comentario.posicaoTexto armazena o anchorId
+        anchorId: comment.posicaoTexto 
+      }));
+    }
+  
+    private updateEditorContent(newContent: string): void {
+      if (this.editorElement && this.editorElement.nativeElement.innerHTML !== newContent) {
+        this.editorElement.nativeElement.innerHTML = newContent;
+        this.highlightCommentedAnchors();
+      }
+    }
+  
+    // Modificado para não ser arrow function para poder remover com removeEventListener
+    private handleSelectionChange = (): void => {
+      if (document.activeElement === this.editorElement?.nativeElement) {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          this.lastSelection = sel.getRangeAt(0).cloneRange();
         }
       }
-      
-      document.execCommand('insertHTML', false, table.outerHTML);
     }
-  }
   
-  loadComments(): void {
-    // Simulação - na implementação real, buscar do backend
-    this.comments = [
-      {
-        id: 1,
-        author: 'Professor Silva',
-        date: new Date(),
-        text: 'Por favor, revise esta seção e adicione mais referências.'
-      },
-      {
-        id: 2,
-        author: 'João Aluno',
-        date: new Date(Date.now() - 86400000), // 1 dia atrás
-        text: 'Corrigi conforme sugerido.'
+    ngOnDestroy(): void {
+      document.removeEventListener('selectionchange', this.handleSelectionChange);
+    }
+  
+  
+    execCommand(command: string, value: string = ''): void {
+      if (this.readOnly) {
+        this.snackBar.open('O editor está em modo de leitura.', 'Fechar', { duration: 3000 });
+        return;
       }
-    ];
-  }
+      // Restaurar seleção antes de executar o comando
+      this.restoreSelection();
+      document.execCommand(command, false, value);
+      this.editorElement.nativeElement.focus(); // Manter o foco
+      this.onContentChanged();
+    }
   
-  submitComment(): void {
-    if (this.newComment.trim()) {
-      const comment = {
-        id: this.comments.length + 1,
-        author: 'Você', // Na implementação real, usar o usuário logado
-        date: new Date(),
-        text: this.newComment
-      };
-      
-      this.comments.unshift(comment);
-      this.newComment = '';
-      
-      // Na implementação real, salvar no backend
+    formatBlock(block: string): void {
+      if (this.readOnly) {
+        this.snackBar.open('O editor está em modo de leitura.', 'Fechar', { duration: 3000 });
+        return;
+      }
+      this.restoreSelection();
+      document.execCommand('formatBlock', false, `<${block}>`);
+      this.editorElement.nativeElement.focus();
+      this.onContentChanged();
+    }
+  
+    onContentChanged(): void {
+      if (this.editorElement) {
+        this.content = this.editorElement.nativeElement.innerHTML;
+        this.contentChange.emit(this.content);
+        this.highlightCommentedAnchors(); // Re-aplicar destaques após mudança
+      }
+    }
+  
+    private restoreSelection(): void {
+      if (this.lastSelection) {
+        const sel = window.getSelection();
+        if (sel) {
+          sel.removeAllRanges();
+          sel.addRange(this.lastSelection);
+        }
+      } else {
+        // Se não houver seleção salva, focar no editor para permitir comandos
+        this.editorElement?.nativeElement.focus();
+      }
+    }
+  
+    private generateUniqueId(): string {
+      return `comment-anchor-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    }
+  
+    requestNewComment(): void {
+      if (this.readOnly) {
+        this.snackBar.open('Não é possível adicionar comentários no modo de leitura.', 'Fechar', { duration: 3000 });
+        return;
+      }
+  
+      this.restoreSelection();
+      const selection = window.getSelection();
+      const selectionText = selection?.toString().trim();
+  
+      if (selection && selection.rangeCount > 0 && selectionText) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const anchorId = this.generateUniqueId();
+          const span = this.renderer.createElement('span');
+          this.renderer.setAttribute(span, 'data-comment-anchor-id', anchorId);
+          this.renderer.addClass(span, 'comment-highlight');
+          // Tentar envolver o conteúdo do range com o span
+          // Cuidado: range.surroundContents(span) pode falhar se o range cruzar limites de nós não textuais
+          try {
+            // Se a seleção for apenas texto, podemos fazer de forma mais simples
+            // Caso contrário, surroundContents é melhor mas mais propenso a erro.
+            // Para simplificar e maior robustez com execCommand:
+            document.execCommand('insertHTML', false, `<span class="comment-highlight" data-comment-anchor-id="${anchorId}">${selectionText}</span>`);
+            this.onContentChanged(); // Atualiza o conteúdo e re-aplica destaques
+            
+            this.newCommentAnchorRequested.emit({ anchorId, selectionText });
+            this.snackBar.open(`Seleção marcada para comentário. ID: ${anchorId}`, 'Fechar', { duration: 2000 });
+  
+          } catch (e) {
+            console.error('Erro ao envolver seleção com span:', e);
+            this.snackBar.open('Erro ao marcar texto para comentário. Tente selecionar apenas texto simples.', 'Fechar', { duration: 4000 });
+          }
+        } else {
+          this.snackBar.open('Selecione um trecho de texto para comentar.', 'Fechar', { duration: 3000 });
+        }
+      } else {
+        this.snackBar.open('Selecione um trecho de texto para comentar.', 'Fechar', { duration: 3000 });
+      }
+    }
+    
+    private highlightCommentedAnchors(): void {
+      if (!this.editorElement || !this.editorElement.nativeElement) return;
+  
+      // Remover destaques antigos para evitar duplicação se o conteúdo for atualizado
+      const oldHighlights = this.editorElement.nativeElement.querySelectorAll('span.comment-highlight[data-comment-anchor-id]');
+      oldHighlights.forEach(node => {
+        // Se o nó ainda não é um link, apenas remove a classe de destaque se não for mais um comentário válido.
+        // Se já for um link, não mexemos aqui, o addEventListener cuida disso.
+        // A lógica atual é: se está em commentsToHighlight, deve ser um link.
+      });
+  
+  
+      this.commentsToHighlight.forEach(comment => {
+        if (comment.anchorId) {
+          const anchorElement = this.editorElement.nativeElement.querySelector(`span[data-comment-anchor-id="${comment.anchorId}"]`) as HTMLElement;
+          if (anchorElement) {
+            this.renderer.addClass(anchorElement, 'comment-highlight'); // Garante a classe
+            this.renderer.addClass(anchorElement, 'has-comment'); // Nova classe para diferenciar
+            this.renderer.setStyle(anchorElement, 'cursor', 'pointer');
+            
+            // Adicionar listener para ver a thread de comentários
+            // Remover listener antigo para evitar múltiplos listeners no mesmo elemento
+            anchorElement.onclick = null; // Simplista, idealmente gerenciar com Renderer2.listen
+            this.renderer.listen(anchorElement, 'click', (event) => {
+              event.stopPropagation();
+              this.viewCommentThread.emit(comment.anchorId);
+            });
+          }
+        }
+      });
+    }
+  
+  
+    insertImage(): void {
+      if (this.readOnly) {
+        this.snackBar.open('O editor está em modo de leitura.', 'Fechar', { duration: 3000 });
+        return;
+      }
+      const url = prompt('Insira a URL da imagem:');
+      if (url) {
+        this.execCommand('insertImage', url);
+      }
+    }
+  
+    insertTable(): void {
+      if (this.readOnly) {
+        this.snackBar.open('O editor está em modo de leitura.', 'Fechar', { duration: 3000 });
+        return;
+      }
+      const rows = prompt('Número de linhas:', '2');
+      const cols = prompt('Número de colunas:', '2');
+  
+      if (rows && cols) {
+        let tableHtml = '<table border="1" style="width:100%; border-collapse: collapse;">';
+        for (let i = 0; i < parseInt(rows); i++) {
+          tableHtml += '<tr>';
+          for (let j = 0; j < parseInt(cols); j++) {
+            tableHtml += '<td style="padding: 8px; border: 1px solid #ddd;">Célula</td>';
+          }
+          tableHtml += '</tr>';
+        }
+        tableHtml += '</table><p></p>'; // Adicionar um parágrafo após a tabela para facilitar a edição
+        
+        this.restoreSelection();
+        document.execCommand('insertHTML', false, tableHtml);
+        this.editorElement.nativeElement.focus();
+        this.onContentChanged();
+      }
+    }
+  
+    // O botão de "Salvar" no editor pode ser um "Salvar Rascunho Rápido" ou
+    // pode ser removido se o salvamento principal for feito pelo `EditorMonografiaComponent`
+    // ao criar uma nova versão. Por ora, manteremos a lógica original de `saveDocument`.
+    saveDocument(): void {
+      if (this.readOnly) {
+        this.snackBar.open('O editor está em modo de leitura. Não é possível salvar alterações.', 'Fechar', { duration: 3000 });
+        return;
+      }
+      this.saving = true;
+      this.contentChange.emit(this.editorElement.nativeElement.innerHTML); // Garante que o pai tem o conteúdo mais recente
+      this.saved.emit({
+        content: this.editorElement.nativeElement.innerHTML,
+        monografiaId: this.monografiaId,
+        versaoId: this.versaoId // O pai decidirá se isso cria uma nova versão ou atualiza um rascunho
+      });
+  
+      // Simular o fim do salvamento (o pai deve controlar 'saving' na realidade)
+      setTimeout(() => {
+        this.saving = false;
+        this.snackBar.open('Conteúdo do editor enviado para salvamento.', 'Fechar', { duration: 2000 });
+      }, 1000);
     }
   }
-  
-  saveDocument(): void {
-    this.saving = true;
-    
-    // Simulação de salvar - na implementação real, enviar para o backend
-    setTimeout(() => {
-      this.saved.emit({
-        content: this.content,
-        monografiaId: this.monografiaId,
-        versaoId: this.versaoId
-      });
-      
-      this.saving = false;
-    }, 1000);
-  }
-}
