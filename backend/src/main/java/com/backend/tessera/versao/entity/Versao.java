@@ -1,51 +1,57 @@
-// src/main/java/com/backend/tessera/versao/entity/Versao.java
 package com.backend.tessera.versao.entity;
 
-import com.backend.tessera.monografia.entity.Monografia; // Se houver relação bidirecional
+import com.backend.tessera.monografia.entity.Monografia;
 import com.backend.tessera.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor; // Adicionado se quiser construtor com todos os campos
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "versoes")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor // Adicionado para conveniência, se aplicável
 public class Versao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private int numeroVersao;
-
-    @Column(length = 500)
-    private String descricaoAlteracoes;
-
-    @Column(nullable = false)
-    private String caminhoArquivo; // Ou armazene o arquivo de outra forma
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "monografia_id", nullable = false)
     private Monografia monografia;
 
-    @ManyToOne
-    @JoinColumn(name = "submetido_por_id", nullable = false)
-    private User submetidoPor;
+    @Column(nullable = false)
+    private String numeroVersao; // Ex: "1.0", "1.1"
+
+    @Column(nullable = false, length = 64) // SHA-256 hash é 64 caracteres hex
+    private String hashArquivo;
+
+    @Column(nullable = false)
+    private String nomeArquivo; // Nome do arquivo no sistema de arquivos
+
+    @Column(columnDefinition = "TEXT")
+    private String mensagemCommit;
+
+    private String tag; // Opcional, ex: "Entrega Parcial", "Final"
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "criado_por_id", nullable = false)
+    private User criadoPor; // Usuário que criou esta versão
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime dataSubmissao;
+    private LocalDateTime dataCriacao;
 
-    // Exemplo de campo adicional
-    private String feedbackOrientador;
+    @Column(nullable = false)
+    private String caminhoArquivo; // Caminho relativo para o arquivo no storage
+
+    private Long tamanhoArquivo; // Tamanho do arquivo em bytes
+
 
     @PrePersist
     protected void onCreate() {
-        dataSubmissao = LocalDateTime.now();
+        dataCriacao = LocalDateTime.now();
     }
-
-    // Construtor, getters, setters (Lombok @Data cuida disso)
-    // Adicione quaisquer outros campos e lógica necessários
 }

@@ -25,7 +25,7 @@ public class SignupRequest {
     @Size(min = 3, max = 100, message = "Instituição deve ter entre 3 e 100 caracteres")
     private String institution;
 
-    @NotEmpty(message = "Pelo menos um perfil (Role) deve ser especificado")
+    // @NotEmpty(message = "Pelo menos um perfil (Role) deve ser especificado") // REMOVIDO
     private Set<String> role;
 
     public SignupRequest() {
@@ -40,7 +40,7 @@ public class SignupRequest {
         this.role = role;
     }
 
-    // Getters e Setters
+    // Getters e Setters (Lombok @Data os geraria, mas se não estiver usando, mantenha-os)
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getUsername() { return username; }

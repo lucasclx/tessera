@@ -1,17 +1,17 @@
 package com.backend.tessera.auth.controller;
 
-import com.backend.tessera.auth.entity.AccountStatus; // Atualizado
-import com.backend.tessera.auth.entity.Role; // Atualizado
-import com.backend.tessera.auth.entity.User; // Atualizado
-import com.backend.tessera.auth.dto.SignupRequest; // Atualizado
-import com.backend.tessera.auth.dto.MessageResponse; // Atualizado
-import com.backend.tessera.auth.repository.UserRepository; // Atualizado
+import com.backend.tessera.auth.entity.AccountStatus;
+import com.backend.tessera.auth.entity.Role;
+import com.backend.tessera.auth.entity.User;
+import com.backend.tessera.auth.dto.SignupRequest;
+import com.backend.tessera.auth.dto.MessageResponse;
+import com.backend.tessera.auth.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
+import jakarta.validation.Valid; // Import correto
 
 import java.util.Set;
 
@@ -42,7 +42,7 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Email já está em uso!"));
             }
 
-            Role userRole = null; // Inicializa como null
+            Role userRole = null;
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles == null || strRoles.isEmpty()) {
@@ -51,11 +51,10 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Perfil (Role) não especificado."));
             }
 
-            // Assumindo que apenas um papel é enviado no Set para simplificar
             String roleStr = strRoles.iterator().next().toUpperCase();
             try {
-                userRole = Role.valueOf(roleStr); // Converte string para Enum Role
-                 if (userRole == Role.ADMIN) { // Não permitir auto-registro como ADMIN
+                userRole = Role.valueOf(roleStr);
+                 if (userRole == Role.ADMIN) {
                     return ResponseEntity
                             .badRequest()
                             .body(new MessageResponse("Erro: Registro como ADMIN não é permitido."));
@@ -66,17 +65,17 @@ public class RegisterController {
                         .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
             }
 
-
-            User user = new User();
-            user.setNome(signUpRequest.getNome());
-            user.setUsername(signUpRequest.getUsername());
-            user.setEmail(signUpRequest.getEmail());
-            user.setPassword(encoder.encode(signUpRequest.getPassword()));
-            user.setInstitution(signUpRequest.getInstitution());
-            user.setRole(userRole); // Atribui o papel validado
-
-            user.setStatus(AccountStatus.PENDENTE);
-            user.setEnabled(false); // Novos usuários começam desabilitados
+            // Usando o construtor completo
+            User user = new User(
+                signUpRequest.getNome(),
+                signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getInstitution(),
+                userRole,
+                AccountStatus.PENDENTE,
+                false // enabled
+            );
             user.setAdminComments("Aguardando aprovação do administrador.");
 
             userRepository.save(user);
