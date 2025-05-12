@@ -2,10 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { AuthService, ApprovalStatus } from '../../../core/auth.service'; // Caminho corrigido
+import { AuthService, ApprovalStatus } from '../../../core/auth.service';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../../material.module'; // Caminho corrigido
-import { NavigationService } from '../../../core/services/navigation.service'; // Caminho corrigido
+import { MaterialModule } from '../../../material.module';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +24,8 @@ export class LoginComponent implements OnInit {
   errorMessage: string | null = null;
   loading = false;
   returnUrl: string = '';
-  passwordVisible = false;
+  showPassword = false;
+  submitted = false;
 
   constructor(
     private fb: FormBuilder,
@@ -52,10 +53,17 @@ export class LoginComponent implements OnInit {
   }
 
   togglePasswordVisibility(): void {
-    this.passwordVisible = !this.passwordVisible;
+    this.showPassword = !this.showPassword;
+  }
+
+  // Getter para fácil acesso aos controles do formulário no template
+  get f() {
+    return this.loginForm.controls;
   }
 
   onSubmit(): void {
+    this.submitted = true;
+    
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -104,14 +112,5 @@ export class LoginComponent implements OnInit {
         this.errorMessage = err.error?.message || err.error?.error || err.message || 'Falha no login. Verifique suas credenciais.';
       }
     });
-  }
-
-  // Getters para fácil acesso aos controles do formulário no template
-  get usernameFc() {
-    return this.loginForm.get('username');
-  }
-
-  get passwordFc() {
-    return this.loginForm.get('password');
   }
 }

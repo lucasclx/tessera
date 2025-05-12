@@ -5,16 +5,18 @@ import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MaterialModule } from '../../material.module';
 
 @Component({
   selector: 'app-aluno-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    MaterialModule
   ],
   templateUrl: './aluno-dashboard.component.html',
-  styleUrl: './aluno-dashboard.component.scss'
+  styleUrls: ['./aluno-dashboard.component.scss']
 })
 export class AlunoDashboardComponent implements OnInit {
   username: string | null = null;

@@ -5,16 +5,18 @@ import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MaterialModule } from '../../material.module';
 
 @Component({
   selector: 'app-professor-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    MaterialModule
   ],
   templateUrl: './professor-dashboard.component.html',
-  styleUrl: './professor-dashboard.component.scss'
+  styleUrls: ['./professor-dashboard.component.scss']
 })
 export class ProfessorDashboardComponent implements OnInit {
   username: string | null = null;

@@ -124,7 +124,7 @@ form {
       }
       
       &::placeholder {
-        color: lighten($text-secondary, 20%);
+        color: color.adjust($text-secondary, $lightness: 20%);
       }
     }
     
@@ -209,7 +209,7 @@ form {
       color: $white;
       
       &:hover:not(:disabled) {
-        background-color: darken($primary-color, 5%);
+        background-color: color.adjust($primary-color, $lightness: -5%);
       }
       
       &:disabled {

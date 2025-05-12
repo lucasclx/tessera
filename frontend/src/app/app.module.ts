@@ -8,6 +8,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
 import { AuthModule } from './auth/auth.module';
+import { MaterialModule } from './material.module';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    MaterialModule, // Importante para os componentes Material
     CoreModule, // Importante: Core deve ser importado antes dos outros módulos
     AuthModule,
     AppRoutingModule, // Importante: AppRoutingModule deve ser o último

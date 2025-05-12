@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth.service';
+import { MaterialModule } from '../../material.module';
 // Importar diretamente os tipos, não os serviços
 import { User, UserApprovalRequest } from '../../core/admin.service.types';
 
@@ -24,7 +25,8 @@ interface AdminService {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterModule
+    RouterModule,
+    MaterialModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
