@@ -1,11 +1,13 @@
 package com.backend.tessera.security;
 
-import com.backend.tessera.auth.service.UserDetailsServiceImpl; // Atualizado
+import com.backend.tessera.auth.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,11 +22,13 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService; // Vem de auth.service
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -33,22 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
         final String requestURI = request.getRequestURI();
+        logger.debug("Filtrando requisição para: {}", requestURI);
 
-        // System.out.println("Request URI: " + requestURI);
-        // System.out.println("Auth Header: " + (authorizationHeader != null ?
-        //         authorizationHeader.substring(0, Math.min(20, authorizationHeader.length())) + "..." : "null"));
-
-        // Endpoints que não exigem JWT para acesso inicial. A segurança deles é definida no SecurityConfig.
-        if (requestURI.startsWith("/api/auth/") || // Login, Register, Check-Approval
+        // Endpoints que não exigem JWT para acesso inicial
+        if (requestURI.startsWith("/api/auth/") || 
             requestURI.startsWith("/actuator/")) {
-            // System.out.println("Pulando filtro JWT para endpoint público: " + requestURI);
+            logger.debug("Pulando filtro JWT para endpoint público: {}", requestURI);
             filterChain.doFilter(request, response);
             return;
         }
-        // Os demais endpoints, incluindo /api/admin/** e /api/dashboard/**, passarão pela validação do token.
 
+        final String authorizationHeader = request.getHeader("Authorization");
         String username = null;
         String jwt = null;
 
@@ -56,59 +56,58 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                // System.out.println("Usuário extraído do token: " + username);
+                logger.debug("Token JWT válido para usuário: {}", username);
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token expirado para " + e.getClaims().getSubject());
-                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                // response.setContentType("application/json");
-                // response.getWriter().write("{\"message\": \"Token expirado.\"}");
-                filterChain.doFilter(request, response); // Deixa o SecurityConfig lidar com a resposta de não autorizado
+                logger.warn("Token JWT expirado para usuário: {}", 
+                    e.getClaims() != null ? e.getClaims().getSubject() : "desconhecido");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"unauthorized\",\"message\":\"Token expirado. Por favor, faça login novamente.\"}");
                 return;
             } catch (Exception e) {
-                System.out.println("Erro ao processar JWT Token: " + e.getMessage());
-                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                // response.setContentType("application/json");
-                // response.getWriter().write("{\"message\": \"Token inválido.\"}");
-                filterChain.doFilter(request, response); // Deixa o SecurityConfig lidar
+                logger.error("Erro ao processar token JWT: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"unauthorized\",\"message\":\"Token inválido. Por favor, faça login novamente.\"}");
                 return;
             }
         } else {
-             //System.out.println("Cabeçalho Authorization não encontrado ou sem prefixo Bearer para: " + requestURI);
-             // Para endpoints que não são /api/auth/** ou /actuator/**, isso resultará em falha de autenticação
-             // que será tratada pelo authenticationEntryPoint no SecurityConfig
-            filterChain.doFilter(request, response);
+            logger.debug("Nenhum token Bearer encontrado no cabeçalho Authorization");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"unauthorized\",\"message\":\"Autenticação necessária. Por favor, faça login.\"}");
             return;
         }
-
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                // System.out.println("Detalhes do usuário carregados para validação JWT: " + userDetails.getUsername());
-                // System.out.println("Autoridades para validação JWT: " + userDetails.getAuthorities());
-
-                boolean isValid = jwtUtil.validateToken(jwt, userDetails);
-                // System.out.println("Token válido para " + username + "? " + isValid);
-
-                if (isValid) {
+                logger.debug("Detalhes do usuário carregados: {}", userDetails.getUsername());
+                
+                if (jwtUtil.validateToken(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    // System.out.println("Autenticação JWT definida com sucesso no SecurityContextHolder para: " + username);
+                    logger.debug("Autenticação JWT definida para usuário: {}", username);
+                    
+                    // Continue a cadeia de filtros
+                    filterChain.doFilter(request, response);
                 } else {
-                    System.out.println("Token JWT inválido, autenticação não realizada para: " + username);
-                    // SecurityContextHolder.clearContext(); // Garante que não haja contexto de segurança antigo
+                    logger.warn("Token JWT inválido para usuário: {}", username);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"unauthorized\",\"message\":\"Token inválido. Por favor, faça login novamente.\"}");
                 }
             } catch (Exception e) {
-                System.out.println("Erro durante a validação do token ou carregamento do UserDetails: " + e.getMessage());
-                // SecurityContextHolder.clearContext();
+                logger.error("Erro ao validar token ou carregar UserDetails: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"unauthorized\",\"message\":\"Erro de autenticação: " + e.getMessage() + "\"}");
             }
-        } else if (username == null) {
-            System.out.println("Username não extraído do token, ou token não fornecido onde esperado.");
+        } else {
+            // Continue a cadeia de filtros se autenticação já estiver presente
+            filterChain.doFilter(request, response);
         }
-
-
-        filterChain.doFilter(request, response);
     }
 }

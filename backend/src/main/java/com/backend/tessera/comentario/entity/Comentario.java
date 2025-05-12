@@ -4,17 +4,17 @@ import com.backend.tessera.auth.entity.User;
 import com.backend.tessera.versao.entity.Versao;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data; // Adicionado
+import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comentarios")
-@Data // Garante getters, setters, toString, equals, hashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comentario {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,7 +34,6 @@ public class Comentario {
     private LocalDateTime dataCriacao;
 
     private String posicaoTexto;
-
 
     @PrePersist
     protected void onCreate() {

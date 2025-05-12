@@ -140,13 +140,6 @@ public class User implements UserDetails {
 
 
     // Métodos UserDetails
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (role != null && status == AccountStatus.ATIVO && this.enabled) {
-            return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-        }
-        return Collections.emptyList();
-    }
 
     @Override
     public String getPassword() {

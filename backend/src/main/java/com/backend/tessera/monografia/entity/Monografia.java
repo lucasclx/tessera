@@ -1,12 +1,12 @@
-// src/main/java/com/backend/tessera/monografia/entity/Monografia.java
-
 package com.backend.tessera.monografia.entity;
-import com.backend.tessera.versao.entity.Versao;
+
 import com.backend.tessera.auth.entity.User;
+import com.backend.tessera.versao.entity.Versao;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,8 @@ import java.util.List;
 @Table(name = "monografias")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Monografia {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

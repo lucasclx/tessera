@@ -37,7 +37,7 @@ public class SecurityConfig {
     private CustomAuthenticationProvider customAuthenticationProvider;
     
     @Autowired
-    private PasswordEncoder passwordEncoder;  // Injetando o bean existente de PasswordEncoderConfig
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,17 +51,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers("/api/dashboard/aluno/**").hasRole("ALUNO")
                 
-                // --- REGRA DE AUTORIZAÇÃO PARA MONOGRAFIAS (AJUSTADA/ADICIONADA) ---
+                // --- REGRAS DE AUTORIZAÇÃO PARA MONOGRAFIAS ---
                 .requestMatchers(HttpMethod.GET, "/api/monografias").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/monografias").hasAnyRole("ALUNO", "PROFESSOR") // Exemplo: quem pode criar
-                .requestMatchers(HttpMethod.GET, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN") // Ex: para buscar uma específica
-                .requestMatchers(HttpMethod.PUT, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR") // Ex: quem pode atualizar
-                .requestMatchers(HttpMethod.DELETE, "/api/monografias/{id}/**").hasAnyRole("ADMIN", "PROFESSOR") // Ex: quem pode deletar
+                .requestMatchers(HttpMethod.POST, "/api/monografias").hasAnyRole("ALUNO", "PROFESSOR")
+                .requestMatchers(HttpMethod.GET, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/monografias/{id}/**").hasAnyRole("ALUNO", "PROFESSOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/monografias/{id}/**").hasAnyRole("ADMIN", "PROFESSOR")
                 // --- FIM DA REGRA DE MONOGRAFIAS ---
 
-                // Regras para outros módulos (versao, comentario, etc.) devem ser adicionadas aqui
-                .requestMatchers("/api/versoes/**").authenticated() // Exemplo genérico, ajuste as roles
-                .requestMatchers("/api/comentarios/**").authenticated() // Exemplo genérico, ajuste as roles
+                // Regras para outros módulos (versao, comentario, etc.)
+                .requestMatchers("/api/versoes/**").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN")
+                .requestMatchers("/api/comentarios/**").hasAnyRole("ALUNO", "PROFESSOR", "ADMIN")
 
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
@@ -102,7 +102,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:4200")); // Use List.of
+        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
