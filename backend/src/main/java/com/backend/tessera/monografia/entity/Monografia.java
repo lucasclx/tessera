@@ -1,7 +1,7 @@
 // src/main/java/com/backend/tessera/monografia/entity/Monografia.java
 
 package com.backend.tessera.monografia.entity;
-
+import com.backend.tessera.versao.entity.Versao;
 import com.backend.tessera.auth.entity.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
