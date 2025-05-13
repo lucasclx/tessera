@@ -48,13 +48,16 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private AccountStatus status = AccountStatus.PENDENTE;
 
+    @Column(name = "enabled", nullable = false) // Coluna para o banco de dados
+    private boolean enabled;
+
     // Campo para a data de aprovação
     private LocalDateTime approvalDate;
 
     @Column(length = 500)
     private String adminComments;
 
-    // Campos para status da conta
+    // Campos para status da conta (mantidos para UserDetails, mas 'enabled' é o principal para o estado da conta)
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
@@ -67,10 +70,15 @@ public class User implements UserDetails {
     private boolean emailVerified = false;
     private LocalDateTime emailVerifiedAt;
 
-    // Inicializa a data de criação antes de persistir
+    // Inicializa a data de criação e o estado 'enabled' antes de persistir
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        // Garante que 'enabled' seja definido com base no 'status' inicial
+        if (this.status == null) {
+            this.status = AccountStatus.PENDENTE; // Define um padrão se status for nulo
+        }
+        this.enabled = (this.status == AccountStatus.ATIVO);
     }
 
     // Construtores
@@ -78,7 +86,7 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
+        this.setStatus(AccountStatus.ATIVO); // Define status e enabled
         this.createdAt = LocalDateTime.now();
     }
 
@@ -89,16 +97,16 @@ public class User implements UserDetails {
         this.password = password;
         this.institution = institution;
         this.role = role;
-        this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
+        this.setStatus(AccountStatus.PENDENTE); // Define status e enabled
         this.createdAt = LocalDateTime.now();
     }
 
     /**
      * Verifica se o usuário pode fazer login
-     * Um usuário pode fazer login somente se o status for ATIVO
+     * Um usuário pode fazer login somente se o status for ATIVO (e, por consequência, enabled for true)
      */
     public boolean canLogin() {
-        return this.status == AccountStatus.ATIVO;
+        return this.status == AccountStatus.ATIVO && this.enabled;
     }
 
     /**
@@ -110,8 +118,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Só retorna autoridades se o status for ATIVO
-        if (status == AccountStatus.ATIVO) {
+        // Só retorna autoridades se o status for ATIVO e a conta estiver habilitada
+        if (this.status == AccountStatus.ATIVO && this.enabled) {
             return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
         return Collections.emptyList();
@@ -124,9 +132,9 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // A conta está bloqueada se estiver pendente ou rejeitada
-        return this.accountNonLocked && 
-              (this.status != AccountStatus.PENDENTE && this.status != AccountStatus.REJEITADO);
+        // A conta está bloqueada se não estiver 'enabled' (que reflete status PENDENTE, REJEITADO, INATIVO)
+        // ou se accountNonLocked for explicitamente false.
+        return this.accountNonLocked && this.enabled;
     }
 
     @Override
@@ -134,29 +142,52 @@ public class User implements UserDetails {
         return this.credentialsNonExpired;
     }
 
+    // Implementação do método isEnabled da interface UserDetails
     @Override
     public boolean isEnabled() {
-        // A conta está habilitada somente se estiver ATIVA
-        return this.status == AccountStatus.ATIVO;
+        return this.enabled; // Retorna o valor do campo persistido 'enabled'
     }
-    
-    // Para compatibilidade com código existente que chama setEnabled
+
+    // Setter para 'enabled' que também sincroniza 'status'
+    // Este método é crucial se 'enabled' for alterado diretamente.
     public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
         if (enabled) {
-            // Se estiver ativando a conta, apenas mude para ATIVO se não for PENDENTE ou REJEITADO
-            if (this.status == AccountStatus.INATIVO) {
+            // Se está ativando, e o status era INATIVO, PENDENTE (após aprovação), ou REJEITADO (após reconsideração)
+            // muda para ATIVO. A lógica de aprovação deve ser tratada separadamente.
+            // Aqui, focamos em sincronizar 'status' se 'enabled' muda.
+            if (this.status == AccountStatus.INATIVO || this.status == AccountStatus.PENDENTE || this.status == AccountStatus.REJEITADO) {
+                // Se estamos ativando, o status deve se tornar ATIVO.
+                // Casos PENDENTE/REJEITADO devem ser aprovados antes de serem ATIVO,
+                // mas se setEnabled(true) for chamado, assumimos que a intenção é ATIVAR.
                 this.status = AccountStatus.ATIVO;
+                if (this.approvalDate == null && this.status == AccountStatus.ATIVO) {
+                    this.approvalDate = LocalDateTime.now(); // Define data de aprovação se estiver ativando
+                }
             }
         } else {
-            // Se estiver desativando a conta, apenas mude para INATIVO se for ATIVO
+            // Se está desativando, e o status era ATIVO, torna INATIVO
             if (this.status == AccountStatus.ATIVO) {
                 this.status = AccountStatus.INATIVO;
             }
+            // Se PENDENTE ou REJEITADO, já está "desabilitado" (enabled=false).
+        }
+    }
+
+    // Setter para 'status' que também sincroniza 'enabled'
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+        this.enabled = (status == AccountStatus.ATIVO);
+        if (status == AccountStatus.ATIVO && this.approvalDate == null) {
+            this.approvalDate = LocalDateTime.now();
+        } else if (status != AccountStatus.ATIVO) {
+            // Se não está ATIVO, não deve ter data de aprovação (ou pode ser mantida se já foi aprovado antes)
+            // Para simplificar, não limpamos approvalDate aqui, pois um admin pode desativar uma conta aprovada.
         }
     }
     
-    // Getters e Setters explícitos para garantir que o Lombok os gere corretamente
-    
+    // Getters e Setters explícitos (Lombok @Data já os provê, mas para clareza em relação às modificações)
+
     @Override
     public String getUsername() {
         return username;
@@ -219,9 +250,7 @@ public class User implements UserDetails {
         return status;
     }
 
-    public void setStatus(AccountStatus status) {
-        this.status = status;
-    }
+    // public void setStatus(AccountStatus status) { // Setter já modificado acima
 
     public LocalDateTime getApprovalDate() {
         return approvalDate;
@@ -275,5 +304,5 @@ public class User implements UserDetails {
         this.emailVerifiedAt = emailVerifiedAt;
     }
     
-    // Métodos equals, hashCode e toString gerados automaticamente pelo Lombok
+    // O Lombok @Data gera equals, hashCode, toString.
 }

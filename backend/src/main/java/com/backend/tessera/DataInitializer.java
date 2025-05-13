@@ -32,7 +32,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Permitir desabilitar a inicialização para testes
         if (!shouldInitializeData) {
             logger.info("Inicialização de dados desabilitada por configuração.");
             return;
@@ -41,7 +40,6 @@ public class DataInitializer implements CommandLineRunner {
         boolean createdAnyUser = false;
         logger.info("Iniciando DataInitializer...");
         
-        // --- Método refatorado para garantir que todos os usuários necessários existam ----
         createdAnyUser |= ensureUserExists(
             "admin", "admin123", "Administrador", "admin@sistema.edu", 
             "Sistema Acadêmico", Role.ADMIN, AccountStatus.ATIVO, true,
@@ -62,27 +60,20 @@ public class DataInitializer implements CommandLineRunner {
             "Sistema Acadêmico", Role.PROFESSOR, AccountStatus.PENDENTE, false,
             "Aguardando aprovação do administrador (criado via DataInitializer)");
             
-        // Mensagem final
         if (!createdAnyUser) {
-            logger.info("Todos os usuários de teste principais já existem no banco de dados.");
+            logger.info("Todos os usuários de teste principais já existem no banco de dados e estão configurados corretamente.");
         }
         
         logger.info("DataInitializer finalizado.");
     }
     
-    /**
-     * Garante que um usuário com o username especificado exista no sistema.
-     * Se o usuário não existir, será criado. Se existir, seus atributos serão atualizados se necessário.
-     * 
-     * @return true se um novo usuário foi criado, false se o usuário já existia
-     */
     private boolean ensureUserExists(String username, String password, String nome, String email, 
                                    String institution, Role role, AccountStatus status, 
                                    boolean emailVerified, String adminComments) {
         
-        Optional<User> existingUser = userRepository.findByUsername(username);
+        Optional<User> existingUserOpt = userRepository.findByUsername(username);
         
-        if (existingUser.isEmpty()) {
+        if (existingUserOpt.isEmpty()) {
             User newUser = new User();
             newUser.setUsername(username);
             newUser.setPassword(passwordEncoder.encode(password));
@@ -90,48 +81,61 @@ public class DataInitializer implements CommandLineRunner {
             newUser.setEmail(email);
             newUser.setInstitution(institution);
             newUser.setRole(role);
-            newUser.setStatus(status);
-            // Não precisamos mais definir enabled explicitamente, pois é derivado do status
+            // setStatus irá definir 'status' e 'enabled' consistentemente
+            newUser.setStatus(status); 
             newUser.setEmailVerified(emailVerified);
             
             if (emailVerified) {
                 newUser.setEmailVerifiedAt(LocalDateTime.now());
             }
             
-            if (status == AccountStatus.ATIVO) {
-                newUser.setApprovalDate(LocalDateTime.now());
-            }
+            // Se o status for ATIVO, a data de aprovação é agora (consistente com enabled)
+            // O setter de setStatus já cuida da data de aprovação se status for ATIVO e approvalDate for null
+            // if (status == AccountStatus.ATIVO) {
+            //     newUser.setApprovalDate(LocalDateTime.now());
+            // }
             
             newUser.setAdminComments(adminComments);
             
             userRepository.save(newUser);
-            logger.info("Usuário '{}' criado com sucesso", username);
+            logger.info("Usuário '{}' criado com sucesso. Status: {}, Enabled: {}", 
+                        username, newUser.getStatus(), newUser.isEnabled());
             return true;
         } else {
-            User user = existingUser.get();
+            User user = existingUserOpt.get();
             boolean updated = false;
             
-            // Verificar se precisamos atualizar algum atributo
             if (user.getStatus() != status) {
-                user.setStatus(status);
+                user.setStatus(status); // Atualiza status e enabled
                 updated = true;
             }
-            
+            // Se a senha mudou (improvável para dados de inicialização, mas para completude)
+            // if (!passwordEncoder.matches(password, user.getPassword())) {
+            //    user.setPassword(passwordEncoder.encode(password));
+            //    updated = true;
+            // }
             if (user.isEmailVerified() != emailVerified) {
                 user.setEmailVerified(emailVerified);
-                if (emailVerified) {
+                if (emailVerified && user.getEmailVerifiedAt() == null) {
                     user.setEmailVerifiedAt(LocalDateTime.now());
                 }
                 updated = true;
             }
+            if (user.getRole() != role){
+                user.setRole(role);
+                updated = true;
+            }
+
+            // Adicione outras verificações e atualizações se necessário
             
             if (updated) {
                 userRepository.save(user);
-                logger.info("Usuário '{}' atualizado", username);
+                logger.info("Usuário '{}' atualizado. Status: {}, Enabled: {}", 
+                            username, user.getStatus(), user.isEnabled());
             } else {
-                logger.info("Usuário '{}' já existe e está configurado corretamente", username);
+                logger.info("Usuário '{}' já existe e está configurado corretamente. Status: {}, Enabled: {}", 
+                            username, user.getStatus(), user.isEnabled());
             }
-            
             return false;
         }
     }
