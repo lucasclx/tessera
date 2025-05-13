@@ -1,25 +1,27 @@
 package com.backend.tessera.controller;
 
+import com.backend.tessera.config.LoggerConfig;
 import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.dto.SignupRequest;
 import com.backend.tessera.dto.MessageResponse;
 import com.backend.tessera.repository.UserRepository;
-import com.backend.tessera.service.EmailVerificationService; // Importação adicionada
+import com.backend.tessera.service.EmailVerificationService;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-import jakarta.mail.MessagingException; // Importação adicionada
 
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
 public class RegisterController {
+    private static final Logger logger = LoggerConfig.getLogger(RegisterController.class);
 
     @Autowired
     UserRepository userRepository;
@@ -27,17 +29,17 @@ public class RegisterController {
     @Autowired
     PasswordEncoder encoder;
 
-    @Autowired // Injeção adicionada
+    @Autowired
     EmailVerificationService emailVerificationService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
-            // Log para debug
-            System.out.println("Recebendo requisição de registro: " + signUpRequest.getUsername());
+            logger.debug("Recebendo requisição de registro: {}", signUpRequest.getUsername());
             
             // Verificação de username já existente
             if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+                logger.warn("Tentativa de registro com username já existente: {}", signUpRequest.getUsername());
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Erro: Nome de usuário já está em uso!"));
@@ -45,6 +47,7 @@ public class RegisterController {
 
             // Verificação de email já existente
             if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+                logger.warn("Tentativa de registro com email já existente: {}", signUpRequest.getEmail());
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Erro: Email já está em uso!"));
@@ -62,11 +65,13 @@ public class RegisterController {
                     } else if (roleStr.equals("ALUNO")) {
                         userRole = Role.ALUNO;
                     } else {
+                        logger.warn("Tentativa de registro com perfil inválido: {}", roleStr);
                         return ResponseEntity
                                 .badRequest()
                                 .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
                     }
                 } catch (IllegalArgumentException e) {
+                    logger.error("Erro ao processar perfil de usuário: {}", e.getMessage());
                     return ResponseEntity
                             .badRequest()
                             .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
@@ -90,24 +95,28 @@ public class RegisterController {
             // Salvar no banco de dados
             userRepository.save(user);
             
-            System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus() + ", Enabled: " + user.isEnabled());
+            logger.info("Usuário registrado com sucesso: {}, Papel: {}, Status: {}", 
+                        user.getUsername(), user.getRole(), user.getStatus());
 
             // Enviar email de verificação
+            boolean emailSent = false;
             try {
-                emailVerificationService.sendVerificationEmail(user);
-                System.out.println("Email de verificação enviado para: " + user.getEmail());
-            } catch (MessagingException e) {
-                System.err.println("Erro ao enviar email de verificação: " + e.getMessage());
+                emailSent = emailVerificationService.sendVerificationEmail(user);
+            } catch (Exception e) {
+                logger.error("Erro ao enviar email de verificação: {}", e.getMessage());
                 // Não impede o registro, mas loga o erro
             }
-
-            String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores. Um email de verificação foi enviado.";
+            
+            String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores. ";
+            if (!emailSent) {
+                message += "Não foi possível enviar o email de verificação. Por favor, solicite um novo email de verificação mais tarde.";
+            } else {
+                message += "Um email de verificação foi enviado.";
+            }
 
             return ResponseEntity.ok(new MessageResponse(message));
         } catch (Exception e) {
-            // Log de erro para debugging
-            System.err.println("Erro ao registrar usuário: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro ao registrar usuário: {}", e.getMessage(), e);
             return ResponseEntity
                     .internalServerError()
                     .body(new MessageResponse("Erro ao processar o registro: " + e.getMessage()));

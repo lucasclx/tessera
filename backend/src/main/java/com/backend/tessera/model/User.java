@@ -7,7 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime; // Added import
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +64,7 @@ public class User implements UserDetails {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // Atributos adicionados para verificação de email
+    // Atributos para verificação de email
     private boolean emailVerified = false;
     private LocalDateTime emailVerifiedAt;
 
@@ -98,6 +98,17 @@ public class User implements UserDetails {
     }
 
     /**
+     * Verifica se o usuário pode fazer login
+     * Um usuário pode fazer login se:
+     * 1. Conta foi aprovada (status ATIVO)
+     * 2. Conta está habilitada (enabled = true)
+     * A verificação de email não impede o login
+     */
+    public boolean canLogin() {
+        return (status == AccountStatus.ATIVO) && enabled;
+    }
+
+    /**
      * Verifica se a conta foi aprovada
      */
     public boolean isApproved() {
@@ -120,8 +131,9 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // A conta está bloqueada se estiver pendente
-        return this.accountNonLocked && (this.status != AccountStatus.PENDENTE);
+        // A conta está bloqueada se estiver pendente ou rejeitada
+        return this.accountNonLocked && 
+              (this.status != AccountStatus.PENDENTE && this.status != AccountStatus.REJEITADO);
     }
 
     @Override
@@ -133,5 +145,123 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         // A conta está habilitada se estiver ativa E o campo enabled for true
         return this.enabled && (this.status == AccountStatus.ATIVO);
+    }
+    
+    // Getters e setters explícitos para garantir que o Lombok os gere corretamente
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getApprovalDate() {
+        return approvalDate;
+    }
+
+    public void setApprovalDate(LocalDateTime approvalDate) {
+        this.approvalDate = approvalDate;
+    }
+
+    public String getAdminComments() {
+        return adminComments;
+    }
+
+    public void setAdminComments(String adminComments) {
+        this.adminComments = adminComments;
+    }
+
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        this.accountNonExpired = accountNonExpired;
+    }
+
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+    }
+
+    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
+        this.credentialsNonExpired = credentialsNonExpired;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public LocalDateTime getEmailVerifiedAt() {
+        return emailVerifiedAt;
+    }
+
+    public void setEmailVerifiedAt(LocalDateTime emailVerifiedAt) {
+        this.emailVerifiedAt = emailVerifiedAt;
     }
 }

@@ -1,12 +1,12 @@
 package com.backend.tessera.dto;
 
-// Importe jakarta.validation.constraints se for usar validações aqui
-// import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 public class AuthRequest {
-    // @NotBlank // Exemplo de validação
+    @NotBlank(message = "Username é obrigatório")
     private String username;
-    // @NotBlank // Exemplo de validação
+    
+    @NotBlank(message = "Senha é obrigatória")
     private String password;
 
     // Getters e Setters

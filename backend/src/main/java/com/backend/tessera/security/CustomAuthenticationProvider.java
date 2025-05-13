@@ -1,8 +1,10 @@
 package com.backend.tessera.security;
 
+import com.backend.tessera.config.LoggerConfig;
 import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +23,7 @@ import java.util.Optional;
  */
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
+    private static final Logger logger = LoggerConfig.getLogger(CustomAuthenticationProvider.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -36,7 +39,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         // Buscar usuário pelo nome de usuário
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
-            System.out.println("Failed to find user '" + username + "'");
+            logger.debug("Usuário não encontrado: '{}'", username);
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
@@ -44,35 +47,35 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         // Verificar a senha
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            System.out.println("Credenciais inválidas para: " + username);
+            logger.debug("Senha inválida para: '{}'", username);
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
-        // Verificar se o email foi verificado (se aplicável)
-        if (!user.isEmailVerified()) {
-            System.out.println("Email não verificado: " + username);
-            throw new DisabledException("Email não verificado. Por favor, verifique seu email antes de fazer login.");
-        }
-
-        // Verificar o status da conta
+        // Verificar o status da conta primeiro
         if (user.getStatus() == AccountStatus.PENDENTE) {
-            System.out.println("Conta pendente de aprovação: " + username);
+            logger.debug("Conta pendente de aprovação: '{}'", username);
             throw new LockedException("Conta aguardando aprovação do administrador");
+        } else if (user.getStatus() == AccountStatus.REJEITADO) {
+            logger.debug("Conta rejeitada: '{}'", username);
+            throw new LockedException("Conta rejeitada pelo administrador. Entre em contato para mais informações.");
         } else if (user.getStatus() == AccountStatus.INATIVO) {
-            System.out.println("Conta inativa: " + username);
+            logger.debug("Conta inativa: '{}'", username);
             throw new DisabledException("Conta desativada. Entre em contato com o administrador.");
         }
 
-        // Verificar se a conta está habilitada (campo enabled)
-        // Esta verificação pode ser redundante se AccountStatus.ATIVO já implica enabled=true
-        // e isEmailVerified() já foi checado.
-        // No entanto, mantendo para consistência com UserDetails.isEnabled() que considera user.enabled.
+        // Verificação adicional para o campo enabled
         if (!user.isEnabled()) {
-            System.out.println("Conta desabilitada (campo enabled=false): " + username);
+            logger.debug("Conta desabilitada (enabled=false): '{}'", username);
             throw new DisabledException("Conta desabilitada. Entre em contato com o administrador.");
         }
 
+        // Verificação de email é informativa, não bloqueia o login
+        if (!user.isEmailVerified()) {
+            logger.warn("Usuário '{}' fazendo login com email não verificado", username);
+        }
+
         // Autenticação bem-sucedida
+        logger.info("Autenticação bem-sucedida para: '{}'", username);
         return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
     }
 
