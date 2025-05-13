@@ -7,7 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; // Added import
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +63,10 @@ public class User implements UserDetails {
     // Campo para rastrear data de criação
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    // Atributos adicionados para verificação de email
+    private boolean emailVerified = false;
+    private LocalDateTime emailVerifiedAt;
 
     // Inicializa a data de criação antes de persistir
     @PrePersist

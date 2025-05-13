@@ -44,29 +44,27 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**").permitAll()
+                // Modificado para incluir explicitamente as novas rotas de password e email
+                .requestMatchers("/api/auth/**",
+                                     "/api/auth/password/**",
+                                     "/api/auth/email/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // MODIFICADO: Adicionado .accessDeniedHandler()
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {
-                    // Este é para quando a autenticação é necessária mas não foi fornecida ou falhou
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    // Você pode customizar a mensagem baseada na exceção se desejar mais detalhes
-                    // authException.printStackTrace(); // Para debug
-                    if (request.getRequestURI().startsWith("/api/auth/login")) { // Específico para falha no login
+                    if (request.getRequestURI().startsWith("/api/auth/login")) { 
                          response.getWriter().write("{\"message\": \"" + authException.getMessage() + "\"}");
                     } else {
                          response.getWriter().write("{\"message\": \"Autenticação necessária para acessar este recurso.\"}");
                     }
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    // Este é para quando o usuário está autenticado mas não tem permissão (role errada, etc.)
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"message\": \"Acesso Proibido: Você não tem permissão para acessar este recurso.\"}");
@@ -91,9 +89,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200")); // Seja específico se possível
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://127.0.0.1:4200")); 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin")); // Adicionado Origin
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin")); 
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

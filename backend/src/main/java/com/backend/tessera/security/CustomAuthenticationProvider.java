@@ -48,6 +48,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
+        // Verificar se o email foi verificado (se aplicável)
+        if (!user.isEmailVerified()) {
+            System.out.println("Email não verificado: " + username);
+            throw new DisabledException("Email não verificado. Por favor, verifique seu email antes de fazer login.");
+        }
+
         // Verificar o status da conta
         if (user.getStatus() == AccountStatus.PENDENTE) {
             System.out.println("Conta pendente de aprovação: " + username);
@@ -58,8 +64,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         // Verificar se a conta está habilitada (campo enabled)
+        // Esta verificação pode ser redundante se AccountStatus.ATIVO já implica enabled=true
+        // e isEmailVerified() já foi checado.
+        // No entanto, mantendo para consistência com UserDetails.isEnabled() que considera user.enabled.
         if (!user.isEnabled()) {
-            System.out.println("Conta desabilitada: " + username);
+            System.out.println("Conta desabilitada (campo enabled=false): " + username);
             throw new DisabledException("Conta desabilitada. Entre em contato com o administrador.");
         }
 

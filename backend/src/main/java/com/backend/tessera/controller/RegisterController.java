@@ -6,12 +6,14 @@ import com.backend.tessera.model.User;
 import com.backend.tessera.dto.SignupRequest;
 import com.backend.tessera.dto.MessageResponse;
 import com.backend.tessera.repository.UserRepository;
+import com.backend.tessera.service.EmailVerificationService; // Importação adicionada
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import jakarta.mail.MessagingException; // Importação adicionada
 
 import java.util.Set;
 
@@ -24,6 +26,9 @@ public class RegisterController {
 
     @Autowired
     PasswordEncoder encoder;
+
+    @Autowired // Injeção adicionada
+    EmailVerificationService emailVerificationService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
@@ -87,7 +92,16 @@ public class RegisterController {
             
             System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus() + ", Enabled: " + user.isEnabled());
 
-            String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores.";
+            // Enviar email de verificação
+            try {
+                emailVerificationService.sendVerificationEmail(user);
+                System.out.println("Email de verificação enviado para: " + user.getEmail());
+            } catch (MessagingException e) {
+                System.err.println("Erro ao enviar email de verificação: " + e.getMessage());
+                // Não impede o registro, mas loga o erro
+            }
+
+            String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores. Um email de verificação foi enviado.";
 
             return ResponseEntity.ok(new MessageResponse(message));
         } catch (Exception e) {

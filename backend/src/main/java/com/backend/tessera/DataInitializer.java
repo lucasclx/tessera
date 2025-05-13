@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional; // Importar para transação
+
+import java.time.LocalDateTime; // Importar LocalDateTime
+import java.util.Optional;       // Importar Optional
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -19,12 +23,14 @@ public class DataInitializer implements CommandLineRunner {
     private PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional // Garante que todas as operações no método sejam parte de uma única transação
     public void run(String... args) throws Exception {
         boolean createdAnyUser = false;
         System.out.println(">>> Iniciando DataInitializer...");
 
-        // Criar usuário admin se não existir
-        if (userRepository.findByUsername("admin").isEmpty()) {
+        // --- Usuário Admin ---
+        Optional<User> adminOpt = userRepository.findByUsername("admin");
+        if (adminOpt.isEmpty()) {
             User admin = new User();
             admin.setNome("Administrador");
             admin.setUsername("admin");
@@ -34,15 +40,34 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole(Role.ADMIN);
             admin.setStatus(AccountStatus.ATIVO);
             admin.setEnabled(true);
-            admin.setAdminComments("Usuário administrador padrão."); // Adicionando comentário
+            admin.setEmailVerified(true); // Definir como verificado
+            admin.setEmailVerifiedAt(LocalDateTime.now()); // Definir data de verificação
+            admin.setAdminComments("Usuário administrador padrão criado.");
             userRepository.save(admin);
             System.out.println(">>> Usuário Administrador criado: admin/admin123");
             createdAnyUser = true;
         } else {
-            System.out.println(">>> Usuário 'admin' já existe.");
+            User existingAdmin = adminOpt.get();
+            boolean updatedAdmin = false;
+            if (!existingAdmin.isEnabled()) {
+                existingAdmin.setEnabled(true);
+                existingAdmin.setStatus(AccountStatus.ATIVO); // Garante status ATIVO se estiver habilitando
+                updatedAdmin = true;
+            }
+            if (!existingAdmin.isEmailVerified()) {
+                existingAdmin.setEmailVerified(true);
+                existingAdmin.setEmailVerifiedAt(LocalDateTime.now()); // Opcional: definir data de verificação
+                updatedAdmin = true;
+            }
+            if (updatedAdmin) {
+                userRepository.save(existingAdmin);
+                System.out.println(">>> Usuário 'admin' existente atualizado para enabled=true e emailVerified=true.");
+            } else {
+                System.out.println(">>> Usuário 'admin' já existe e está configurado corretamente.");
+            }
         }
 
-        // Criar usuário professor de teste se não existir
+        // --- Usuário Professor de Teste ---
         if (userRepository.findByUsername("professor1").isEmpty()) {
             User professor = new User();
             professor.setNome("Professor Exemplo");
@@ -53,15 +78,18 @@ public class DataInitializer implements CommandLineRunner {
             professor.setRole(Role.PROFESSOR);
             professor.setStatus(AccountStatus.ATIVO);
             professor.setEnabled(true);
-            professor.setAdminComments("Usuário professor de teste, aprovado."); // Adicionando comentário
+            professor.setEmailVerified(true); // Definir como verificado
+            professor.setEmailVerifiedAt(LocalDateTime.now()); // Definir data de verificação
+            professor.setAdminComments("Usuário professor de teste, aprovado e verificado via Initializer.");
             userRepository.save(professor);
             System.out.println(">>> Usuário Professor de teste criado: professor1/senha123");
             createdAnyUser = true;
         } else {
-            System.out.println(">>> Usuário 'professor1' já existe.");
+            // Opcional: Poderia adicionar lógica similar à do admin para verificar/atualizar professor1 se necessário
+             System.out.println(">>> Usuário 'professor1' já existe.");
         }
 
-        // Criar usuário aluno de teste se não existir
+        // --- Usuário Aluno de Teste ---
         if (userRepository.findByUsername("aluno1").isEmpty()) {
             User aluno = new User();
             aluno.setNome("Aluno Exemplo");
@@ -72,15 +100,18 @@ public class DataInitializer implements CommandLineRunner {
             aluno.setRole(Role.ALUNO);
             aluno.setStatus(AccountStatus.ATIVO);
             aluno.setEnabled(true);
-            aluno.setAdminComments("Usuário aluno de teste, aprovado."); // Adicionando comentário
+            aluno.setEmailVerified(true); // Definir como verificado
+            aluno.setEmailVerifiedAt(LocalDateTime.now()); // Definir data de verificação
+            aluno.setAdminComments("Usuário aluno de teste, aprovado e verificado via Initializer.");
             userRepository.save(aluno);
             System.out.println(">>> Usuário Aluno de teste criado: aluno1/senha123");
             createdAnyUser = true;
         } else {
+            // Opcional: Poderia adicionar lógica similar à do admin para verificar/atualizar aluno1 se necessário
             System.out.println(">>> Usuário 'aluno1' já existe.");
         }
 
-        // Criar usuário pendente de teste se não existir
+        // --- Usuário Pendente de Teste ---
         if (userRepository.findByUsername("pendente1").isEmpty()) {
             User pendingUser = new User();
             pendingUser.setNome("Usuário Pendente Exemplo");
@@ -88,10 +119,11 @@ public class DataInitializer implements CommandLineRunner {
             pendingUser.setPassword(passwordEncoder.encode("senha123"));
             pendingUser.setEmail("pendente@sistema.edu");
             pendingUser.setInstitution("Sistema Acadêmico");
-            pendingUser.setRole(Role.PROFESSOR); 
-            pendingUser.setStatus(AccountStatus.PENDENTE); 
-            pendingUser.setEnabled(false); 
-            pendingUser.setAdminComments("Aguardando aprovação do administrador (DataInitializer)");
+            pendingUser.setRole(Role.PROFESSOR); // Papel inicial solicitado
+            pendingUser.setStatus(AccountStatus.PENDENTE);
+            pendingUser.setEnabled(false);
+            // pendingUser.setEmailVerified(false); // Já é false por padrão
+            pendingUser.setAdminComments("Aguardando aprovação do administrador (criado via DataInitializer)");
             userRepository.save(pendingUser);
             System.out.println(">>> Usuário Pendente de teste criado: pendente1/senha123");
             createdAnyUser = true;
@@ -99,12 +131,10 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println(">>> Usuário 'pendente1' já existe.");
         }
 
-        if (!createdAnyUser) {
-            // Esta mensagem agora só aparecerá se todos os 4 usuários acima já existirem.
-            // A mensagem original "Usuários já existem no banco de dados. Nenhum usuário de teste foi criado."
-            // baseada em userRepository.count() > 0 era menos precisa.
+        // Mensagem final
+        if (!createdAnyUser && userRepository.count() >= 4) { // Verifica se nenhum foi criado E se os 4 principais existem
             System.out.println(">>> Todos os usuários de teste principais (admin, professor1, aluno1, pendente1) já existem no banco de dados.");
         }
-         System.out.println(">>> DataInitializer finalizado.");
+        System.out.println(">>> DataInitializer finalizado.");
     }
 }
