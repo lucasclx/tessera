@@ -3,7 +3,7 @@ package com.backend.tessera.security;
 import com.backend.tessera.config.LoggerConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -33,44 +33,18 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        // If the key was not defined by environment variable, use a randomly generated one.
-        // IMPORTANT: For production, the secretString MUST be a strong, environment-specific variable.
-        // The current application.properties has a default, which will be used here.
-        // We are now targeting HS256, so the key derived from secretString should be 256-bit.
-        if (secretString == null || secretString.trim().isEmpty() || 
-            secretString.equals("${JWT_SECRET:e8bbc656b6d4bca2b7e9f292d18082a0af114bdf2b0f8e98f9aefffad9f7e608}") || // Check against the new shorter default
-            secretString.equals("e8bbc656b6d4bca2b7e9f292d18082a0af114bdf2b0f8e98f9aefffad9f7e608") // Default fallback if env var not set
-        ) {
-             // This default key is 256-bit (32 bytes from 64 hex characters)
-            byte[] keyBytes = hexStringToByteArray(secretString);
+        try {
+            // Se a chave já é base64, podemos decodificá-la diretamente
+            byte[] keyBytes = Decoders.BASE64.decode(secretString);
             this.key = Keys.hmacShaKeyFor(keyBytes);
-            logger.info("JWT secret inicializado com valor padrão para HS256 (32 bytes).");
-        } else {
-            // Use the key defined in the environment variable or properties.
-            // Ensure it's the correct length for HS256 (32 bytes / 256 bits / 64 hex characters).
-            // If it's longer, it might be truncated or cause issues if not handled carefully.
-            // Forcing it to be derived from the (now shorter) secretString.
-            byte[] keyBytes = hexStringToByteArray(secretString);
-             if (keyBytes.length != 32) {
-                logger.warn("JWT_SECRET fornecido tem {} bytes, mas HS256 espera 32 bytes. Verifique a configuração.", keyBytes.length);
-                // Potentially truncate or handle error, for now, we'll use it as is,
-                // but Keys.hmacShaKeyFor might throw an error if size is wrong for an implicit algo,
-                // so explicitly using HS256 later with signWith is better.
-            }
-            this.key = Keys.hmacShaKeyFor(keyBytes);
+            logger.debug("JwtUtil inicializado com sucesso usando a chave em Base64");
+        } catch (Exception e) {
+            // Se falhar na decodificação (chave não está em base64), vamos tratar como string normal
+            logger.info("Usando chave JWT em formato de string normal");
+            // Criar uma chave de 256 bits para HS256 (32 bytes)
+            this.key = Keys.hmacShaKeyFor(secretString.getBytes());
+            logger.debug("JwtUtil inicializado");
         }
-        logger.debug("JwtUtil inicializado.");
-    }
-
-    // Helper to convert hex string to byte array
-    private byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                                 + Character.digit(s.charAt(i+1), 16));
-        }
-        return data;
     }
 
     public String extractUsername(String token) {
@@ -89,13 +63,13 @@ public class JwtUtil {
     private Claims extractAllClaims(String token) {
         try {
             return Jwts.parser()
-                    .verifyWith(key) // For JJWT 0.12.x, verifyWith is preferred
+                    .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (Exception e) {
             logger.error("Erro ao extrair claims do token: {}", e.getMessage());
-            throw e; // Re-throw para ser tratado por quem chamou
+            throw e;
         }
     }
 
@@ -103,8 +77,8 @@ public class JwtUtil {
         try {
             return extractExpiration(token).before(new Date());
         } catch (Exception e) {
-            logger.warn("Não foi possível determinar a expiração do token (possivelmente inválido ou malformado): {}", e.getMessage());
-            return true; // Tratar como expirado em caso de erro ao extrair data
+            logger.warn("Não foi possível determinar a expiração do token: {}", e.getMessage());
+            return true;
         }
     }
 
@@ -131,11 +105,11 @@ public class JwtUtil {
                     .subject(subject)
                     .issuedAt(now)
                     .expiration(expiryDate)
-                    .signWith(key, SignatureAlgorithm.HS256) // Explicitamente usando HS256
+                    .signWith(key)
                     .compact();
         } catch (Exception e) {
-            logger.error("Erro ao criar token HS256: {}", e.getMessage(), e); // Log com stack trace
-            throw e; // Re-throw para ser tratado pelo LoginController
+            logger.error("Erro ao criar token: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -146,7 +120,7 @@ public class JwtUtil {
             logger.debug("Validando token para {}: {}", username, isValid);
             return isValid;
         } catch (Exception e) {
-            logger.error("Erro na validação do token (validateToken): {}", e.getMessage());
+            logger.error("Erro na validação do token: {}", e.getMessage());
             return false;
         }
     }

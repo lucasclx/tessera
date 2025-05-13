@@ -43,8 +43,9 @@ public class RefreshToken {
         token.setUser(user);
         token.setToken(UUID.randomUUID().toString());
         token.setExpiryDate(LocalDateTime.now().plusSeconds(expirationInMs / 1000));
-        token.setUserAgent(userAgent);
-        token.setIpAddress(ipAddress);
+        token.setUserAgent(userAgent != null ? userAgent : "Desconhecido");
+        token.setIpAddress(ipAddress != null ? ipAddress : "0.0.0.0");
+        token.setRevoked(false);
         return token;
     }
 }

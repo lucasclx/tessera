@@ -6,7 +6,7 @@ import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test; // Certifique-se de que @Test está importado
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +51,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
@@ -66,6 +67,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
@@ -81,6 +83,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isUnauthorized()) // Modificado no LoginController para retornar 401 com MessageResponse
                 .andExpect(jsonPath("$.message").value("Usuário ou senha inválidos"));
@@ -94,6 +97,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isUnauthorized()) // Modificado no LoginController
                 .andExpect(jsonPath("$.message").value("Usuário ou senha inválidos"));
@@ -108,6 +112,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isForbidden())
                 // MODIFICADO AQUI para corresponder à mensagem do LoginController:
@@ -128,6 +133,7 @@ public class LoginControllerTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "Mozilla/5.0 Test")
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Conta desativada. Entre em contato com o administrador."));

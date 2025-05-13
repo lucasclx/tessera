@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class RefreshTokenService {
@@ -34,8 +35,12 @@ public class RefreshTokenService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> ResourceNotFoundException.forUser(username));
 
+        // Garantir que userAgent e ipAddress não são nulos
+        String safeUserAgent = userAgent != null ? userAgent : "Desconhecido";
+        String safeIpAddress = ipAddress != null ? ipAddress : "0.0.0.0";
+
         RefreshToken refreshToken = RefreshToken.createToken(
-                user, refreshTokenDurationMs, userAgent, ipAddress);
+                user, refreshTokenDurationMs, safeUserAgent, safeIpAddress);
 
         logger.debug("Criando refresh token para usuário: {}", username);
         return refreshTokenRepository.save(refreshToken);

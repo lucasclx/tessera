@@ -65,6 +65,7 @@ public class RefreshTokenTests {
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString())
@@ -80,6 +81,7 @@ public class RefreshTokenTests {
 
         mockMvc.perform(post("/api/auth/refreshtoken")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isString())
@@ -93,6 +95,7 @@ public class RefreshTokenTests {
 
         mockMvc.perform(post("/api/auth/refreshtoken")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message", notNullValue()));
@@ -107,6 +110,7 @@ public class RefreshTokenTests {
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -120,6 +124,7 @@ public class RefreshTokenTests {
 
         mockMvc.perform(post("/api/auth/logout")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(logoutRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Logout realizado com sucesso!"));
@@ -129,6 +134,7 @@ public class RefreshTokenTests {
 
         mockMvc.perform(post("/api/auth/refreshtoken")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("User-Agent", "Mozilla/5.0 Test")
                 .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isInternalServerError());
     }
