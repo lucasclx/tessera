@@ -70,8 +70,7 @@ public class SecurityConfig {
         // Adicionar configurações de segurança extra
         http.headers(headers -> {
             headers.frameOptions(frameOptions -> frameOptions.sameOrigin());
-            // Modificar esta linha: remover o argumento true, chamar apenas o método enable()
-            headers.xssProtection(xss -> xss.enable());
+            headers.xssProtection().disable();
             headers.contentSecurityPolicy(csp -> 
                 csp.policyDirectives("default-src 'self'; frame-ancestors 'self'; form-action 'self';"));
         });
