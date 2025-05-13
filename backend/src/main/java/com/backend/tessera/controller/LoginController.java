@@ -1,13 +1,13 @@
 package com.backend.tessera.controller;
 
 import com.backend.tessera.config.LoggerConfig;
-import com.backend.tessera.dto.AuthRequest;
-import com.backend.tessera.dto.AuthResponse;
-import com.backend.tessera.dto.MessageResponse;
+import com.backend.tessera.dto.*;
 import com.backend.tessera.model.AccountStatus;
+import com.backend.tessera.model.RefreshToken;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import com.backend.tessera.security.JwtUtil;
+import com.backend.tessera.service.RefreshTokenService;
 import com.backend.tessera.service.UserDetailsServiceImpl;
 
 import org.slf4j.Logger;
@@ -24,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.Collection;
@@ -46,9 +47,14 @@ public class LoginController {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> authenticateUser(
+            @Valid @RequestBody AuthRequest authRequest,
+            HttpServletRequest request) {
         try {
             logger.debug("Tentando autenticar usuário: {}", authRequest.getUsername());
             
@@ -73,8 +79,6 @@ public class LoginController {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                            .body(new MessageResponse("Sua conta foi aprovada mas não possui um papel atribuído. Entre em contato com o administrador."));
                 }
-                
-                // A verificação de conta desativada (INATIVO ou !enabled) será tratada pelo CustomAuthenticationProvider
             }
             
             Authentication authentication = authenticationManager.authenticate(
@@ -87,8 +91,15 @@ public class LoginController {
             logger.debug("Detalhes do usuário carregados: {}", userDetails.getUsername());
             logger.debug("Autoridades: {}", userDetails.getAuthorities());
             
-            final String token = jwtUtil.generateToken(userDetails);
+            // Gerar access token
+            final String accessToken = jwtUtil.generateToken(userDetails);
             logger.debug("Token gerado para usuário: {}", userDetails.getUsername());
+            
+            // Criar um refresh token
+            String userAgent = request.getHeader("User-Agent");
+            String ipAddress = request.getRemoteAddr();
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(
+                    userDetails.getUsername(), userAgent, ipAddress);
             
             Collection<String> roles = userDetails.getAuthorities().stream()
                                      .map(GrantedAuthority::getAuthority)
@@ -97,21 +108,23 @@ public class LoginController {
             
             logger.debug("Roles para resposta: {}", roles);
             
-            AuthResponse response = new AuthResponse(token, userDetails.getUsername(), roles);
+            // Resposta com access token e refresh token
+            AuthResponse response = new AuthResponse(accessToken, refreshToken.getToken(), 
+                                                   userDetails.getUsername(), roles);
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
             logger.warn("Credenciais inválidas para: {}", authRequest.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                  .body(new MessageResponse("Usuário ou senha inválidos"));
-        } catch (LockedException e) { // Tipicamente para contas PENDENTES ou REJEITADAS
+        } catch (LockedException e) {
             logger.warn("Conta bloqueada (pendente/rejeitada): {}", authRequest.getUsername());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse(e.getMessage())); // Usar a mensagem da exceção
-        } catch (DisabledException e) { // Tipicamente para contas INATIVAS ou enabled=false
+                   .body(new MessageResponse(e.getMessage()));
+        } catch (DisabledException e) {
             logger.warn("Conta desativada: {}", authRequest.getUsername());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                   .body(new MessageResponse(e.getMessage())); // Usar a mensagem da exceção
+                   .body(new MessageResponse(e.getMessage()));
         } catch (AuthenticationException e) {
             logger.warn("Erro de autenticação para: {} - {}", authRequest.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -120,6 +133,47 @@ public class LoginController {
             logger.error("Erro inesperado na autenticação para {} - {}", authRequest.getUsername(), e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                    .body(new MessageResponse("Erro interno no servidor durante a autenticação."));
+        }
+    }
+    
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+        logger.debug("Solicitação de renovação de token com refresh token: {}...", 
+                    requestRefreshToken.substring(0, Math.min(10, requestRefreshToken.length())));
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    // Gerar novo access token
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+                    String accessToken = jwtUtil.generateToken(userDetails);
+                    
+                    logger.info("Token renovado com sucesso para usuário: {}", user.getUsername());
+                    return ResponseEntity.ok(new TokenRefreshResponse(accessToken, requestRefreshToken));
+                })
+                .orElseThrow(() -> {
+                    logger.warn("Refresh token não encontrado ou inválido: {}...", 
+                               requestRefreshToken.substring(0, Math.min(10, requestRefreshToken.length())));
+                    return new RuntimeException("Refresh token não encontrado ou inválido! Por favor, faça login novamente.");
+                });
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(@Valid @RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+        logger.debug("Solicitação de logout com refresh token: {}...", 
+                    refreshToken.substring(0, Math.min(10, refreshToken.length())));
+        
+        try {
+            refreshTokenService.revokeToken(refreshToken);
+            logger.info("Logout realizado com sucesso para o token: {}...", 
+                        refreshToken.substring(0, Math.min(10, refreshToken.length())));
+            return ResponseEntity.ok(new MessageResponse("Logout realizado com sucesso!"));
+        } catch (Exception e) {
+            logger.error("Erro ao realizar logout: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(new MessageResponse("Erro ao realizar logout: " + e.getMessage()));
         }
     }
     
@@ -156,18 +210,11 @@ public class LoginController {
                        .body(new MessageResponse("PENDING_APPROVAL"));
             } 
             
-            // Se chegou aqui, usuário está ATIVO (isApproved() é true)
+            // Se chegou aqui, usuário está ATIVO
             if (user.getRole() == null) {
                 logger.warn("Usuário aprovado mas sem papel atribuído: {}", username);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                        .body(new MessageResponse("ROLE_MISSING"));
-            }
-            
-            // Verificar se o campo enabled está false mesmo com status ATIVO
-            if (!user.isEnabled()) {
-                 logger.warn("Usuário ATIVO mas desabilitado (enabled=false): {}", username);
-                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new MessageResponse("ACCOUNT_DISABLED"));
             }
             
             logger.debug("Usuário aprovado e ativo: {}", username);

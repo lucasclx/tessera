@@ -1,21 +1,22 @@
 package com.backend.tessera.service;
 
 import com.backend.tessera.config.LoggerConfig;
+import com.backend.tessera.exception.ResourceNotFoundException;
 import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
-import com.backend.tessera.model.VerificationToken; // Importar VerificationToken
 import com.backend.tessera.repository.UserRepository;
-import com.backend.tessera.repository.VerificationTokenRepository; // Importar VerificationTokenRepository
+import com.backend.tessera.repository.VerificationTokenRepository;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -24,17 +25,23 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired // Adicionar esta injeção
+    @Autowired
     private VerificationTokenRepository verificationTokenRepository;
 
     /**
-     * Encontra todos os usuários pendentes de aprovação
+     * Encontra todos os usuários pendentes de aprovação (paginados)
+     */
+    public Page<User> findPendingApprovalUsers(Pageable pageable) {
+        logger.debug("Buscando usuários pendentes de aprovação");
+        return userRepository.findByStatus(AccountStatus.PENDENTE, pageable);
+    }
+
+    /**
+     * Lista não paginada de usuários pendentes (mantida para compatibilidade)
      */
     public List<User> findPendingApprovalUsers() {
-        logger.debug("Buscando usuários pendentes de aprovação");
-        return userRepository.findAll().stream()
-                .filter(user -> user.getStatus() == AccountStatus.PENDENTE)
-                .collect(Collectors.toList());
+        logger.debug("Buscando lista de usuários pendentes de aprovação");
+        return userRepository.findByStatus(AccountStatus.PENDENTE);
     }
 
     /**
@@ -47,7 +54,7 @@ public class UserService {
 
         if (userOpt.isEmpty()) {
             logger.warn("Usuário não encontrado com ID: {}", userId);
-            throw new IllegalArgumentException("Usuário não encontrado com ID: " + userId);
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + userId);
         }
 
         User user = userOpt.get();
@@ -56,7 +63,7 @@ public class UserService {
         if (approved) {
             user.setStatus(AccountStatus.ATIVO);
             user.setApprovalDate(LocalDateTime.now());
-            user.setEnabled(true); // Habilitar a conta quando aprovada
+            // Não é mais necessário setar enabled=true já que isso é derivado do status
 
             // Atualizar o papel se foi especificado e diferente do atual
             if (role != null && role != user.getRole()) {
@@ -66,7 +73,7 @@ public class UserService {
         } else {
             // Se estiver rejeitando a solicitação, marcar como REJEITADO
             user.setStatus(AccountStatus.REJEITADO);
-            user.setEnabled(false); // Desabilitar a conta quando rejeitada
+            // Não é mais necessário setar enabled=false já que isso é derivado do status
         }
 
         // Atualizar comentários do administrador
@@ -89,70 +96,55 @@ public class UserService {
 
         if (userOpt.isEmpty()) {
             logger.warn("Usuário não encontrado com ID: {}", userId);
-            throw new IllegalArgumentException("Usuário não encontrado com ID: " + userId);
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + userId);
         }
 
         User user = userOpt.get();
 
-        // Atualiza o status com base no parâmetro enabled
+        // Atualizar o status diretamente
         if (enabled) {
-            // Se já está aprovado ou inativo, apenas ativa (ou mantém ativo)
-            // Não se deve ativar uma conta que está PENDENTE ou REJEITADA diretamente por aqui.
-            if (user.getStatus() == AccountStatus.ATIVO || user.getStatus() == AccountStatus.INATIVO) {
+            // Só pode ativar contas que não estejam PENDENTE ou REJEITADO
+            if (user.getStatus() != AccountStatus.PENDENTE && user.getStatus() != AccountStatus.REJEITADO) {
                 user.setStatus(AccountStatus.ATIVO);
+                logger.debug("Usuário ID: {} ativado com sucesso", userId);
             } else {
-                 logger.warn("Tentativa de habilitar usuário ID: {} com status {} não permitido para esta operação.", userId, user.getStatus());
-                 // Pode-se lançar uma exceção ou apenas logar, dependendo da regra de negócio.
-                 // Por ora, vamos apenas logar e não alterar o status se não for ATIVO ou INATIVO.
+                logger.warn("Tentativa de habilitar usuário ID: {} com status {} não permitido para esta operação.", 
+                           userId, user.getStatus());
+                throw new IllegalStateException(
+                    "Não é possível ativar um usuário com status " + user.getStatus() + 
+                    ". É necessário aprovar o usuário primeiro.");
             }
         } else {
-            // Desativa o usuário, movendo para INATIVO se estiver ATIVO.
+            // Desativa o usuário, movendo para INATIVO se estiver ATIVO
             if (user.getStatus() == AccountStatus.ATIVO) {
                 user.setStatus(AccountStatus.INATIVO);
+                logger.debug("Usuário ID: {} desativado com sucesso", userId);
+            } else {
+                logger.debug("Status do usuário ID: {} já estava como não-ativo: {}", userId, user.getStatus());
             }
-             // Se já estiver INATIVO, PENDENTE ou REJEITADO, manter o status ao tentar desabilitar.
         }
 
-        // Atualiza o campo enabled para consistência com o status
-        // Se ATIVO, enabled = true. Caso contrário, enabled = false.
-        user.setEnabled(user.getStatus() == AccountStatus.ATIVO);
-
         User savedUser = userRepository.save(user);
-        logger.info("Status de ativação atualizado para usuário ID: {}, novo status: {}, enabled: {}",
-                    userId, savedUser.getStatus(), savedUser.isEnabled());
+        logger.info("Status atualizado para usuário ID: {}, novo status: {}", userId, savedUser.getStatus());
         return savedUser;
     }
 
     /**
-     * Deleta um usuário e seus tokens de verificação associados.
+     * Deleta um usuário e seus tokens associados
      */
     @Transactional
     public void deleteUser(Long userId) {
         logger.debug("Tentando deletar usuário ID: {}", userId);
         if (!userRepository.existsById(userId)) {
             logger.warn("Tentativa de deletar usuário inexistente, ID: {}", userId);
-            throw new IllegalArgumentException("Usuário não encontrado com ID: " + userId);
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + userId);
         }
 
-        // Buscar e deletar todos os verification tokens associados ao usuário
-        // Melhoria: Adicionar um método findByUserId em VerificationTokenRepository
-        // Por ora, faremos o filtro na lista retornada por findAll, o que pode não ser ideal para performance.
-        // Uma abordagem mais eficiente seria criar um método no VerificationTokenRepository:
-        // List<VerificationToken> findByUserId(Long userId);
-        // E depois: verificationTokenRepository.deleteAll(tokens);
-        // Ou até mesmo: void deleteAllByUserId(Long userId); (se o JPA provider suportar bem)
+        // Deletar todos os tokens associados ao usuário
+        verificationTokenRepository.deleteByUserId(userId);
+        logger.debug("Tokens de verificação deletados para o usuário ID: {}", userId);
 
-        List<VerificationToken> tokens = verificationTokenRepository.findAll().stream()
-                .filter(token -> token.getUser() != null && token.getUser().getId().equals(userId))
-                .collect(Collectors.toList());
-
-        if (!tokens.isEmpty()) {
-            logger.debug("Deletando {} token(s) de verificação para o usuário ID: {}", tokens.size(), userId);
-            verificationTokenRepository.deleteAllInBatch(tokens); // Usar deleteAllInBatch para performance
-        } else {
-            logger.debug("Nenhum token de verificação encontrado para o usuário ID: {}", userId);
-        }
-
+        // Deletar o usuário
         userRepository.deleteById(userId);
         logger.info("Usuário ID: {} deletado com sucesso", userId);
     }

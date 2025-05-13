@@ -1,17 +1,23 @@
 package com.backend.tessera.service;
 
 import com.backend.tessera.config.LoggerConfig;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class EmailService {
@@ -25,56 +31,102 @@ public class EmailService {
 
     @Value("${app.client.base-url}")
     private String clientBaseUrl;
-
+    
+    // Lista para armazenar emails não enviados para retry
+    private final List<PendingEmail> pendingEmails = new CopyOnWriteArrayList<>();
+    
+    // Classe para armazenar emails pendentes
+    @Data
+    @AllArgsConstructor
+    private static class PendingEmail {
+        private String to;
+        private String subject;
+        private String htmlContent;
+        private int retries;
+        private LocalDateTime lastAttempt;
+    }
+    
     /**
-     * Tenta enviar um email com retentativas em caso de falha
-     * @return true se o email foi enviado com sucesso, false caso contrário
+     * Agenda o processamento de emails pendentes a cada 15 minutos
      */
-    public boolean trySendHtmlEmail(String to, String subject, String htmlContent) {
-        int maxRetries = 3;
-        int retryCount = 0;
+    @Scheduled(fixedDelay = 900000) // 15 minutos
+    public void processEmailQueue() {
+        logger.info("Processando fila de emails pendentes. Tamanho da fila: {}", pendingEmails.size());
         
-        while (retryCount < maxRetries) {
-            try {
-                MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        if (pendingEmails.isEmpty()) {
+            return;
+        }
+        
+        Iterator<PendingEmail> iterator = pendingEmails.iterator();
+        while (iterator.hasNext()) {
+            PendingEmail email = iterator.next();
+            
+            // Esperar pelo menos 5 minutos entre tentativas
+            if (email.getLastAttempt().plusMinutes(5).isAfter(LocalDateTime.now())) {
+                continue;
+            }
+            
+            // Tentar enviar o email
+            boolean sent = doSendHtmlEmail(email.getTo(), email.getSubject(), email.getHtmlContent());
+            
+            if (sent) {
+                iterator.remove();
+                logger.info("Email pendente enviado com sucesso para: {}", email.getTo());
+            } else {
+                email.setRetries(email.getRetries() + 1);
+                email.setLastAttempt(LocalDateTime.now());
                 
-                helper.setFrom(fromEmail);
-                helper.setTo(to);
-                helper.setSubject(subject);
-                helper.setText(htmlContent, true);
-                
-                mailSender.send(message);
-                logger.info("Email enviado com sucesso para: {}", to);
-                return true;
-            } catch (Exception e) {
-                retryCount++;
-                logger.warn("Falha ao enviar email (tentativa {}/{}): {}", retryCount, maxRetries, e.getMessage());
-                
-                if (retryCount >= maxRetries) {
-                    logger.error("Falha ao enviar email após {} tentativas: {}", maxRetries, e.getMessage());
-                    return false;
-                }
-                
-                // Espera antes da próxima tentativa (com backoff exponencial)
-                try {
-                    Thread.sleep(1000 * retryCount);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Thread interrompida durante espera para retry: {}", ie.getMessage());
-                    return false;
+                // Desistir após 5 tentativas
+                if (email.getRetries() >= 5) {
+                    logger.error("Falha permanente ao enviar email para: {} após {} tentativas", 
+                                email.getTo(), email.getRetries());
+                    iterator.remove();
                 }
             }
         }
+    }
+
+    /**
+     * Tenta enviar um email assincronamente, com retentativas em caso de falha
+     */
+    @Async
+    public void sendEmailAsync(String to, String subject, String htmlContent) {
+        logger.debug("Enviando email assíncrono para: {}", to);
+        boolean sent = doSendHtmlEmail(to, subject, htmlContent);
         
-        return false;
+        if (!sent) {
+            // Adicionar à fila para tentar novamente mais tarde
+            pendingEmails.add(new PendingEmail(to, subject, htmlContent, 1, LocalDateTime.now()));
+            logger.warn("Email para {} adicionado à fila de retentativas", to);
+        }
+    }
+    
+    /**
+     * Tenta enviar o email imediatamente, sem retentativas
+     */
+    private boolean doSendHtmlEmail(String to, String subject, String htmlContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            
+            mailSender.send(message);
+            logger.info("Email enviado com sucesso para: {}", to);
+            return true;
+        } catch (Exception e) {
+            logger.error("Falha ao enviar email para: {}: {}", to, e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Envia um email de redefinição de senha
-     * @return true se o email foi enviado com sucesso, false caso contrário
      */
-    public boolean sendPasswordResetEmail(String to, String token) {
+    public void sendPasswordResetEmail(String to, String token) {
         try {
             String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
             String resetUrl = clientBaseUrl + "/auth/reset-password?token=" + encodedToken;
@@ -95,18 +147,16 @@ public class EmailService {
                     + "<p>Atenciosamente,<br>Equipe do Sistema Acadêmico</p>"
                     + "</div>";
             
-            return trySendHtmlEmail(to, subject, htmlContent);
+            sendEmailAsync(to, subject, htmlContent);
         } catch (Exception e) {
             logger.error("Erro ao preparar email de redefinição de senha: {}", e.getMessage());
-            return false;
         }
     }
 
     /**
      * Envia um email de verificação
-     * @return true se o email foi enviado com sucesso, false caso contrário
      */
-    public boolean sendEmailVerification(String to, String token) {
+    public void sendEmailVerification(String to, String token) {
         try {
             String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
             String verificationUrl = clientBaseUrl + "/auth/verify-email?token=" + encodedToken;
@@ -127,10 +177,9 @@ public class EmailService {
                     + "<p>Atenciosamente,<br>Equipe do Sistema Acadêmico</p>"
                     + "</div>";
             
-            return trySendHtmlEmail(to, subject, htmlContent);
+            sendEmailAsync(to, subject, htmlContent);
         } catch (Exception e) {
             logger.error("Erro ao preparar email de verificação: {}", e.getMessage());
-            return false;
         }
     }
 }

@@ -4,6 +4,7 @@ import java.util.Collection;
 
 public class AuthResponse {
     private String token;
+    private String refreshToken;
     private String type = "Bearer";
     private String username;
     private Collection<String> roles;
@@ -12,8 +13,9 @@ public class AuthResponse {
     public AuthResponse() {
     }
 
-    public AuthResponse(String accessToken, String username, Collection<String> roles) {
+    public AuthResponse(String accessToken, String refreshToken, String username, Collection<String> roles) {
         this.token = accessToken;
+        this.refreshToken = refreshToken;
         this.username = username;
         this.roles = roles;
     }
@@ -25,6 +27,14 @@ public class AuthResponse {
     
     public void setToken(String token) { 
         this.token = token; 
+    }
+    
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+    
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
     
     public String getType() { 

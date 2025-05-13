@@ -1,4 +1,3 @@
-//Arquivo: src/main/java/com/backend/tessera/config/SecurityConfig.java
 package com.backend.tessera.config;
 
 import com.backend.tessera.security.CustomAuthenticationProvider;
@@ -15,8 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-// Removido: import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; (Já existe em PasswordEncoderConfig)
-// Removido: import org.springframework.security.crypto.password.PasswordEncoder; (Já existe em PasswordEncoderConfig)
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -44,10 +41,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                // Modificado para incluir explicitamente as novas rotas de password e email
                 .requestMatchers("/api/auth/**",
-                                     "/api/auth/password/**",
-                                     "/api/auth/email/**").permitAll()
+                                 "/api/auth/password/**",
+                                 "/api/auth/email/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/professor/**").hasRole("PROFESSOR")
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/aluno/**").hasRole("ALUNO")
@@ -71,7 +67,14 @@ public class SecurityConfig {
                 })
             );
         
-        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
+        // Adicionar configurações de segurança extra
+        http.headers(headers -> {
+            headers.frameOptions(frameOptions -> frameOptions.sameOrigin());
+            // Modificar esta linha: remover o argumento true, chamar apenas o método enable()
+            headers.xssProtection(xss -> xss.enable());
+            headers.contentSecurityPolicy(csp -> 
+                csp.policyDirectives("default-src 'self'; frame-ancestors 'self'; form-action 'self';"));
+        });
 
         return http.build();
     }

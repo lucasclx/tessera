@@ -32,37 +32,37 @@ public class EmailVerificationService {
 
     /**
      * Cria e envia um token de verificação de email para o usuário
-     * @return true se o email foi enviado com sucesso, false caso contrário
+     * @return true se o processo foi iniciado com sucesso, false caso contrário
      */
     @Transactional
     public boolean sendVerificationEmail(User user) {
-        logger.debug("Gerando token de verificação de email para usuário: {}", user.getUsername());
-        
-        // Invalidar qualquer token anterior
-        Optional<VerificationToken> existingToken = tokenRepository.findByUserIdAndTokenType(
-                user.getId(), VerificationToken.TokenType.EMAIL_VERIFICATION);
-        
-        existingToken.ifPresent(token -> {
-            token.setUsed(true);
+        try {
+            logger.debug("Gerando token de verificação de email para usuário: {}", user.getUsername());
+            
+            // Invalidar qualquer token anterior
+            Optional<VerificationToken> existingToken = tokenRepository.findByUserIdAndTokenType(
+                    user.getId(), VerificationToken.TokenType.EMAIL_VERIFICATION);
+            
+            existingToken.ifPresent(token -> {
+                token.setUsed(true);
+                tokenRepository.save(token);
+                logger.debug("Token anterior invalidado para usuário: {}", user.getUsername());
+            });
+            
+            // Criar novo token
+            VerificationToken token = VerificationToken.createEmailVerificationToken(user, emailVerificationTokenDuration);
             tokenRepository.save(token);
-            logger.debug("Token anterior invalidado para usuário: {}", user.getUsername());
-        });
-        
-        // Criar novo token
-        VerificationToken token = VerificationToken.createEmailVerificationToken(user, emailVerificationTokenDuration);
-        tokenRepository.save(token);
-        logger.debug("Novo token de verificação criado: {}", token.getToken().substring(0, 8) + "...");
-        
-        // Enviar email
-        boolean emailSent = emailService.sendEmailVerification(user.getEmail(), token.getToken());
-        
-        if (emailSent) {
-            logger.info("Email de verificação enviado com sucesso para: {} <{}>", user.getUsername(), user.getEmail());
-        } else {
-            logger.error("Falha ao enviar email de verificação para: {} <{}>", user.getUsername(), user.getEmail());
+            logger.debug("Novo token de verificação criado: {}", token.getToken().substring(0, 8) + "...");
+            
+            // Enviar email assincronamente
+            emailService.sendEmailVerification(user.getEmail(), token.getToken());
+            logger.info("Solicitação de verificação de email processada para: {} <{}>", user.getUsername(), user.getEmail());
+            
+            return true;
+        } catch (Exception e) {
+            logger.error("Erro ao processar verificação de email para {}: {}", user.getUsername(), e.getMessage(), e);
+            return false;
         }
-        
-        return emailSent;
     }
 
     /**

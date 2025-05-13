@@ -58,7 +58,6 @@ public class User implements UserDetails {
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
-    private boolean enabled = false; // Alterado para false por padrão
 
     // Campo para rastrear data de criação
     @Column(updatable = false)
@@ -74,17 +73,15 @@ public class User implements UserDetails {
         createdAt = LocalDateTime.now();
     }
 
-    // Construtor usado pelo DataInitializer
+    // Construtores
     public User(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
         this.createdAt = LocalDateTime.now();
-        this.enabled = true; // Usuários iniciais já vêm habilitados
     }
 
-    // Construtor completo para RegisterController
     public User(String nome, String username, String email, String password, String institution, Role role) {
         this.nome = nome;
         this.username = username;
@@ -94,18 +91,14 @@ public class User implements UserDetails {
         this.role = role;
         this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
         this.createdAt = LocalDateTime.now();
-        this.enabled = false; // Novos usuários começam desabilitados
     }
 
     /**
      * Verifica se o usuário pode fazer login
-     * Um usuário pode fazer login se:
-     * 1. Conta foi aprovada (status ATIVO)
-     * 2. Conta está habilitada (enabled = true)
-     * A verificação de email não impede o login
+     * Um usuário pode fazer login somente se o status for ATIVO
      */
     public boolean canLogin() {
-        return (status == AccountStatus.ATIVO) && enabled;
+        return this.status == AccountStatus.ATIVO;
     }
 
     /**
@@ -118,7 +111,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Só retorna autoridades se o status for ATIVO
-        if (status == AccountStatus.ATIVO && enabled) {
+        if (status == AccountStatus.ATIVO) {
             return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
         return Collections.emptyList();
@@ -143,12 +136,32 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // A conta está habilitada se estiver ativa E o campo enabled for true
-        return this.enabled && (this.status == AccountStatus.ATIVO);
+        // A conta está habilitada somente se estiver ATIVA
+        return this.status == AccountStatus.ATIVO;
     }
     
-    // Getters e setters explícitos para garantir que o Lombok os gere corretamente
+    // Para compatibilidade com código existente que chama setEnabled
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            // Se estiver ativando a conta, apenas mude para ATIVO se não for PENDENTE ou REJEITADO
+            if (this.status == AccountStatus.INATIVO) {
+                this.status = AccountStatus.ATIVO;
+            }
+        } else {
+            // Se estiver desativando a conta, apenas mude para INATIVO se for ATIVO
+            if (this.status == AccountStatus.ATIVO) {
+                this.status = AccountStatus.INATIVO;
+            }
+        }
+    }
     
+    // Getters e Setters explícitos para garantir que o Lombok os gere corretamente
+    
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
     public Long getId() {
         return id;
     }
@@ -177,12 +190,13 @@ public class User implements UserDetails {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
+    @Override
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getInstitution() {
@@ -237,10 +251,6 @@ public class User implements UserDetails {
         this.credentialsNonExpired = credentialsNonExpired;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -264,4 +274,6 @@ public class User implements UserDetails {
     public void setEmailVerifiedAt(LocalDateTime emailVerifiedAt) {
         this.emailVerifiedAt = emailVerifiedAt;
     }
+    
+    // Métodos equals, hashCode e toString gerados automaticamente pelo Lombok
 }

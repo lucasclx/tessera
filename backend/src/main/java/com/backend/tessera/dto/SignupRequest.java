@@ -1,5 +1,6 @@
 package com.backend.tessera.dto;
 
+import com.backend.tessera.validation.StrongPassword;
 import jakarta.validation.constraints.*;
 import java.util.Set;
 
@@ -13,14 +14,15 @@ public class SignupRequest {
     @NotBlank @Size(max = 50) @Email
     private String email;
 
-    @NotBlank @Size(min = 6, max = 40)
+    @NotBlank
+    @StrongPassword
     private String password;
 
     @NotBlank @Size(min = 3, max = 100)
     private String institution;
 
-    @NotEmpty // Garante que o conjunto não seja nulo nem vazio
-    private Set<String> role; // Nome singular para corresponder ao backend
+    @NotEmpty
+    private Set<String> role;
 
     // Construtores
     public SignupRequest() {

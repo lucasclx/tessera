@@ -1,7 +1,7 @@
 package com.backend.tessera.dto;
 
+import com.backend.tessera.validation.StrongPassword;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public class PasswordResetRequest {
 
@@ -9,7 +9,7 @@ public class PasswordResetRequest {
     private String token;
 
     @NotBlank(message = "Nova senha é obrigatória")
-    @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
+    @StrongPassword
     private String newPassword;
 
     // Getters e Setters

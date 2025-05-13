@@ -35,10 +35,9 @@ public class PasswordResetService {
 
     /**
      * Solicita a redefinição de senha para um email
-     * @return true se o email foi enviado com sucesso, false caso contrário
      */
     @Transactional
-    public boolean requestPasswordReset(String email) {
+    public void requestPasswordReset(String email) {
         logger.debug("Solicitação de redefinição de senha para email: {}", email);
         
         Optional<User> userOpt = userRepository.findByEmail(email);
@@ -62,20 +61,12 @@ public class PasswordResetService {
             tokenRepository.save(token);
             logger.debug("Novo token de redefinição criado: {}", token.getToken().substring(0, 8) + "...");
             
-            // Enviar email
-            boolean emailSent = emailService.sendPasswordResetEmail(user.getEmail(), token.getToken());
-            
-            if (emailSent) {
-                logger.info("Email de redefinição enviado com sucesso para: {} <{}>", user.getUsername(), user.getEmail());
-            } else {
-                logger.error("Falha ao enviar email de redefinição para: {} <{}>", user.getUsername(), user.getEmail());
-            }
-            
-            return emailSent;
+            // Enviar email assincronamente
+            emailService.sendPasswordResetEmail(user.getEmail(), token.getToken());
+            logger.info("Solicitação de redefinição de senha processada para: {} <{}>", user.getUsername(), user.getEmail());
         } else {
             logger.debug("Email não encontrado no sistema: {}", email);
-            // Não informamos ao cliente por segurança, simulamos sucesso
-            return true;
+            // Não informamos ao cliente por segurança
         }
     }
 

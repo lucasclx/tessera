@@ -7,6 +7,7 @@ import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -24,32 +25,41 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Value("${app.init.data:true}")
+    private boolean shouldInitializeData;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        // Permitir desabilitar a inicialização para testes
+        if (!shouldInitializeData) {
+            logger.info("Inicialização de dados desabilitada por configuração.");
+            return;
+        }
+        
         boolean createdAnyUser = false;
         logger.info("Iniciando DataInitializer...");
         
         // --- Método refatorado para garantir que todos os usuários necessários existam ----
         createdAnyUser |= ensureUserExists(
             "admin", "admin123", "Administrador", "admin@sistema.edu", 
-            "Sistema Acadêmico", Role.ADMIN, AccountStatus.ATIVO, true, true,
+            "Sistema Acadêmico", Role.ADMIN, AccountStatus.ATIVO, true,
             "Usuário administrador padrão.");
             
         createdAnyUser |= ensureUserExists(
             "professor1", "senha123", "Professor Exemplo", "professor@sistema.edu", 
-            "Sistema Acadêmico", Role.PROFESSOR, AccountStatus.ATIVO, true, true,
+            "Sistema Acadêmico", Role.PROFESSOR, AccountStatus.ATIVO, true,
             "Usuário professor de teste, aprovado e verificado via Initializer.");
             
         createdAnyUser |= ensureUserExists(
             "aluno1", "senha123", "Aluno Exemplo", "aluno@sistema.edu", 
-            "Sistema Acadêmico", Role.ALUNO, AccountStatus.ATIVO, true, true,
+            "Sistema Acadêmico", Role.ALUNO, AccountStatus.ATIVO, true,
             "Usuário aluno de teste, aprovado e verificado via Initializer.");
             
         createdAnyUser |= ensureUserExists(
             "pendente1", "senha123", "Usuário Pendente Exemplo", "pendente@sistema.edu", 
-            "Sistema Acadêmico", Role.PROFESSOR, AccountStatus.PENDENTE, false, false,
+            "Sistema Acadêmico", Role.PROFESSOR, AccountStatus.PENDENTE, false,
             "Aguardando aprovação do administrador (criado via DataInitializer)");
             
         // Mensagem final
@@ -68,7 +78,7 @@ public class DataInitializer implements CommandLineRunner {
      */
     private boolean ensureUserExists(String username, String password, String nome, String email, 
                                    String institution, Role role, AccountStatus status, 
-                                   boolean enabled, boolean emailVerified, String adminComments) {
+                                   boolean emailVerified, String adminComments) {
         
         Optional<User> existingUser = userRepository.findByUsername(username);
         
@@ -81,7 +91,7 @@ public class DataInitializer implements CommandLineRunner {
             newUser.setInstitution(institution);
             newUser.setRole(role);
             newUser.setStatus(status);
-            newUser.setEnabled(enabled);
+            // Não precisamos mais definir enabled explicitamente, pois é derivado do status
             newUser.setEmailVerified(emailVerified);
             
             if (emailVerified) {
@@ -104,11 +114,6 @@ public class DataInitializer implements CommandLineRunner {
             // Verificar se precisamos atualizar algum atributo
             if (user.getStatus() != status) {
                 user.setStatus(status);
-                updated = true;
-            }
-            
-            if (user.isEnabled() != enabled) {
-                user.setEnabled(enabled);
                 updated = true;
             }
             

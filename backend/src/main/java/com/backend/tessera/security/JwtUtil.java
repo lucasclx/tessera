@@ -3,6 +3,7 @@ package com.backend.tessera.security;
 import com.backend.tessera.config.LoggerConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -27,13 +28,21 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
-
+    
     private SecretKey key;
 
     @PostConstruct
     public void init() {
-        // Esta chave é específica para algoritmos HMAC-SHA (HS256, HS384, HS512)
-        this.key = Keys.hmacShaKeyFor(secretString.getBytes());
+        // Se a chave não foi definida por variável de ambiente, use uma gerada automaticamente
+        if (secretString == null || secretString.trim().isEmpty() || 
+            secretString.equals("${JWT_SECRET}")) {
+            logger.warn("JWT secret não definido! Gerando uma chave aleatória para esta sessão...");
+            // Gerar uma chave aleatória para desenvolvimento - NÃO USAR EM PRODUÇÃO
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        } else {
+            // Use a chave definida em variável de ambiente
+            this.key = Keys.hmacShaKeyFor(secretString.getBytes());
+        }
         logger.debug("JwtUtil inicializado com chave secreta");
     }
 

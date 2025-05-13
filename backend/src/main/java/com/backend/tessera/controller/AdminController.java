@@ -4,6 +4,7 @@ import com.backend.tessera.config.LoggerConfig;
 import com.backend.tessera.dto.MessageResponse;
 import com.backend.tessera.dto.UserApprovalRequest;
 import com.backend.tessera.dto.UserDetailsResponse;
+import com.backend.tessera.exception.ResourceNotFoundException;
 import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.Role;
 import com.backend.tessera.model.User;
@@ -12,6 +13,10 @@ import com.backend.tessera.service.AuditService;
 import com.backend.tessera.service.UserService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +24,10 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")  // Restringe acesso apenas para administradores
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private static final Logger logger = LoggerConfig.getLogger(AdminController.class);
 
@@ -38,30 +41,63 @@ public class AdminController {
     private AuditService auditService;
 
     /**
-     * Obtém a lista de todos os usuários
+     * Obtém a lista de todos os usuários (paginada)
      */
     @GetMapping("/users")
-    public ResponseEntity<List<UserDetailsResponse>> getAllUsers() {
-        logger.debug("Buscando todos os usuários");
-        List<User> users = userRepository.findAll();
-        List<UserDetailsResponse> userResponses = users.stream()
-                .map(this::convertToUserDetailsResponse)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<UserDetailsResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
         
-        logger.debug("Retornando {} usuários", userResponses.size());
+        logger.debug("Buscando todos os usuários - página: {}, tamanho: {}", page, size);
+        
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<User> userPage = userRepository.findAll(pageable);
+        Page<UserDetailsResponse> userResponses = userPage.map(this::convertToUserDetailsResponse);
+        
+        logger.debug("Retornando {} usuários (página {} de {})", 
+                    userResponses.getNumberOfElements(),
+                    userResponses.getNumber() + 1,
+                    userResponses.getTotalPages());
+                    
         return ResponseEntity.ok(userResponses);
     }
 
     /**
-     * Obtém a lista de usuários pendentes de aprovação
+     * Obtém a lista de usuários pendentes de aprovação (paginada)
      */
     @GetMapping("/users/pending")
-    public ResponseEntity<List<UserDetailsResponse>> getPendingUsers() {
-        logger.debug("Buscando usuários pendentes de aprovação");
+    public ResponseEntity<Page<UserDetailsResponse>> getPendingUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        logger.debug("Buscando usuários pendentes - página: {}, tamanho: {}", page, size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> pendingUsersPage = userRepository.findByStatus(AccountStatus.PENDENTE, pageable);
+        Page<UserDetailsResponse> userResponses = pendingUsersPage.map(this::convertToUserDetailsResponse);
+        
+        logger.debug("Retornando {} usuários pendentes (página {} de {})", 
+                    userResponses.getNumberOfElements(),
+                    userResponses.getNumber() + 1,
+                    userResponses.getTotalPages());
+                    
+        return ResponseEntity.ok(userResponses);
+    }
+
+    /**
+     * Método de compatibilidade para obter todos os usuários pendentes sem paginação
+     */
+    @GetMapping("/users/all-pending")
+    public ResponseEntity<List<UserDetailsResponse>> getAllPendingUsers() {
+        logger.debug("Buscando todos os usuários pendentes (sem paginação)");
         List<User> pendingUsers = userService.findPendingApprovalUsers();
         List<UserDetailsResponse> userResponses = pendingUsers.stream()
                 .map(this::convertToUserDetailsResponse)
-                .collect(Collectors.toList());
+                .toList();
         
         logger.debug("Retornando {} usuários pendentes", userResponses.size());
         return ResponseEntity.ok(userResponses);
@@ -73,15 +109,14 @@ public class AdminController {
     @GetMapping("/users/{id}")
     public ResponseEntity<?> getUserDetails(@PathVariable Long id) {
         logger.debug("Buscando detalhes do usuário ID: {}", id);
-        Optional<User> userOpt = userRepository.findById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.warn("Usuário não encontrado com ID: {}", id);
+                    return new ResourceNotFoundException("Usuário não encontrado com ID: " + id);
+                });
         
-        if (userOpt.isEmpty()) {
-            logger.warn("Usuário não encontrado com ID: {}", id);
-            return ResponseEntity.notFound().build();
-        }
-        
-        logger.debug("Usuário encontrado: {}", userOpt.get().getUsername());
-        return ResponseEntity.ok(convertToUserDetailsResponse(userOpt.get()));
+        logger.debug("Usuário encontrado: {}", user.getUsername());
+        return ResponseEntity.ok(convertToUserDetailsResponse(user));
     }
 
     /**
@@ -115,7 +150,7 @@ public class AdminController {
                        principal.getName());
             
             return ResponseEntity.ok(convertToUserDetailsResponse(updatedUser));
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             logger.error("Erro ao atualizar aprovação do usuário ID: {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
@@ -146,7 +181,7 @@ public class AdminController {
                        id, (enabled ? "ativo" : "inativo"), principal.getName());
             
             return ResponseEntity.ok(convertToUserDetailsResponse(updatedUser));
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             logger.error("Erro ao atualizar status do usuário ID: {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
@@ -167,7 +202,7 @@ public class AdminController {
             
             logger.info("Usuário ID: {} deletado por {}", id, principal.getName());
             return ResponseEntity.ok(new MessageResponse("Usuário deletado com sucesso"));
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             logger.error("Erro ao deletar usuário ID: {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
@@ -185,10 +220,10 @@ public class AdminController {
                 user.getInstitution(),
                 user.getRole() != null ? user.getRole().name() : null,
                 null, // requestedRole não é mais usado
-                user.isApproved(), // Converter o status para o conceito de "aprovado"
+                user.isApproved(),
                 user.getApprovalDate(),
                 user.getAdminComments(),
-                user.getStatus() == AccountStatus.ATIVO, // Converter o status para o conceito de "ativo"
+                user.isEnabled(), // Agora isso é determinado pelo status
                 user.getCreatedAt()
         );
     }
