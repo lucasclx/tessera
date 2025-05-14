@@ -1,25 +1,27 @@
-// Arquivo: src/main/java/com/backend/tessera/security/JwtUtil.java
 package com.backend.tessera.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret}")
     private String secretString;
@@ -31,8 +33,8 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        // Esta chave é específica para algoritmos HMAC-SHA (HS256, HS384, HS512)
         this.key = Keys.hmacShaKeyFor(secretString.getBytes());
+        logger.debug("JwtUtil inicializado com sucesso usando a chave em Base64");
     }
 
     public String extractUsername(String token) {
@@ -50,15 +52,14 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         try {
-            // Correção: modificando para trabalhar com SecretKey em vez de Key
             return Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (Exception e) {
-            System.out.println("Erro ao extrair claims do token: " + e.getMessage());
-            e.printStackTrace();
+            String tokenSnippet = (token != null && token.length() > 20) ? token.substring(0, 20) + "..." : token;
+            logger.error("Erro ao extrair claims do token: {}", tokenSnippet, e);
             throw e;
         }
     }
@@ -73,21 +74,18 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         claims.put("roles", roles);
-        
-        System.out.println("Gerando token para usuário: " + userDetails.getUsername());
-        System.out.println("Roles: " + roles);
-        
+
+        logger.debug("Gerando token para usuário: {} com roles: {}", userDetails.getUsername(), roles);
         return createToken(claims, userDetails.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-        
-        System.out.println("Token válido de " + now + " até " + expiryDate);
-        
+
+        logger.debug("Token válido de {} até {}", now, expiryDate);
+
         try {
-            // Atualizado para a sintaxe do JJWT 0.12.x
             return Jwts.builder()
                     .claims(claims)
                     .subject(subject)
@@ -96,8 +94,7 @@ public class JwtUtil {
                     .signWith(key)
                     .compact();
         } catch (Exception e) {
-            System.out.println("Erro ao criar token: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro ao criar token para {}: {}", subject, e.getMessage(), e);
             throw e;
         }
     }
@@ -106,11 +103,12 @@ public class JwtUtil {
         try {
             final String username = extractUsername(token);
             boolean isValid = (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-            System.out.println("Validando token para " + username + ": " + isValid);
+            logger.debug("Validando token para {}: {}", username, isValid);
             return isValid;
         } catch (Exception e) {
-            System.out.println("Erro na validação do token: " + e.getMessage());
-            e.printStackTrace();
+            String tokenSnippet = (token != null && token.length() > 20) ? token.substring(0, 20) + "..." : token;
+            logger.warn("Erro na validação do token ({}): {}", tokenSnippet, e.getMessage());
+            // Não logar stacktrace aqui pois pode ser comum (ex: token expirado)
             return false;
         }
     }

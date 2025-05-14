@@ -1,27 +1,33 @@
+// Arquivo: backend/src/test/java/com/backend/tessera/controller/RegisterControllerTests.java
 package com.backend.tessera.controller;
 
 import com.backend.tessera.dto.SignupRequest;
-import com.backend.tessera.model.Role;
+import com.backend.tessera.model.User; // Importar User
 import com.backend.tessera.repository.UserRepository;
+import com.backend.tessera.service.EmailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException; // Importar para mock de sendHtmlMessage
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional // Garante que os testes sejam revertidos e não afetem o banco de dados permanentemente
+@Transactional
 public class RegisterControllerTests {
 
     @Autowired
@@ -30,21 +36,26 @@ public class RegisterControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
+    @Autowired // Necessário para verificar se o usuário existe antes de testar duplicação
     private UserRepository userRepository;
 
+    @MockBean
+    private EmailService emailService;
+
     @BeforeEach
-    void setUp() {
-        // Limpar dados específicos se necessário, ou confiar no @Transactional
-        // Ex: userRepository.deleteAll(); (Cuidado se DataInitializer rodar sempre)
+    void setUp() throws MessagingException {
+        userRepository.deleteAll(); // Limpa para garantir que os testes de "já existe" funcionem
+
+        doNothing().when(emailService).sendSimpleMessage(anyString(), anyString(), anyString());
+        doNothing().when(emailService).sendHtmlMessage(anyString(), anyString(), anyString());
     }
 
     @Test
     void testRegisterUser_Success_Aluno() throws Exception {
         SignupRequest signupRequest = new SignupRequest(
-                "Novo Aluno",
-                "novoaluno",
-                "novoaluno@example.com",
+                "Novo Aluno Teste",
+                "novoalunoteste",
+                "novoalunoteste@example.com",
                 "password123",
                 "Instituicao Teste",
                 Set.of("ALUNO")
@@ -54,15 +65,17 @@ public class RegisterControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Usuário registrado com sucesso! Sua conta será analisada pelos administradores."));
+                // Verifique a mensagem EXATA que seu RegisterController está retornando.
+                // O log anterior indicava que era a mensagem mais curta.
+                .andExpect(jsonPath("$.message").value("Usuário registrado com sucesso! Um e-mail de confirmação foi enviado. Sua conta também será analisada pelos administradores."));
     }
 
     @Test
     void testRegisterUser_Success_Professor() throws Exception {
         SignupRequest signupRequest = new SignupRequest(
-                "Novo Professor",
-                "novoprof",
-                "novoprof@example.com",
+                "Novo Professor Teste",
+                "novoproftest",
+                "novoproftest@example.com",
                 "password123",
                 "Instituicao Teste",
                 Set.of("PROFESSOR")
@@ -72,17 +85,20 @@ public class RegisterControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Usuário registrado com sucesso! Sua conta será analisada pelos administradores."));
+                 // Verifique a mensagem EXATA que seu RegisterController está retornando.
+                .andExpect(jsonPath("$.message").value("Usuário registrado com sucesso! Um e-mail de confirmação foi enviado. Sua conta também será analisada pelos administradores."));
     }
 
     @Test
     void testRegisterUser_Error_UsernameExists() throws Exception {
-        // Primeiro, crie um usuário para garantir que o username já exista
-        // O DataInitializer pode já ter criado "aluno1"
+        // Criar um usuário para simular a existência
+        User existingUser = new User("Existente", "userexists", "exists@example.com", "password", "Inst", com.backend.tessera.model.Role.ALUNO);
+        userRepository.save(existingUser);
+
         SignupRequest signupRequest = new SignupRequest(
-                "Aluno Existente",
-                "aluno1", // Username que já existe devido ao DataInitializer
-                "alunoexistente@example.com",
+                "Outro Nome",
+                "userexists", // Username que já existe
+                "outroemail@example.com",
                 "password123",
                 "Instituicao Teste",
                 Set.of("ALUNO")
@@ -97,11 +113,14 @@ public class RegisterControllerTests {
 
     @Test
     void testRegisterUser_Error_EmailExists() throws Exception {
-        // O DataInitializer pode já ter criado "aluno@sistema.edu"
+        // Criar um usuário para simular a existência do e-mail
+         User existingUser = new User("Existente Email", "useremail", "emailexists@example.com", "password", "Inst", com.backend.tessera.model.Role.ALUNO);
+        userRepository.save(existingUser);
+        
         SignupRequest signupRequest = new SignupRequest(
                 "Aluno Email Existente",
                 "alunoemailnovo",
-                "aluno@sistema.edu", // Email que já existe
+                "emailexists@example.com", // Email que já existe
                 "password123",
                 "Instituicao Teste",
                 Set.of("ALUNO")

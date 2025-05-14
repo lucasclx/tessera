@@ -7,6 +7,8 @@ import com.backend.tessera.dto.SignupRequest;
 import com.backend.tessera.dto.MessageResponse;
 import com.backend.tessera.repository.UserRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,8 @@ import java.util.Set;
 @RequestMapping("/api/auth")
 public class RegisterController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
+
     @Autowired
     UserRepository userRepository;
 
@@ -28,25 +32,23 @@ public class RegisterController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
-            // Log para debug
-            System.out.println("Recebendo requisição de registro: " + signUpRequest.getUsername());
-            
-            // Verificação de username já existente
+            logger.debug("Recebendo requisição de registro para username: {}", signUpRequest.getUsername());
+
             if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+                logger.warn("Tentativa de registro com username já existente: {}", signUpRequest.getUsername());
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Erro: Nome de usuário já está em uso!"));
             }
 
-            // Verificação de email já existente
             if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+                logger.warn("Tentativa de registro com email já existente: {}", signUpRequest.getEmail());
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Erro: Email já está em uso!"));
             }
 
-            // Determinar o papel a partir da solicitação
-            Role userRole = Role.ALUNO; // Papel padrão é ALUNO
+            Role userRole = Role.ALUNO;
             Set<String> strRoles = signUpRequest.getRole();
 
             if (strRoles != null && !strRoles.isEmpty()) {
@@ -57,18 +59,19 @@ public class RegisterController {
                     } else if (roleStr.equals("ALUNO")) {
                         userRole = Role.ALUNO;
                     } else {
+                        logger.warn("Tentativa de registro com perfil (Role) inválido: {}", roleStr);
                         return ResponseEntity
                                 .badRequest()
                                 .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
                     }
                 } catch (IllegalArgumentException e) {
+                    logger.warn("Tentativa de registro com perfil (Role) inválido: {}", roleStr, e);
                     return ResponseEntity
                             .badRequest()
                             .body(new MessageResponse("Erro: Perfil (Role) '" + roleStr + "' inválido."));
                 }
             }
 
-            // Construir o objeto usuário
             User user = new User();
             user.setNome(signUpRequest.getNome());
             user.setUsername(signUpRequest.getUsername());
@@ -76,24 +79,20 @@ public class RegisterController {
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
             user.setInstitution(signUpRequest.getInstitution());
             user.setRole(userRole);
-            
-            // Definir status como PENDENTE para novos usuários
             user.setStatus(AccountStatus.PENDENTE);
-            user.setEnabled(false); // Conta não habilitada até ser aprovada
+            user.setEnabled(false);
             user.setAdminComments("Aguardando aprovação do administrador");
-            
-            // Salvar no banco de dados
+
             userRepository.save(user);
-            
-            System.out.println("Usuário registrado com sucesso: " + user.getUsername() + ", Papel: " + user.getRole() + ", Status: " + user.getStatus() + ", Enabled: " + user.isEnabled());
+
+            logger.info("Usuário registrado com sucesso: {}, Papel: {}, Status: {}",
+                    user.getUsername(), user.getRole(), user.getStatus());
 
             String message = "Usuário registrado com sucesso! Sua conta será analisada pelos administradores.";
-
             return ResponseEntity.ok(new MessageResponse(message));
+
         } catch (Exception e) {
-            // Log de erro para debugging
-            System.err.println("Erro ao registrar usuário: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro ao registrar usuário {}: {}", signUpRequest.getUsername(), e.getMessage(), e);
             return ResponseEntity
                     .internalServerError()
                     .body(new MessageResponse("Erro ao processar o registro: " + e.getMessage()));

@@ -1,7 +1,8 @@
+// Arquivo: backend/src/main/java/com/backend/tessera/model/User.java
 package com.backend.tessera.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Data; // Certifique-se que esta anotação está presente e importada
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,7 +18,7 @@ import java.util.List;
     @UniqueConstraint(columnNames = "username"),
     @UniqueConstraint(columnNames = "email")
 })
-@Data
+@Data // ESSENCIAL: Gera getters, setters, toString, equals, hashCode
 @NoArgsConstructor
 public class User implements UserDetails {
 
@@ -48,39 +49,53 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private AccountStatus status = AccountStatus.PENDENTE;
 
-    // Campo para a data de aprovação
     private LocalDateTime approvalDate;
 
     @Column(length = 500)
     private String adminComments;
 
-    // Campos para status da conta
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
-    private boolean enabled = false; // Alterado para false por padrão
+    private boolean enabled = false; 
 
-    // Campo para rastrear data de criação
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // Inicializa a data de criação antes de persistir
+    // Campos para confirmação de e-mail
+    @Column(name = "email_verified") // Mantendo o nome da coluna explícito
+    private boolean emailVerified = false; // Lombok irá gerar isEmailVerified()
+
+    @Column(name = "email_verification_token")
+    private String emailVerificationToken; // Lombok irá gerar getEmailVerificationToken() e setEmailVerificationToken()
+
+    @Column(name = "email_verification_token_expiry_date")
+    private LocalDateTime emailVerificationTokenExpiryDate; // Lombok irá gerar getters/setters
+
+    // Campos para recuperação de senha
+    @Column(name = "password_reset_token")
+    private String passwordResetToken; // Lombok irá gerar getters/setters
+
+    @Column(name = "password_reset_token_expiry_date")
+    private LocalDateTime passwordResetTokenExpiryDate; // Lombok irá gerar getters/setters
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
-    // Construtor usado pelo DataInitializer
+    // Construtor para DataInitializer
     public User(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.status = AccountStatus.ATIVO; // Usuários iniciais já vêm ativos
+        this.status = AccountStatus.ATIVO; 
         this.createdAt = LocalDateTime.now();
-        this.enabled = true; // Usuários iniciais já vêm habilitados
+        this.enabled = true; 
+        this.emailVerified = true; // E-mails dos usuários iniciais são considerados verificados
     }
 
-    // Construtor completo para RegisterController
+    // Construtor para RegisterController
     public User(String nome, String username, String email, String password, String institution, Role role) {
         this.nome = nome;
         this.username = username;
@@ -88,22 +103,28 @@ public class User implements UserDetails {
         this.password = password;
         this.institution = institution;
         this.role = role;
-        this.status = AccountStatus.PENDENTE; // Novos usuários começam pendentes
+        this.status = AccountStatus.PENDENTE; 
         this.createdAt = LocalDateTime.now();
-        this.enabled = false; // Novos usuários começam desabilitados
+        this.enabled = false; 
+        this.emailVerified = false; // Novos usuários precisam verificar
     }
 
-    /**
-     * Verifica se a conta foi aprovada
-     */
+    // O Lombok @Data já gera isApproved() se o campo fosse 'approved'.
+    // Como o campo é 'status', mantemos este método customizado.
     public boolean isApproved() {
         return this.status == AccountStatus.ATIVO;
     }
+    
+    // O Lombok @Data gera isEnabled(), mas sobrescrevemos para lógica customizada.
+    @Override
+    public boolean isEnabled() {
+        return this.enabled && (this.status == AccountStatus.ATIVO);
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Só retorna autoridades se o status for ATIVO
-        if (status == AccountStatus.ATIVO && enabled) {
+        if (status == AccountStatus.ATIVO && isEnabled()) { // Usar o isEnabled() customizado
             return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
         return Collections.emptyList();
@@ -116,7 +137,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // A conta está bloqueada se estiver pendente
         return this.accountNonLocked && (this.status != AccountStatus.PENDENTE);
     }
 
@@ -124,10 +144,5 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return this.credentialsNonExpired;
     }
-
-    @Override
-    public boolean isEnabled() {
-        // A conta está habilitada se estiver ativa E o campo enabled for true
-        return this.enabled && (this.status == AccountStatus.ATIVO);
-    }
+    // O método isEmailVerified() será gerado pelo Lombok para o campo 'emailVerified'
 }

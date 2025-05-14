@@ -1,0 +1,67 @@
+<configuration>
+
+    <property name="LOG_DIR" value="${LOG_DIR:-./logs}"/>
+    <property name="LOG_FILE_NAME" value="tessera-app"/>
+
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE_NAME}.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.json.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeContext>true</includeContext>
+            <includeCallerData>false</includeCallerData> <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version> <levelValue>[ignore]</levelValue> </fieldNames>
+        </encoder>
+    </appender>
+
+    <logger name="com.backend.tessera" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <logger name="org.springframework" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <logger name="org.springframework.security" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" additivity="false"> <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+    
+    <logger name="org.hibernate" level="WARN" additivity="false">
+         <appender-ref ref="CONSOLE_TEXT"/>
+         <appender-ref ref="FILE_JSON"/>
+    </logger>
+    
+    <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE_TEXT"/>
+        <appender-ref ref="FILE_JSON"/>
+    </root>
+
+</configuration>

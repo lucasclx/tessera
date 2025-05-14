@@ -3,6 +3,8 @@ package com.backend.tessera.security;
 import com.backend.tessera.model.AccountStatus;
 import com.backend.tessera.model.User;
 import com.backend.tessera.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,11 +18,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-/**
- * Provedor de autenticação personalizado para verificar o status dos usuários
- */
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -33,37 +34,35 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        // Buscar usuário pelo nome de usuário
+        logger.debug("Tentando autenticar usuário: {}", username);
+
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
-            System.out.println("Failed to find user '" + username + "'");
+            logger.warn("Tentativa de login falhou. Usuário não encontrado: '{}'", username);
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
         User user = userOpt.get();
 
-        // Verificar a senha
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            System.out.println("Credenciais inválidas para: " + username);
+            logger.warn("Tentativa de login falhou. Credenciais inválidas para: '{}'", username);
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
 
-        // Verificar o status da conta
         if (user.getStatus() == AccountStatus.PENDENTE) {
-            System.out.println("Conta pendente de aprovação: " + username);
+            logger.info("Tentativa de login bloqueada. Conta pendente de aprovação: '{}'", username);
             throw new LockedException("Conta aguardando aprovação do administrador");
         } else if (user.getStatus() == AccountStatus.INATIVO) {
-            System.out.println("Conta inativa: " + username);
+            logger.info("Tentativa de login bloqueada. Conta inativa: '{}'", username);
             throw new DisabledException("Conta desativada. Entre em contato com o administrador.");
         }
 
-        // Verificar se a conta está habilitada (campo enabled)
         if (!user.isEnabled()) {
-            System.out.println("Conta desabilitada: " + username);
+            logger.info("Tentativa de login bloqueada. Conta desabilitada (enabled=false): '{}'", username);
             throw new DisabledException("Conta desabilitada. Entre em contato com o administrador.");
         }
 
-        // Autenticação bem-sucedida
+        logger.info("Autenticação bem-sucedida para: '{}'", username);
         return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
     }
 
